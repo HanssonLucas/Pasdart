@@ -175,6 +175,14 @@ export default function SchedulePage({
 
   const finalCreated = finalMatches.length > 0;
 
+  const finishedFinal = finalMatches.find(
+    (match) => match.status === "finished",
+  );
+
+  const winnerTeam = finishedFinal?.winnerTeamId
+    ? getTeam(finishedFinal.winnerTeamId)
+    : undefined;
+
   const semifinalsFinished =
     semifinalMatches.length === 2 &&
     semifinalMatches.every(
@@ -1079,6 +1087,31 @@ export default function SchedulePage({
                 );
               })}
             </Stack>
+          )}
+          {data.tournament.status === "finished" && winnerTeam && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
+                border: "1px solid",
+                borderColor: "divider",
+                textAlign: "center",
+              }}
+            >
+              <Stack spacing={1}>
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                  Turneringen är avslutad
+                </Typography>
+
+                <Typography variant="h5">
+                  Vinnare: Lag {winnerTeam.teamNumber}
+                </Typography>
+
+                <Typography sx={{ color: "text.secondary" }}>
+                  {winnerTeam.players.map((player) => player.name).join(" + ")}
+                </Typography>
+              </Stack>
+            </Paper>
           )}
         </Stack>
       </Box>
