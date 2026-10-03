@@ -534,21 +534,29 @@ export default function SchedulePage({
             elevation={0}
             sx={{
               overflow: "hidden",
+
               border: "1px solid rgba(255,255,255,0.14)",
+
               borderRadius: 1.25,
+
               backgroundColor: "rgba(255,255,255,0.018)",
             }}
           >
             <Box
               sx={{
                 height: 3,
+
                 display: "grid",
+
                 gridTemplateColumns: "42px 12px 42px",
+
                 justifyContent: "center",
               }}
             >
               <Box sx={{ backgroundColor: "success.dark" }} />
+
               <Box sx={{ backgroundColor: "rgba(255,255,255,0.78)" }} />
+
               <Box sx={{ backgroundColor: "error.dark" }} />
             </Box>
 
@@ -557,8 +565,11 @@ export default function SchedulePage({
                 <Stack
                   sx={{
                     flexDirection: { xs: "column", sm: "row" },
+
                     justifyContent: "space-between",
+
                     alignItems: { xs: "flex-start", sm: "center" },
+
                     gap: 2,
                   }}
                 >
@@ -566,9 +577,13 @@ export default function SchedulePage({
                     <Typography
                       sx={{
                         fontFamily: 'Georgia, "Times New Roman", serif',
+
                         fontStyle: "italic",
+
                         fontSize: { xs: "1.1rem", sm: "1.25rem" },
+
                         color: "rgba(255,255,255,0.82)",
+
                         lineHeight: 1,
                       }}
                     >
@@ -580,9 +595,13 @@ export default function SchedulePage({
                       component="h1"
                       sx={{
                         mt: 0.7,
+
                         fontWeight: 800,
+
                         letterSpacing: "-0.025em",
+
                         fontSize: { xs: "2rem", sm: "2.5rem" },
+
                         lineHeight: 1.05,
                       }}
                     >
@@ -590,79 +609,85 @@ export default function SchedulePage({
                     </Typography>
                   </Box>
 
-                  {isPlayoffView && (
-                    <Box
+                  <Box
+                    sx={{
+                      minWidth: { sm: 175 },
+                      pl: { sm: 2.5 },
+                      borderLeft: {
+                        xs: "none",
+                        sm: "1px solid rgba(255,255,255,0.12)",
+                      },
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
                       sx={{
-                        minWidth: { sm: 175 },
-                        pl: { sm: 2.5 },
-                        borderLeft: {
-                          xs: "none",
-                          sm: "1px solid rgba(255,255,255,0.12)",
-                        },
+                        display: "block",
+                        color: "error.light",
+                        letterSpacing: "0.08em",
+                        fontWeight: 800,
                       }}
                     >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          display: "block",
-                          color: "error.light",
-                          letterSpacing: "0.08em",
-                          fontWeight: 800,
-                        }}
-                      >
-                        TURNERINGSFAS
-                      </Typography>
+                      TURNERINGSFAS
+                    </Typography>
 
-                      <Typography sx={{ mt: 0.25, fontWeight: 800 }}>
-                        {data.tournament.status === "finished"
+                    <Typography sx={{ mt: 0.25, fontWeight: 800 }}>
+                      {isPlayoffView
+                        ? data.tournament.status === "finished"
                           ? "Avslutad"
                           : finalCreated
                             ? "Final"
-                            : "Slutspel"}
-                      </Typography>
+                            : "Slutspel"
+                        : "Gruppspel"}
+                    </Typography>
 
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "text.secondary", mt: 0.2 }}
-                      >
-                        {data.tournament.status === "finished"
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", mt: 0.2 }}
+                    >
+                      {isPlayoffView
+                        ? data.tournament.status === "finished"
                           ? "Vinnaren är korad"
                           : finalCreated
                             ? "Finalen är skapad"
                             : semifinalMatches.length === 1
                               ? "1 semifinal"
-                              : `${semifinalMatches.length} semifinaler`}
-                      </Typography>
-                    </Box>
-                  )}
+                              : `${semifinalMatches.length} semifinaler`
+                        : data.groupStageComplete
+                          ? "Gruppspelet är klart"
+                          : `${groupMatches.filter((match) => match.status === "finished").length} av ${groupMatches.length} matcher klara`}
+                    </Typography>
+                  </Box>
                 </Stack>
 
                 <Box
                   sx={{
                     pt: 1.5,
+
                     borderTop: "1px solid rgba(255,255,255,0.10)",
                   }}
                 >
                   <Stack
                     sx={{
                       flexDirection: "row",
+
                       flexWrap: "wrap",
+
                       alignItems: "center",
+
                       gap: 1,
                     }}
                   >
-                    {isPlayoffView && (
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: "error.light",
-                          fontWeight: 800,
-                          letterSpacing: "0.08em",
-                        }}
-                      >
-                        SLUTSPEL
-                      </Typography>
-                    )}
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "error.light",
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      {isPlayoffView ? "SLUTSPEL" : "GRUPPSPEL"}
+                    </Typography>
 
                     <Typography
                       variant="body2"
@@ -696,8 +721,11 @@ export default function SchedulePage({
             <Stack
               sx={{
                 flexDirection: "row",
+
                 gap: 1,
+
                 borderBottom: "1px solid rgba(255,255,255,0.12)",
+
                 pb: 1,
               }}
             >
@@ -707,7 +735,9 @@ export default function SchedulePage({
                 onClick={() => setShowGroupHistory(false)}
                 sx={{
                   borderRadius: 0.75,
+
                   boxShadow: "none",
+
                   px: 1.5,
                 }}
               >
@@ -720,7 +750,9 @@ export default function SchedulePage({
                 onClick={() => setShowGroupHistory(true)}
                 sx={{
                   borderRadius: 0.75,
+
                   boxShadow: "none",
+
                   px: 1.5,
                 }}
               >
@@ -733,76 +765,223 @@ export default function SchedulePage({
             <Paper
               elevation={0}
               sx={{
-                p: 2.5,
-
-                border: "1px solid",
-
-                borderColor: "divider",
+                overflow: "hidden",
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: 0.75,
+                backgroundColor: "rgba(255,255,255,0.012)",
               }}
             >
-              <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-                Tabell
-              </Typography>
+              <Box
+                sx={{
+                  px: { xs: 2, sm: 2.5 },
+                  pt: 2.25,
+                  pb: 1.75,
+                  borderBottom: "1px solid rgba(255,255,255,0.10)",
+                }}
+              >
+                <Stack
+                  sx={{
+                    flexDirection: { xs: "column", sm: "row" },
+                    justifyContent: "space-between",
+                    alignItems: { xs: "flex-start", sm: "flex-end" },
+                    gap: 1.5,
+                  }}
+                >
+                  <Box>
+                    <Typography
+                      variant="overline"
+                      sx={{
+                        color: "error.light",
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      GRUPPSPEL
+                    </Typography>
+
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 800,
+                        letterSpacing: "-0.01em",
+                      }}
+                    >
+                      Tabell
+                    </Typography>
+
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", mt: 0.35 }}
+                    >
+                      {Math.min(
+                        data.tournament.playoffQualifiers,
+                        data.standings.length,
+                      )}{" "}
+                      lag går vidare till slutspel.
+                    </Typography>
+                  </Box>
+
+                  <Stack spacing={0.35} sx={{ alignItems: { sm: "flex-end" } }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "text.secondary",
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      M = matcher · V = vinster · F = förluster
+                    </Typography>
+
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "text.secondary",
+                        letterSpacing: "0.03em",
+                      }}
+                    >
+                      Grön markering = slutspelsplats
+                    </Typography>
+                  </Stack>
+                </Stack>
+
+                <Box
+                  sx={{
+                    width: 42,
+                    height: 2,
+                    mt: 1.5,
+                    backgroundColor: "error.dark",
+                  }}
+                />
+              </Box>
 
               <TableContainer>
                 <Table size="small">
                   <TableHead>
-                    <TableRow>
-                      <TableCell>#</TableCell>
-
+                    <TableRow
+                      sx={{
+                        "& th": {
+                          py: 1.25,
+                          borderBottom: "1px solid rgba(255,255,255,0.16)",
+                          color: "text.secondary",
+                          fontSize: "0.72rem",
+                          fontWeight: 800,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                        },
+                      }}
+                    >
+                      <TableCell sx={{ width: 52 }}>#</TableCell>
                       <TableCell>Lag</TableCell>
-
                       <TableCell align="center">M</TableCell>
-
                       <TableCell align="center">V</TableCell>
-
                       <TableCell align="center">F</TableCell>
-
                       <TableCell align="center">Legs</TableCell>
-
                       <TableCell align="center">+/-</TableCell>
                     </TableRow>
                   </TableHead>
 
                   <TableBody>
-                    {data.standings.map((standing, index) => (
-                      <TableRow key={standing.teamId}>
-                        <TableCell>{index + 1}</TableCell>
+                    {data.standings.map((standing, index) => {
+                      const isPlayoffPosition =
+                        index < data.tournament.playoffQualifiers;
 
-                        <TableCell>
-                          <Typography sx={{ fontWeight: 600 }}>
-                            Lag {standing.teamNumber}
-                          </Typography>
+                      return (
+                        <TableRow
+                          key={standing.teamId}
+                          sx={{
+                            position: "relative",
+                            "& td": {
+                              py: 1.4,
+                              borderBottom: "1px solid rgba(255,255,255,0.07)",
+                            },
+                            "&:last-of-type td": {
+                              borderBottom: 0,
+                            },
+                            ...(isPlayoffPosition && {
+                              "& td:first-of-type": {
+                                borderLeft: "3px solid rgba(76,175,80,0.70)",
+                              },
+                            }),
+                            ...(index ===
+                              Math.min(
+                                data.tournament.playoffQualifiers,
+                                data.standings.length,
+                              ) -
+                                1 &&
+                              index < data.standings.length - 1 && {
+                                "& td": {
+                                  borderBottom:
+                                    "2px solid rgba(198,40,40,0.38)",
+                                },
+                              }),
+                          }}
+                        >
+                          <TableCell>
+                            <Typography
+                              sx={{
+                                fontWeight: 800,
+                                color: isPlayoffPosition
+                                  ? "text.primary"
+                                  : "text.secondary",
+                              }}
+                            >
+                              {index + 1}
+                            </Typography>
+                          </TableCell>
 
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "text.secondary" }}
-                          >
-                            {standing.players
+                          <TableCell>
+                            <Typography sx={{ fontWeight: 700 }}>
+                              Lag {standing.teamNumber}
+                            </Typography>
 
-                              .map((player) => player.name)
+                            <Typography
+                              variant="body2"
+                              sx={{ color: "text.secondary", mt: 0.15 }}
+                            >
+                              {standing.players
+                                .map((player) => player.name)
+                                .join(" + ")}
+                            </Typography>
+                          </TableCell>
 
-                              .join(" + ")}
-                          </Typography>
-                        </TableCell>
+                          <TableCell align="center">
+                            {standing.played}
+                          </TableCell>
 
-                        <TableCell align="center">{standing.played}</TableCell>
+                          <TableCell align="center">
+                            <Typography sx={{ fontWeight: 700 }}>
+                              {standing.wins}
+                            </Typography>
+                          </TableCell>
 
-                        <TableCell align="center">{standing.wins}</TableCell>
+                          <TableCell align="center">
+                            {standing.losses}
+                          </TableCell>
 
-                        <TableCell align="center">{standing.losses}</TableCell>
+                          <TableCell align="center">
+                            {standing.legsWon}-{standing.legsLost}
+                          </TableCell>
 
-                        <TableCell align="center">
-                          {standing.legsWon}-{standing.legsLost}
-                        </TableCell>
-
-                        <TableCell align="center">
-                          {standing.legDifference > 0
-                            ? `+${standing.legDifference}`
-                            : standing.legDifference}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                          <TableCell align="center">
+                            <Typography
+                              sx={{
+                                fontWeight: 700,
+                                color:
+                                  standing.legDifference > 0
+                                    ? "success.light"
+                                    : standing.legDifference < 0
+                                      ? "text.secondary"
+                                      : "text.primary",
+                              }}
+                            >
+                              {standing.legDifference > 0
+                                ? `+${standing.legDifference}`
+                                : standing.legDifference}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -1129,19 +1308,28 @@ export default function SchedulePage({
             <Box
               sx={{
                 display: "grid",
+
                 gridTemplateColumns: {
                   xs: "1fr",
+
                   md:
                     semifinalMatches.length > 0
                       ? "minmax(0, 1fr) 64px minmax(0, 1fr)"
                       : "minmax(0, 1fr)",
                 },
+
                 gap: { xs: 3, md: 2.5 },
+
                 alignItems: "center",
+
                 p: { xs: 2, sm: 2.5 },
+
                 borderTop: "1px solid rgba(255,255,255,0.16)",
+
                 borderBottom: "1px solid rgba(255,255,255,0.10)",
+
                 borderRadius: 0,
+
                 backgroundColor: "transparent",
               }}
             >
@@ -1152,7 +1340,9 @@ export default function SchedulePage({
                       variant="overline"
                       sx={{
                         color: "error.light",
+
                         fontWeight: 800,
+
                         letterSpacing: "0.08em",
                       }}
                     >
@@ -1176,8 +1366,11 @@ export default function SchedulePage({
                     <Box
                       sx={{
                         width: 42,
+
                         height: 2,
+
                         mt: 1.25,
+
                         backgroundColor: "error.dark",
                       }}
                     />
@@ -1185,10 +1378,13 @@ export default function SchedulePage({
 
                   {semifinalMatches.map((match) => {
                     const teamA = getTeam(match.teamAId);
+
                     const teamB = getTeam(match.teamBId);
+
                     const teamAWon =
                       match.status === "finished" &&
                       match.winnerTeamId === match.teamAId;
+
                     const teamBWon =
                       match.status === "finished" &&
                       match.winnerTeamId === match.teamBId;
@@ -1199,9 +1395,13 @@ export default function SchedulePage({
                         elevation={0}
                         sx={{
                           p: 2,
+
                           border: "1px solid rgba(255,255,255,0.12)",
+
                           borderRadius: 0.75,
+
                           backgroundColor: "rgba(255,255,255,0.012)",
+
                           boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
                         }}
                       >
@@ -1209,7 +1409,9 @@ export default function SchedulePage({
                           <Stack
                             sx={{
                               flexDirection: "row",
+
                               justifyContent: "space-between",
+
                               alignItems: "center",
                             }}
                           >
@@ -1217,7 +1419,9 @@ export default function SchedulePage({
                               variant="caption"
                               sx={{
                                 color: "text.secondary",
+
                                 fontWeight: 700,
+
                                 letterSpacing: "0.04em",
                               }}
                             >
@@ -1236,21 +1440,31 @@ export default function SchedulePage({
                             <Box
                               sx={{
                                 display: "flex",
+
                                 justifyContent: "space-between",
+
                                 alignItems: "center",
+
                                 gap: 2,
+
                                 p: 1.5,
+
                                 border: "1px solid",
+
                                 borderColor: teamAWon
                                   ? "text.primary"
                                   : "divider",
+
                                 borderRadius: 1,
+
                                 backgroundColor: teamAWon
                                   ? "rgba(46,125,50,0.07)"
                                   : "rgba(255,255,255,0.012)",
+
                                 borderLeft: teamAWon
                                   ? "3px solid rgba(76,175,80,0.80)"
                                   : "3px solid transparent",
+
                                 opacity:
                                   match.status === "finished" && !teamAWon
                                     ? 0.55
@@ -1269,7 +1483,9 @@ export default function SchedulePage({
                                   sx={{ color: "text.secondary" }}
                                 >
                                   {teamA?.players
+
                                     .map((player) => player.name)
+
                                     .join(" + ")}
                                 </Typography>
                               </Box>
@@ -1287,21 +1503,31 @@ export default function SchedulePage({
                             <Box
                               sx={{
                                 display: "flex",
+
                                 justifyContent: "space-between",
+
                                 alignItems: "center",
+
                                 gap: 2,
+
                                 p: 1.5,
+
                                 border: "1px solid",
+
                                 borderColor: teamBWon
                                   ? "text.primary"
                                   : "divider",
+
                                 borderRadius: 1,
+
                                 backgroundColor: teamAWon
                                   ? "rgba(46,125,50,0.07)"
                                   : "rgba(255,255,255,0.012)",
+
                                 borderLeft: teamAWon
                                   ? "3px solid rgba(76,175,80,0.80)"
                                   : "3px solid transparent",
+
                                 opacity:
                                   match.status === "finished" && !teamBWon
                                     ? 0.55
@@ -1320,7 +1546,9 @@ export default function SchedulePage({
                                   sx={{ color: "text.secondary" }}
                                 >
                                   {teamB?.players
+
                                     .map((player) => player.name)
+
                                     .join(" + ")}
                                 </Typography>
                               </Box>
@@ -1341,6 +1569,7 @@ export default function SchedulePage({
                               <Typography
                                 sx={{
                                   fontWeight: 600,
+
                                   mb: 1,
                                 }}
                               >
@@ -1350,7 +1579,9 @@ export default function SchedulePage({
                               <Stack
                                 sx={{
                                   flexDirection: "row",
+
                                   flexWrap: "wrap",
+
                                   gap: 1,
                                 }}
                               >
@@ -1363,7 +1594,9 @@ export default function SchedulePage({
                                     onClick={() =>
                                       handleResult(
                                         match.id,
+
                                         teamALegs,
+
                                         teamBLegs,
                                       )
                                     }
@@ -1385,7 +1618,9 @@ export default function SchedulePage({
                 <Box
                   sx={{
                     display: { xs: "none", md: "flex" },
+
                     alignItems: "center",
+
                     justifyContent: "center",
                   }}
                 >
@@ -1393,7 +1628,9 @@ export default function SchedulePage({
                     aria-hidden="true"
                     sx={{
                       color: "rgba(255,255,255,0.58)",
+
                       fontSize: 34,
+
                       lineHeight: 1,
                     }}
                   >
@@ -1408,7 +1645,9 @@ export default function SchedulePage({
                     variant="overline"
                     sx={{
                       color: "error.light",
+
                       fontWeight: 800,
+
                       letterSpacing: "0.08em",
                     }}
                   >
@@ -1436,8 +1675,11 @@ export default function SchedulePage({
                   <Box
                     sx={{
                       width: 42,
+
                       height: 2,
+
                       mt: 1.25,
+
                       backgroundColor: "success.dark",
                     }}
                   />
@@ -1446,10 +1688,13 @@ export default function SchedulePage({
                 {finalCreated ? (
                   finalMatches.map((match) => {
                     const teamA = getTeam(match.teamAId);
+
                     const teamB = getTeam(match.teamBId);
+
                     const teamAWon =
                       match.status === "finished" &&
                       match.winnerTeamId === match.teamAId;
+
                     const teamBWon =
                       match.status === "finished" &&
                       match.winnerTeamId === match.teamBId;
@@ -1460,10 +1705,15 @@ export default function SchedulePage({
                         elevation={0}
                         sx={{
                           p: 2,
+
                           border: "1px solid rgba(255,255,255,0.12)",
+
                           borderTop: "2px solid rgba(198,40,40,0.72)",
+
                           borderRadius: 0.75,
+
                           backgroundColor: "rgba(255,255,255,0.012)",
+
                           boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
                         }}
                       >
@@ -1471,7 +1721,9 @@ export default function SchedulePage({
                           <Stack
                             sx={{
                               flexDirection: "row",
+
                               justifyContent: "space-between",
+
                               alignItems: "center",
                             }}
                           >
@@ -1479,7 +1731,9 @@ export default function SchedulePage({
                               variant="caption"
                               sx={{
                                 color: "text.secondary",
+
                                 fontWeight: 700,
+
                                 letterSpacing: "0.04em",
                               }}
                             >
@@ -1498,21 +1752,31 @@ export default function SchedulePage({
                             <Box
                               sx={{
                                 display: "flex",
+
                                 justifyContent: "space-between",
+
                                 alignItems: "center",
+
                                 gap: 2,
+
                                 p: 1.5,
+
                                 border: "1px solid",
+
                                 borderColor: teamAWon
                                   ? "text.primary"
                                   : "divider",
+
                                 borderRadius: 1,
+
                                 backgroundColor: teamBWon
                                   ? "rgba(46,125,50,0.07)"
                                   : "rgba(255,255,255,0.012)",
+
                                 borderLeft: teamAWon
                                   ? "3px solid rgba(76,175,80,0.80)"
                                   : "3px solid transparent",
+
                                 opacity:
                                   match.status === "finished" && !teamAWon
                                     ? 0.55
@@ -1531,7 +1795,9 @@ export default function SchedulePage({
                                   sx={{ color: "text.secondary" }}
                                 >
                                   {teamA?.players
+
                                     .map((player) => player.name)
+
                                     .join(" + ")}
                                 </Typography>
                               </Box>
@@ -1549,21 +1815,31 @@ export default function SchedulePage({
                             <Box
                               sx={{
                                 display: "flex",
+
                                 justifyContent: "space-between",
+
                                 alignItems: "center",
+
                                 gap: 2,
+
                                 p: 1.5,
+
                                 border: "1px solid",
+
                                 borderColor: teamBWon
                                   ? "text.primary"
                                   : "divider",
+
                                 borderRadius: 1,
+
                                 backgroundColor: teamBWon
                                   ? "rgba(46,125,50,0.07)"
                                   : "rgba(255,255,255,0.012)",
+
                                 borderLeft: teamBWon
                                   ? "3px solid rgba(76,175,80,0.80)"
                                   : "3px solid transparent",
+
                                 opacity:
                                   match.status === "finished" && !teamBWon
                                     ? 0.55
@@ -1582,7 +1858,9 @@ export default function SchedulePage({
                                   sx={{ color: "text.secondary" }}
                                 >
                                   {teamB?.players
+
                                     .map((player) => player.name)
+
                                     .join(" + ")}
                                 </Typography>
                               </Box>
@@ -1603,6 +1881,7 @@ export default function SchedulePage({
                               <Typography
                                 sx={{
                                   fontWeight: 600,
+
                                   mb: 1,
                                 }}
                               >
@@ -1612,7 +1891,9 @@ export default function SchedulePage({
                               <Stack
                                 sx={{
                                   flexDirection: "row",
+
                                   flexWrap: "wrap",
+
                                   gap: 1,
                                 }}
                               >
@@ -1625,7 +1906,9 @@ export default function SchedulePage({
                                     onClick={() =>
                                       handleResult(
                                         match.id,
+
                                         teamALegs,
+
                                         teamBLegs,
                                       )
                                     }
@@ -1645,13 +1928,21 @@ export default function SchedulePage({
                     elevation={0}
                     sx={{
                       p: 2.5,
+
                       border: "1px dashed",
+
                       borderColor: "rgba(255,255,255,0.18)",
+
                       borderRadius: 1.5,
+
                       minHeight: 190,
+
                       display: "flex",
+
                       alignItems: "center",
+
                       justifyContent: "center",
+
                       backgroundColor: "rgba(255,255,255,0.018)",
                     }}
                   >
@@ -1718,7 +2009,9 @@ export default function SchedulePage({
 
                   <Typography sx={{ color: "text.secondary" }}>
                     {winnerTeam.players
+
                       .map((player) => player.name)
+
                       .join(" + ")}
                   </Typography>
                 </Stack>
