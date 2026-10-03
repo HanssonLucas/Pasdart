@@ -57,6 +57,7 @@ export async function GET(
       teamBId: matches.teamBId,
       teamALegs: matches.teamALegs,
       teamBLegs: matches.teamBLegs,
+      winnerTeamId: matches.winnerTeamId,
       status: matches.status,
     })
     .from(matches)

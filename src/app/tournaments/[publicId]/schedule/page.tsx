@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   Box,
+  Button,
   Chip,
   Container,
   Paper,
@@ -32,6 +33,7 @@ type Match = {
   teamALegs: number;
   teamBLegs: number;
   status: string;
+  winnerTeamId: number | null;
 };
 
 type TournamentResponse = {
@@ -125,6 +127,61 @@ export default function SchedulePage({
     return data?.teams.find((team) => team.id === teamId);
   }
 
+  function getPossibleResults(bestOf: number) {
+    const legsToWin = Math.floor(bestOf / 2) + 1;
+    const results: Array<[number, number]> = [];
+
+    for (let loserLegs = 0; loserLegs < legsToWin; loserLegs += 1) {
+      results.push([legsToWin, loserLegs]);
+    }
+
+    for (let loserLegs = legsToWin - 1; loserLegs >= 0; loserLegs -= 1) {
+      results.push([loserLegs, legsToWin]);
+    }
+
+    return results;
+  }
+
+  async function handleResult(
+    matchId: number,
+    teamALegs: number,
+    teamBLegs: number,
+  ) {
+    try {
+      const response = await fetch(`/api/matches/${matchId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          teamALegs,
+          teamBLegs,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      const updatedMatch: Match = await response.json();
+
+      setData((current) => {
+        if (!current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          matches: current.matches.map((match) =>
+            match.id === updatedMatch.id ? updatedMatch : match,
+          ),
+        };
+      });
+    } catch {
+      setError("Kunde inte spara matchresultatet.");
+    }
+  }
+
   return (
     <Container maxWidth="md">
       <Box sx={{ py: 4 }}>
@@ -189,6 +246,7 @@ export default function SchedulePage({
                           <Typography sx={{ fontWeight: 700 }}>
                             Lag {teamA?.teamNumber}
                           </Typography>
+
                           <Typography sx={{ color: "text.secondary" }}>
                             {teamA?.players
                               .map((player) => player.name)
@@ -210,12 +268,68 @@ export default function SchedulePage({
                           <Typography sx={{ fontWeight: 700 }}>
                             Lag {teamB?.teamNumber}
                           </Typography>
+
                           <Typography sx={{ color: "text.secondary" }}>
                             {teamB?.players
                               .map((player) => player.name)
                               .join(" + ")}
                           </Typography>
                         </Box>
+
+                        {match.status === "finished" ? (
+                          <Box
+                            sx={{
+                              textAlign: "center",
+                              pt: 1,
+                            }}
+                          >
+                            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                              {match.teamALegs} - {match.teamBLegs}
+                            </Typography>
+
+                            <Typography
+                              sx={{
+                                color: "text.secondary",
+                                mt: 0.5,
+                              }}
+                            >
+                              Match avslutad
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Box>
+                            <Typography
+                              sx={{
+                                fontWeight: 600,
+                                mb: 1,
+                              }}
+                            >
+                              Registrera resultat
+                            </Typography>
+
+                            <Stack
+                              sx={{
+                                flexDirection: "row",
+                                flexWrap: "wrap",
+                                gap: 1,
+                              }}
+                            >
+                              {getPossibleResults(
+                                data.tournament.groupBestOf,
+                              ).map(([teamALegs, teamBLegs]) => (
+                                <Button
+                                  key={`${teamALegs}-${teamBLegs}`}
+                                  variant="outlined"
+                                  onClick={() =>
+                                    handleResult(match.id, teamALegs, teamBLegs)
+                                  }
+                                >
+                                  {teamALegs} - {teamBLegs}
+                                </Button>
+                              ))}
+                            </Stack>
+                          </Box>
+                        )}
                       </Stack>
                     </Paper>
                   );
