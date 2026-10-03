@@ -64,6 +64,7 @@ type TournamentResponse = {
   tournament: {
     id: number;
     name: string;
+    status: string;
     gameType: number;
     groupBestOf: number;
     playoffBestOf: number;
