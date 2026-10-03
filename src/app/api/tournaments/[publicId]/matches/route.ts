@@ -36,6 +36,7 @@ export async function GET(
     .select({
       id: teams.id,
       teamNumber: teams.teamNumber,
+      seed: teams.seed,
     })
     .from(teams)
     .where(eq(teams.tournamentId, tournament.id));
@@ -151,7 +152,15 @@ export async function GET(
     for (const wins of winsInPlayoffs) {
       const tiedTeams = standings.filter((standing) => standing.wins === wins);
 
-      if (tiedTeams.length > 1) {
+      const castoffAlreadyCompleted = tiedTeams.every((standing) => {
+        const team = tournamentTeams.find(
+          (tournamentTeam) => tournamentTeam.id === standing.teamId,
+        );
+
+        return team?.seed !== null && team?.seed !== undefined;
+      });
+
+      if (tiedTeams.length > 1 && !castoffAlreadyCompleted) {
         castoffGroups.push({
           wins,
           teams: tiedTeams,
