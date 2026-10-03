@@ -1,0 +1,20 @@
+CREATE TABLE "tournaments" (
+	"id" serial PRIMARY KEY,
+	"public_id" text NOT NULL UNIQUE,
+	"admin_token" text NOT NULL UNIQUE,
+	"name" text NOT NULL,
+	"status" text DEFAULT 'setup' NOT NULL,
+	"game_type" integer NOT NULL,
+	"team_mode" text NOT NULL,
+	"round_robin_type" text NOT NULL,
+	"group_best_of" integer NOT NULL,
+	"playoff_best_of" integer NOT NULL,
+	"group_max_darts" integer,
+	"playoff_max_darts" integer,
+	"board_count" integer NOT NULL,
+	"tiebreak_method" text NOT NULL,
+	"playoff_qualifiers" integer DEFAULT 4 NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"finished_at" timestamp
+);
