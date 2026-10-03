@@ -93,6 +93,8 @@ export default function SchedulePage({
   );
   const [savingCastoff, setSavingCastoff] = useState(false);
   const [startingPlayoffs, setStartingPlayoffs] = useState(false);
+  const [creatingFinal, setCreatingFinal] = useState(false);
+
   function applyTournamentData(result: TournamentResponse) {
     setData(result);
 
@@ -168,6 +170,15 @@ export default function SchedulePage({
   const semifinalMatches = data.matches.filter(
     (match) => match.stage === "semifinal",
   );
+  const finalMatches = data.matches.filter((match) => match.stage === "final");
+
+  const finalCreated = finalMatches.length > 0;
+
+  const semifinalsFinished =
+    semifinalMatches.length === 2 &&
+    semifinalMatches.every(
+      (match) => match.status === "finished" && match.winnerTeamId !== null,
+    );
 
   const playoffsStarted = semifinalMatches.length > 0;
 
@@ -333,6 +344,41 @@ export default function SchedulePage({
     }
   }
 
+  async function handleCreateFinal() {
+    setCreatingFinal(true);
+    setError("");
+
+    try {
+      const { publicId } = await params;
+
+      const response = await fetch(
+        `/api/tournaments/${publicId}/playoffs/final`,
+        {
+          method: "POST",
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      const updatedResponse = await fetch(
+        `/api/tournaments/${publicId}/matches`,
+      );
+
+      if (!updatedResponse.ok) {
+        throw new Error();
+      }
+
+      const updatedData: TournamentResponse = await updatedResponse.json();
+
+      applyTournamentData(updatedData);
+    } catch {
+      setError("Kunde inte skapa finalen.");
+    } finally {
+      setCreatingFinal(false);
+    }
+  }
   function getPossibleResults(bestOf: number) {
     const legsToWin = Math.floor(bestOf / 2) + 1;
     const results: Array<[number, number]> = [];
@@ -886,6 +932,17 @@ export default function SchedulePage({
                 );
               })}
             </Stack>
+          )}
+          {semifinalsFinished && !finalCreated && (
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              onClick={handleCreateFinal}
+              disabled={creatingFinal}
+            >
+              {creatingFinal ? "Skapar final..." : "Fortsätt till final"}
+            </Button>
           )}
         </Stack>
       </Box>
