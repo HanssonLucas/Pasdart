@@ -1028,6 +1028,12 @@ export default function SchedulePage({
                   {semifinalMatches.map((match) => {
                     const teamA = getTeam(match.teamAId);
                     const teamB = getTeam(match.teamBId);
+                    const teamAWon =
+                      match.status === "finished" &&
+                      match.winnerTeamId === match.teamAId;
+                    const teamBWon =
+                      match.status === "finished" &&
+                      match.winnerTeamId === match.teamBId;
 
                     return (
                       <Paper
@@ -1060,61 +1066,97 @@ export default function SchedulePage({
                             </Typography>
                           </Stack>
 
-                          <Box>
-                            <Typography sx={{ fontWeight: 700 }}>
-                              Lag {teamA?.teamNumber}
-                            </Typography>
-
-                            <Typography sx={{ color: "text.secondary" }}>
-                              {teamA?.players
-                                .map((player) => player.name)
-                                .join(" + ")}
-                            </Typography>
-                          </Box>
-
-                          <Typography
-                            sx={{
-                              textAlign: "center",
-                              color: "text.secondary",
-                              fontWeight: 700,
-                            }}
-                          >
-                            VS
-                          </Typography>
-
-                          <Box>
-                            <Typography sx={{ fontWeight: 700 }}>
-                              Lag {teamB?.teamNumber}
-                            </Typography>
-
-                            <Typography sx={{ color: "text.secondary" }}>
-                              {teamB?.players
-                                .map((player) => player.name)
-                                .join(" + ")}
-                            </Typography>
-                          </Box>
-
-                          {match.status === "finished" ? (
+                          <Stack spacing={1}>
                             <Box
                               sx={{
-                                textAlign: "center",
-                                pt: 1,
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 2,
+                                p: 1.5,
+                                border: "1px solid",
+                                borderColor: teamAWon
+                                  ? "text.primary"
+                                  : "divider",
+                                borderRadius: 1,
+                                opacity:
+                                  match.status === "finished" && !teamAWon
+                                    ? 0.55
+                                    : 1,
                               }}
                             >
-                              <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                                {match.teamALegs} - {match.teamBLegs}
-                              </Typography>
+                              <Box sx={{ minWidth: 0 }}>
+                                <Typography sx={{ fontWeight: 700 }}>
+                                  Lag {teamA?.teamNumber}
+                                  {teamAWon ? " ✓" : ""}
+                                </Typography>
 
-                              <Typography
-                                sx={{
-                                  color: "text.secondary",
-                                  mt: 0.5,
-                                }}
-                              >
-                                Match avslutad
-                              </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "text.secondary" }}
+                                >
+                                  {teamA?.players
+                                    .map((player) => player.name)
+                                    .join(" + ")}
+                                </Typography>
+                              </Box>
+
+                              {match.status === "finished" && (
+                                <Typography
+                                  variant="h5"
+                                  sx={{ fontWeight: 700 }}
+                                >
+                                  {match.teamALegs}
+                                </Typography>
+                              )}
                             </Box>
-                          ) : (
+
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 2,
+                                p: 1.5,
+                                border: "1px solid",
+                                borderColor: teamBWon
+                                  ? "text.primary"
+                                  : "divider",
+                                borderRadius: 1,
+                                opacity:
+                                  match.status === "finished" && !teamBWon
+                                    ? 0.55
+                                    : 1,
+                              }}
+                            >
+                              <Box sx={{ minWidth: 0 }}>
+                                <Typography sx={{ fontWeight: 700 }}>
+                                  Lag {teamB?.teamNumber}
+                                  {teamBWon ? " ✓" : ""}
+                                </Typography>
+
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "text.secondary" }}
+                                >
+                                  {teamB?.players
+                                    .map((player) => player.name)
+                                    .join(" + ")}
+                                </Typography>
+                              </Box>
+
+                              {match.status === "finished" && (
+                                <Typography
+                                  variant="h5"
+                                  sx={{ fontWeight: 700 }}
+                                >
+                                  {match.teamBLegs}
+                                </Typography>
+                              )}
+                            </Box>
+                          </Stack>
+
+                          {match.status !== "finished" && (
                             <Box>
                               <Typography
                                 sx={{
@@ -1202,6 +1244,12 @@ export default function SchedulePage({
                   finalMatches.map((match) => {
                     const teamA = getTeam(match.teamAId);
                     const teamB = getTeam(match.teamBId);
+                    const teamAWon =
+                      match.status === "finished" &&
+                      match.winnerTeamId === match.teamAId;
+                    const teamBWon =
+                      match.status === "finished" &&
+                      match.winnerTeamId === match.teamBId;
 
                     return (
                       <Paper
@@ -1234,61 +1282,97 @@ export default function SchedulePage({
                             </Typography>
                           </Stack>
 
-                          <Box>
-                            <Typography sx={{ fontWeight: 700 }}>
-                              Lag {teamA?.teamNumber}
-                            </Typography>
-
-                            <Typography sx={{ color: "text.secondary" }}>
-                              {teamA?.players
-                                .map((player) => player.name)
-                                .join(" + ")}
-                            </Typography>
-                          </Box>
-
-                          <Typography
-                            sx={{
-                              textAlign: "center",
-                              color: "text.secondary",
-                              fontWeight: 700,
-                            }}
-                          >
-                            VS
-                          </Typography>
-
-                          <Box>
-                            <Typography sx={{ fontWeight: 700 }}>
-                              Lag {teamB?.teamNumber}
-                            </Typography>
-
-                            <Typography sx={{ color: "text.secondary" }}>
-                              {teamB?.players
-                                .map((player) => player.name)
-                                .join(" + ")}
-                            </Typography>
-                          </Box>
-
-                          {match.status === "finished" ? (
+                          <Stack spacing={1}>
                             <Box
                               sx={{
-                                textAlign: "center",
-                                pt: 1,
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 2,
+                                p: 1.5,
+                                border: "1px solid",
+                                borderColor: teamAWon
+                                  ? "text.primary"
+                                  : "divider",
+                                borderRadius: 1,
+                                opacity:
+                                  match.status === "finished" && !teamAWon
+                                    ? 0.55
+                                    : 1,
                               }}
                             >
-                              <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                                {match.teamALegs} - {match.teamBLegs}
-                              </Typography>
+                              <Box sx={{ minWidth: 0 }}>
+                                <Typography sx={{ fontWeight: 700 }}>
+                                  Lag {teamA?.teamNumber}
+                                  {teamAWon ? " ✓" : ""}
+                                </Typography>
 
-                              <Typography
-                                sx={{
-                                  color: "text.secondary",
-                                  mt: 0.5,
-                                }}
-                              >
-                                Match avslutad
-                              </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "text.secondary" }}
+                                >
+                                  {teamA?.players
+                                    .map((player) => player.name)
+                                    .join(" + ")}
+                                </Typography>
+                              </Box>
+
+                              {match.status === "finished" && (
+                                <Typography
+                                  variant="h5"
+                                  sx={{ fontWeight: 700 }}
+                                >
+                                  {match.teamALegs}
+                                </Typography>
+                              )}
                             </Box>
-                          ) : (
+
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 2,
+                                p: 1.5,
+                                border: "1px solid",
+                                borderColor: teamBWon
+                                  ? "text.primary"
+                                  : "divider",
+                                borderRadius: 1,
+                                opacity:
+                                  match.status === "finished" && !teamBWon
+                                    ? 0.55
+                                    : 1,
+                              }}
+                            >
+                              <Box sx={{ minWidth: 0 }}>
+                                <Typography sx={{ fontWeight: 700 }}>
+                                  Lag {teamB?.teamNumber}
+                                  {teamBWon ? " ✓" : ""}
+                                </Typography>
+
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "text.secondary" }}
+                                >
+                                  {teamB?.players
+                                    .map((player) => player.name)
+                                    .join(" + ")}
+                                </Typography>
+                              </Box>
+
+                              {match.status === "finished" && (
+                                <Typography
+                                  variant="h5"
+                                  sx={{ fontWeight: 700 }}
+                                >
+                                  {match.teamBLegs}
+                                </Typography>
+                              )}
+                            </Box>
+                          </Stack>
+
+                          {match.status !== "finished" && (
                             <Box>
                               <Typography
                                 sx={{
