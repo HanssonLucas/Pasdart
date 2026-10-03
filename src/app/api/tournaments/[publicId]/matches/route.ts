@@ -21,6 +21,8 @@ export async function GET(
       groupMaxDarts: tournaments.groupMaxDarts,
       tiebreakMethod: tournaments.tiebreakMethod,
       playoffQualifiers: tournaments.playoffQualifiers,
+      playoffBestOf: tournaments.playoffBestOf,
+      playoffMaxDarts: tournaments.playoffMaxDarts,
     })
     .from(tournaments)
     .where(eq(tournaments.publicId, publicId));
