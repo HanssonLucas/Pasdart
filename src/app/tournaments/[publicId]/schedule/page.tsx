@@ -40,6 +40,7 @@ type Match = {
   teamBLegs: number;
   status: string;
   winnerTeamId: number | null;
+  stage: string;
 };
 
 type Standing = {
@@ -61,10 +62,13 @@ type TournamentResponse = {
     gameType: number;
     groupBestOf: number;
     groupMaxDarts: number | null;
+    tiebreakMethod: string;
+    playoffQualifiers: number;
   };
   teams: Team[];
   matches: Match[];
   standings: Standing[];
+  groupStageComplete: boolean;
 };
 
 export default function SchedulePage({
@@ -284,6 +288,33 @@ export default function SchedulePage({
               </Table>
             </TableContainer>
           </Paper>
+
+          {data.groupStageComplete && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                border: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                    Gruppspelet är klart
+                  </Typography>
+
+                  <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
+                    Alla gruppmatcher är färdigspelade.
+                  </Typography>
+                </Box>
+
+                <Button variant="contained" size="large" fullWidth>
+                  Fortsätt till slutspel
+                </Button>
+              </Stack>
+            </Paper>
+          )}
 
           {roundNumbers.map((roundNumber) => (
             <Stack key={roundNumber} spacing={2}>

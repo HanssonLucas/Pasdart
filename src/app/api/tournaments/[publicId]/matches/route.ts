@@ -19,6 +19,8 @@ export async function GET(
       gameType: tournaments.gameType,
       groupBestOf: tournaments.groupBestOf,
       groupMaxDarts: tournaments.groupMaxDarts,
+      tiebreakMethod: tournaments.tiebreakMethod,
+      playoffQualifiers: tournaments.playoffQualifiers,
     })
     .from(tournaments)
     .where(eq(tournaments.publicId, publicId));
@@ -50,6 +52,7 @@ export async function GET(
   const tournamentMatches = await db
     .select({
       id: matches.id,
+      stage: matches.stage,
       roundNumber: matches.roundNumber,
       boardNumber: matches.boardNumber,
       matchNumber: matches.matchNumber,
@@ -63,6 +66,14 @@ export async function GET(
     .from(matches)
     .where(eq(matches.tournamentId, tournament.id));
 
+  const groupMatches = tournamentMatches.filter(
+    (match) => match.stage === "group",
+  );
+
+  const groupStageComplete =
+    groupMatches.length > 0 &&
+    groupMatches.every((match) => match.status === "finished");
+
   const teamsWithPlayers = tournamentTeams.map((team) => ({
     ...team,
     players: teamMembers
@@ -75,7 +86,7 @@ export async function GET(
 
   const standings = teamsWithPlayers
     .map((team) => {
-      const teamMatches = tournamentMatches.filter(
+      const teamMatches = groupMatches.filter(
         (match) =>
           match.status === "finished" &&
           (match.teamAId === team.id || match.teamBId === team.id),
@@ -128,5 +139,6 @@ export async function GET(
     teams: teamsWithPlayers,
     matches: tournamentMatches,
     standings,
+    groupStageComplete,
   });
 }
