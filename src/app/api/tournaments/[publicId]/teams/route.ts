@@ -2,7 +2,8 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { db } from "@/db";
-import { teamPlayers, teams, tournaments } from "@/db/schema";
+import { matches, teamPlayers, teams, tournaments } from "@/db/schema";
+import { generateRoundRobinSchedule } from "@/lib/tournaments/generateRoundRobinSchedule";
 
 type TeamInput = {
   number: number;
@@ -39,6 +40,8 @@ export async function POST(
   const [tournament] = await db
     .select({
       id: tournaments.id,
+      boardCount: tournaments.boardCount,
+      roundRobinType: tournaments.roundRobinType,
     })
     .from(tournaments)
     .where(eq(tournaments.publicId, publicId));
@@ -64,6 +67,11 @@ export async function POST(
     );
   }
 
+  const createdTeams: Array<{
+    id: number;
+    number: number;
+  }> = [];
+
   for (const submittedTeam of submittedTeams) {
     const [newTeam] = await db
       .insert(teams)
@@ -73,12 +81,36 @@ export async function POST(
       })
       .returning({
         id: teams.id,
+        number: teams.teamNumber,
       });
+
+    createdTeams.push(newTeam);
 
     await db.insert(teamPlayers).values(
       submittedTeam.playerIds.map((playerId) => ({
         teamId: newTeam.id,
         playerId,
+      })),
+    );
+  }
+
+  const schedule = generateRoundRobinSchedule(
+    createdTeams.map((team) => team.id),
+    tournament.boardCount,
+    tournament.roundRobinType === "double",
+  );
+
+  if (schedule.length > 0) {
+    await db.insert(matches).values(
+      schedule.map((match, index) => ({
+        tournamentId: tournament.id,
+        stage: "group",
+        roundNumber: match.roundNumber,
+        boardNumber: match.boardNumber,
+        matchNumber: index + 1,
+        teamAId: match.teamAId,
+        teamBId: match.teamBId,
+        status: "scheduled",
       })),
     );
   }
