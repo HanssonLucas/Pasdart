@@ -74,6 +74,8 @@ export default function TeamsPage({
   const [teams, setTeams] = useState<GeneratedTeam[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [teamsSaved, setTeamsSaved] = useState(false);
 
   const resolvedParams = useMemo(() => params, [params]);
 
@@ -120,6 +122,43 @@ export default function TeamsPage({
     }
 
     setTeams(generateTeams(tournament.players, tournament.teamMode));
+  }
+
+  async function handleApproveTeams() {
+    if (!tournament) {
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `/api/tournaments/${tournament.publicId}/teams`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            teams: teams.map((team) => ({
+              number: team.number,
+              playerIds: team.players.map((player) => player.id),
+            })),
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      setTeamsSaved(true);
+    } catch {
+      setError("Kunde inte spara lagen.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (loading) {
@@ -190,8 +229,18 @@ export default function TeamsPage({
               Slumpa om
             </Button>
 
-            <Button variant="contained" size="large" fullWidth>
-              Godkänn lag
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              onClick={handleApproveTeams}
+              disabled={saving || teamsSaved}
+            >
+              {saving
+                ? "Sparar lag..."
+                : teamsSaved
+                  ? "Lagen är sparade"
+                  : "Godkänn lag"}
             </Button>
           </Stack>
         </Stack>
