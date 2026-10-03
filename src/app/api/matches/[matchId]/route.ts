@@ -95,5 +95,16 @@ export async function PATCH(
     .where(eq(matches.id, match.id))
     .returning();
 
+  if (match.stage === "final") {
+    await db
+      .update(tournaments)
+      .set({
+        status: "finished",
+        finishedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(tournaments.id, match.tournamentId));
+  }
+
   return NextResponse.json(updatedMatch);
 }
