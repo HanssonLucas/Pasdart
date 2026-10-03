@@ -30,6 +30,7 @@ export default function NewTournamentPage() {
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<number[]>([]);
   const [loadingPlayers, setLoadingPlayers] = useState(true);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const [name, setName] = useState("Onsdagscup");
   const [teamMode, setTeamMode] = useState("doubles");
@@ -80,6 +81,44 @@ export default function NewTournamentPage() {
         ? current.filter((id) => id !== playerId)
         : [...current, playerId],
     );
+  }
+  async function handleContinue() {
+    setSaving(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/tournaments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          gameType,
+          teamMode,
+          roundRobinType,
+          groupBestOf,
+          playoffBestOf,
+          groupMaxDarts,
+          playoffMaxDarts,
+          boardCount,
+          tiebreakMethod,
+          playerIds: selectedPlayerIds,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      const data = await response.json();
+
+      console.log("Tournament created:", data);
+    } catch {
+      setError("Kunde inte skapa cupen.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -274,9 +313,10 @@ export default function NewTournamentPage() {
               <Button
                 variant="contained"
                 size="large"
-                disabled={selectedPlayerIds.length < 2}
+                disabled={selectedPlayerIds.length < 2 || saving}
+                onClick={handleContinue}
               >
-                Fortsätt
+                {saving ? "Skapar cup..." : "Fortsätt"}
               </Button>
             </Stack>
           </Paper>
