@@ -154,9 +154,72 @@ export async function POST(
       ),
     );
 
+  if (qualifiedTeams.length === 2) {
+    const teamBySeed = new Map(
+      qualifiedTeams.map((team) => [team.seed, team.id]),
+    );
+
+    const seed1 = teamBySeed.get(1);
+    const seed2 = teamBySeed.get(2);
+
+    if (!seed1 || !seed2) {
+      return NextResponse.json(
+        { error: "Seedningen är ofullständig." },
+        { status: 400 },
+      );
+    }
+
+    const existingFinal = await db
+      .select({
+        id: matches.id,
+      })
+      .from(matches)
+      .where(
+        and(
+          eq(matches.tournamentId, tournament.id),
+          eq(matches.stage, "final"),
+        ),
+      );
+
+    if (existingFinal.length > 0) {
+      return NextResponse.json(
+        { error: "Finalen har redan skapats." },
+        { status: 409 },
+      );
+    }
+
+    await db.insert(matches).values({
+      tournamentId: tournament.id,
+      stage: "final",
+      roundNumber: 1,
+      boardNumber: 1,
+      matchNumber: 1,
+      teamAId: seed1,
+      teamBId: seed2,
+      status: "scheduled",
+    });
+
+    await db
+      .update(tournaments)
+      .set({
+        status: "playoffs",
+        updatedAt: new Date(),
+      })
+      .where(eq(tournaments.id, tournament.id));
+
+    return NextResponse.json(
+      {
+        success: true,
+      },
+      { status: 201 },
+    );
+  }
+
   if (qualifiedTeams.length !== 4) {
     return NextResponse.json(
-      { error: "Fyra seedade lag krävs för att starta slutspelet." },
+      {
+        error: "Slutspelet kräver antingen 2 eller 4 seedade lag.",
+      },
       { status: 400 },
     );
   }
