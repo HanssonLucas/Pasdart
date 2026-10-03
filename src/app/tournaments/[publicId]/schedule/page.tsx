@@ -826,6 +826,61 @@ export default function SchedulePage({
                             .join(" + ")}
                         </Typography>
                       </Box>
+
+                      {match.status === "finished" ? (
+                        <Box
+                          sx={{
+                            textAlign: "center",
+                            pt: 1,
+                          }}
+                        >
+                          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                            {match.teamALegs} - {match.teamBLegs}
+                          </Typography>
+
+                          <Typography
+                            sx={{
+                              color: "text.secondary",
+                              mt: 0.5,
+                            }}
+                          >
+                            Match avslutad
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Box>
+                          <Typography
+                            sx={{
+                              fontWeight: 600,
+                              mb: 1,
+                            }}
+                          >
+                            Registrera resultat
+                          </Typography>
+
+                          <Stack
+                            sx={{
+                              flexDirection: "row",
+                              flexWrap: "wrap",
+                              gap: 1,
+                            }}
+                          >
+                            {getPossibleResults(
+                              data.tournament.playoffBestOf,
+                            ).map(([teamALegs, teamBLegs]) => (
+                              <Button
+                                key={`${teamALegs}-${teamBLegs}`}
+                                variant="outlined"
+                                onClick={() =>
+                                  handleResult(match.id, teamALegs, teamBLegs)
+                                }
+                              >
+                                {teamALegs} - {teamBLegs}
+                              </Button>
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
                     </Stack>
                   </Paper>
                 );
