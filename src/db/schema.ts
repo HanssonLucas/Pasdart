@@ -32,3 +32,39 @@ export const tournaments = pgTable("tournaments", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   finishedAt: timestamp("finished_at"),
 });
+
+export const tournamentPlayers = pgTable("tournament_players", {
+  id: serial("id").primaryKey(),
+
+  tournamentId: integer("tournament_id")
+    .notNull()
+    .references(() => tournaments.id, { onDelete: "cascade" }),
+
+  playerId: integer("player_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+});
+
+export const teams = pgTable("teams", {
+  id: serial("id").primaryKey(),
+
+  tournamentId: integer("tournament_id")
+    .notNull()
+    .references(() => tournaments.id, { onDelete: "cascade" }),
+
+  teamNumber: integer("team_number").notNull(),
+
+  seed: integer("seed"),
+});
+
+export const teamPlayers = pgTable("team_players", {
+  id: serial("id").primaryKey(),
+
+  teamId: integer("team_id")
+    .notNull()
+    .references(() => teams.id, { onDelete: "cascade" }),
+
+  playerId: integer("player_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+});
