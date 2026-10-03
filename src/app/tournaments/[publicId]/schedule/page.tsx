@@ -991,145 +991,286 @@ export default function SchedulePage({
             <Paper
               elevation={0}
               sx={{
-                p: 2.5,
-
-                border: "1px solid",
-
-                borderColor: "divider",
+                overflow: "hidden",
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: 0.75,
+                backgroundColor: "rgba(255,255,255,0.012)",
               }}
             >
               {data.requiresCastoff ? (
-                <Stack spacing={3}>
-                  <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                <Stack spacing={0}>
+                  <Box
+                    sx={{
+                      px: { xs: 2, sm: 2.5 },
+                      pt: 2.25,
+                      pb: 1.75,
+                      borderBottom: "1px solid rgba(255,255,255,0.10)",
+                    }}
+                  >
+                    <Typography
+                      variant="overline"
+                      sx={{
+                        color: "error.light",
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      AVGÖRANDE
+                    </Typography>
+
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 800,
+                        letterSpacing: "-0.01em",
+                      }}
+                    >
                       Castoff krävs
                     </Typography>
 
-                    <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
-                      Ett eller flera lag har samma antal vinster. Ordna lagen
-                      efter resultatet från castoffen.
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", mt: 0.35, maxWidth: 640 }}
+                    >
+                      Lag med samma antal vinster behöver skiljas åt innan
+                      slutspelet kan starta. Flytta lagen tills ordningen
+                      motsvarar castoff-resultatet.
                     </Typography>
+
+                    <Box
+                      sx={{
+                        width: 42,
+                        height: 2,
+                        mt: 1.5,
+                        backgroundColor: "error.dark",
+                      }}
+                    />
                   </Box>
 
-                  {data.castoffGroups.map((group) => {
-                    const order = castoffOrders[group.wins] ?? [];
+                  <Stack spacing={2.25} sx={{ p: { xs: 2, sm: 2.5 } }}>
+                    {data.castoffGroups.map((group) => {
+                      const order = castoffOrders[group.wins] ?? [];
 
-                    return (
-                      <Stack key={group.wins} spacing={1.5}>
-                        <Typography sx={{ fontWeight: 600 }}>
-                          {group.wins} {group.wins === 1 ? "vinst" : "vinster"}
-                        </Typography>
-
-                        {order.map((teamId, index) => {
-                          const standing = group.teams.find(
-                            (team) => team.teamId === teamId,
-                          );
-
-                          if (!standing) {
-                            return null;
-                          }
-
-                          return (
-                            <Paper
-                              key={teamId}
-                              elevation={0}
+                      return (
+                        <Box key={group.wins}>
+                          <Stack
+                            sx={{
+                              flexDirection: "row",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              gap: 2,
+                              mb: 0.75,
+                            }}
+                          >
+                            <Typography
                               sx={{
-                                p: 2,
-
-                                border: "1px solid",
-
-                                borderColor: "divider",
+                                fontWeight: 800,
+                                letterSpacing: "-0.01em",
                               }}
                             >
-                              <Stack spacing={1.5}>
-                                <Box>
-                                  <Typography sx={{ fontWeight: 700 }}>
-                                    {index + 1}. Lag {standing.teamNumber}
-                                  </Typography>
+                              {group.wins}{" "}
+                              {group.wins === 1 ? "vinst" : "vinster"}
+                            </Typography>
 
-                                  <Typography
-                                    variant="body2"
-                                    sx={{ color: "text.secondary" }}
-                                  >
-                                    {standing.players
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: "text.secondary",
+                                letterSpacing: "0.03em",
+                              }}
+                            >
+                              {group.teams.length} lag
+                            </Typography>
+                          </Stack>
 
-                                      .map((player) => player.name)
+                          <Box
+                            sx={{
+                              borderTop: "1px solid rgba(255,255,255,0.12)",
+                            }}
+                          >
+                            {order.map((teamId, index) => {
+                              const standing = group.teams.find(
+                                (team) => team.teamId === teamId,
+                              );
 
-                                      .join(" + ")}
-                                  </Typography>
-                                </Box>
+                              if (!standing) {
+                                return null;
+                              }
 
-                                <Stack
+                              return (
+                                <Box
+                                  key={teamId}
                                   sx={{
-                                    flexDirection: "row",
-
-                                    gap: 1,
+                                    display: "grid",
+                                    gridTemplateColumns:
+                                      "34px minmax(0, 1fr) auto",
+                                    alignItems: "center",
+                                    gap: { xs: 1, sm: 1.5 },
+                                    py: 1.25,
+                                    borderBottom:
+                                      "1px solid rgba(255,255,255,0.08)",
                                   }}
                                 >
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    disabled={index === 0}
-                                    onClick={() =>
-                                      moveCastoffTeam(group.wins, teamId, "up")
-                                    }
+                                  <Box
+                                    sx={{
+                                      width: 28,
+                                      height: 28,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      border:
+                                        "1px solid rgba(255,255,255,0.14)",
+                                      borderRadius: 0.75,
+                                      fontWeight: 800,
+                                      fontSize: "0.9rem",
+                                    }}
                                   >
-                                    Flytta upp
-                                  </Button>
+                                    {index + 1}
+                                  </Box>
 
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    disabled={index === order.length - 1}
-                                    onClick={() =>
-                                      moveCastoffTeam(
-                                        group.wins,
+                                  <Box sx={{ minWidth: 0 }}>
+                                    <Typography sx={{ fontWeight: 700 }}>
+                                      Lag {standing.teamNumber}
+                                    </Typography>
 
-                                        teamId,
+                                    <Typography
+                                      variant="body2"
+                                      sx={{ color: "text.secondary" }}
+                                    >
+                                      {standing.players
+                                        .map((player) => player.name)
+                                        .join(" + ")}
+                                    </Typography>
+                                  </Box>
 
-                                        "down",
-                                      )
-                                    }
+                                  <Stack
+                                    sx={{
+                                      flexDirection: "row",
+                                      gap: 0.5,
+                                    }}
                                   >
-                                    Flytta ner
-                                  </Button>
-                                </Stack>
-                              </Stack>
-                            </Paper>
-                          );
-                        })}
-                      </Stack>
-                    );
-                  })}
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      aria-label={`Flytta Lag ${standing.teamNumber} upp`}
+                                      disabled={index === 0}
+                                      onClick={() =>
+                                        moveCastoffTeam(
+                                          group.wins,
+                                          teamId,
+                                          "up",
+                                        )
+                                      }
+                                      sx={{
+                                        minWidth: 34,
+                                        width: 34,
+                                        height: 34,
+                                        p: 0,
+                                        borderRadius: 0.75,
+                                        borderColor: "rgba(255,255,255,0.16)",
+                                        color: "text.primary",
+                                      }}
+                                    >
+                                      ↑
+                                    </Button>
 
-                  <Button
-                    variant="contained"
-                    size="large"
-                    fullWidth
-                    onClick={handleConfirmCastoff}
-                    disabled={savingCastoff}
-                  >
-                    {savingCastoff ? "Sparar castoff..." : "Bekräfta castoff"}
-                  </Button>
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      aria-label={`Flytta Lag ${standing.teamNumber} ner`}
+                                      disabled={index === order.length - 1}
+                                      onClick={() =>
+                                        moveCastoffTeam(
+                                          group.wins,
+                                          teamId,
+                                          "down",
+                                        )
+                                      }
+                                      sx={{
+                                        minWidth: 34,
+                                        width: 34,
+                                        height: 34,
+                                        p: 0,
+                                        borderRadius: 0.75,
+                                        borderColor: "rgba(255,255,255,0.16)",
+                                        color: "text.primary",
+                                      }}
+                                    >
+                                      ↓
+                                    </Button>
+                                  </Stack>
+                                </Box>
+                              );
+                            })}
+                          </Box>
+                        </Box>
+                      );
+                    })}
+
+                    <Box
+                      sx={{
+                        pt: 2,
+                        mt: 0.5,
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        borderTop: "1px solid rgba(255,255,255,0.10)",
+                      }}
+                    >
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={handleConfirmCastoff}
+                        disabled={savingCastoff}
+                        sx={{
+                          minWidth: { xs: "100%", sm: 220 },
+                          borderRadius: 0.75,
+                          boxShadow: "none",
+                        }}
+                      >
+                        {savingCastoff
+                          ? "Sparar castoff..."
+                          : "Bekräfta placering"}
+                      </Button>
+                    </Box>
+                  </Stack>
                 </Stack>
               ) : (
-                <Stack spacing={2}>
+                <Stack spacing={2} sx={{ p: { xs: 2, sm: 2.5 } }}>
                   <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                      Gruppspelet är klart
+                    <Typography
+                      variant="overline"
+                      sx={{
+                        color: "error.light",
+                        fontWeight: 800,
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      GRUPPSPEL KLART
                     </Typography>
 
-                    <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
-                      Alla gruppmatcher är färdigspelade.
+                    <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                      Redo för slutspel
+                    </Typography>
+
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", mt: 0.35 }}
+                    >
+                      Alla gruppmatcher är färdigspelade och seedningen är klar.
                     </Typography>
                   </Box>
 
                   <Button
                     variant="contained"
                     size="large"
-                    fullWidth
                     onClick={handleStartPlayoffs}
                     disabled={startingPlayoffs}
+                    sx={{
+                      alignSelf: { xs: "stretch", sm: "flex-start" },
+                      minWidth: { sm: 220 },
+                      borderRadius: 0.75,
+                      boxShadow: "none",
+                    }}
                   >
                     {startingPlayoffs
                       ? "Startar slutspel..."
