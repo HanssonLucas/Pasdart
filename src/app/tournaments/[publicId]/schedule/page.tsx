@@ -30,6 +30,8 @@ type Team = {
 
   teamNumber: number;
 
+  seed: number | null;
+
   players: Player[];
 };
 
@@ -1087,6 +1089,7 @@ export default function SchedulePage({
                             >
                               <Box sx={{ minWidth: 0 }}>
                                 <Typography sx={{ fontWeight: 700 }}>
+                                  {teamA?.seed ? `#${teamA.seed} · ` : ""}
                                   Lag {teamA?.teamNumber}
                                   {teamAWon ? " ✓" : ""}
                                 </Typography>
@@ -1131,6 +1134,7 @@ export default function SchedulePage({
                             >
                               <Box sx={{ minWidth: 0 }}>
                                 <Typography sx={{ fontWeight: 700 }}>
+                                  {teamB?.seed ? `#${teamB.seed} · ` : ""}
                                   Lag {teamB?.teamNumber}
                                   {teamBWon ? " ✓" : ""}
                                 </Typography>
@@ -1303,6 +1307,7 @@ export default function SchedulePage({
                             >
                               <Box sx={{ minWidth: 0 }}>
                                 <Typography sx={{ fontWeight: 700 }}>
+                                  {teamA?.seed ? `#${teamA.seed} · ` : ""}
                                   Lag {teamA?.teamNumber}
                                   {teamAWon ? " ✓" : ""}
                                 </Typography>
@@ -1347,6 +1352,7 @@ export default function SchedulePage({
                             >
                               <Box sx={{ minWidth: 0 }}>
                                 <Typography sx={{ fontWeight: 700 }}>
+                                  {teamB?.seed ? `#${teamB.seed} · ` : ""}
                                   Lag {teamB?.teamNumber}
                                   {teamBWon ? " ✓" : ""}
                                 </Typography>
