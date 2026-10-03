@@ -10,6 +10,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 type Player = {
   id: number;
@@ -76,6 +77,7 @@ export default function TeamsPage({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [teamsSaved, setTeamsSaved] = useState(false);
+  const router = useRouter();
 
   const resolvedParams = useMemo(() => params, [params]);
 
@@ -154,6 +156,7 @@ export default function TeamsPage({
       }
 
       setTeamsSaved(true);
+      router.push(`/tournaments/${tournament.publicId}/schedule`);
     } catch {
       setError("Kunde inte spara lagen.");
     } finally {

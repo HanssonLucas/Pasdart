@@ -1,0 +1,229 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Box,
+  Chip,
+  Container,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
+
+type Player = {
+  id: number;
+  name: string;
+};
+
+type Team = {
+  id: number;
+  teamNumber: number;
+  players: Player[];
+};
+
+type Match = {
+  id: number;
+  roundNumber: number | null;
+  boardNumber: number | null;
+  matchNumber: number | null;
+  teamAId: number;
+  teamBId: number;
+  teamALegs: number;
+  teamBLegs: number;
+  status: string;
+};
+
+type TournamentResponse = {
+  tournament: {
+    id: number;
+    name: string;
+    gameType: number;
+    groupBestOf: number;
+    groupMaxDarts: number | null;
+  };
+  teams: Team[];
+  matches: Match[];
+};
+
+export default function SchedulePage({
+  params,
+}: {
+  params: Promise<{ publicId: string }>;
+}) {
+  const [data, setData] = useState<TournamentResponse | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSchedule() {
+      try {
+        const { publicId } = await params;
+
+        const response = await fetch(`/api/tournaments/${publicId}/matches`);
+
+        if (!response.ok) {
+          throw new Error();
+        }
+
+        const result: TournamentResponse = await response.json();
+
+        if (!cancelled) {
+          setData(result);
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Kunde inte hämta spelschemat.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadSchedule();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [params]);
+
+  if (loading) {
+    return (
+      <Container maxWidth="sm">
+        <Box sx={{ py: 4 }}>
+          <Typography>Hämtar spelschema...</Typography>
+        </Box>
+      </Container>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <Container maxWidth="sm">
+        <Box sx={{ py: 4 }}>
+          <Alert severity="error">
+            {error || "Spelschemat kunde inte hittas."}
+          </Alert>
+        </Box>
+      </Container>
+    );
+  }
+
+  const roundNumbers = [
+    ...new Set(
+      data.matches
+        .map((match) => match.roundNumber)
+        .filter((round): round is number => round !== null),
+    ),
+  ].sort((a, b) => a - b);
+
+  function getTeam(teamId: number) {
+    return data?.teams.find((team) => team.id === teamId);
+  }
+
+  return (
+    <Container maxWidth="md">
+      <Box sx={{ py: 4 }}>
+        <Stack spacing={3}>
+          <Box>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
+              {data.tournament.name}
+            </Typography>
+
+            <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
+              {data.tournament.gameType} · Bäst av {data.tournament.groupBestOf}
+              {data.tournament.groupMaxDarts
+                ? ` · Max ${data.tournament.groupMaxDarts} darts`
+                : ""}
+            </Typography>
+          </Box>
+
+          {roundNumbers.map((roundNumber) => (
+            <Stack key={roundNumber} spacing={2}>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                Omgång {roundNumber}
+              </Typography>
+
+              {data.matches
+                .filter((match) => match.roundNumber === roundNumber)
+                .map((match) => {
+                  const teamA = getTeam(match.teamAId);
+                  const teamB = getTeam(match.teamBId);
+
+                  return (
+                    <Paper
+                      key={match.id}
+                      elevation={0}
+                      sx={{
+                        p: 2.5,
+                        border: "1px solid",
+                        borderColor: "divider",
+                      }}
+                    >
+                      <Stack spacing={2}>
+                        <Stack
+                          sx={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Chip
+                            label={`Tavla ${match.boardNumber}`}
+                            size="small"
+                          />
+
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "text.secondary" }}
+                          >
+                            Match {match.matchNumber}
+                          </Typography>
+                        </Stack>
+
+                        <Box>
+                          <Typography sx={{ fontWeight: 700 }}>
+                            Lag {teamA?.teamNumber}
+                          </Typography>
+                          <Typography sx={{ color: "text.secondary" }}>
+                            {teamA?.players
+                              .map((player) => player.name)
+                              .join(" + ")}
+                          </Typography>
+                        </Box>
+
+                        <Typography
+                          sx={{
+                            textAlign: "center",
+                            color: "text.secondary",
+                            fontWeight: 700,
+                          }}
+                        >
+                          VS
+                        </Typography>
+
+                        <Box>
+                          <Typography sx={{ fontWeight: 700 }}>
+                            Lag {teamB?.teamNumber}
+                          </Typography>
+                          <Typography sx={{ color: "text.secondary" }}>
+                            {teamB?.players
+                              .map((player) => player.name)
+                              .join(" + ")}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </Paper>
+                  );
+                })}
+            </Stack>
+          ))}
+        </Stack>
+      </Box>
+    </Container>
+  );
+}
