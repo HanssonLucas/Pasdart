@@ -91,6 +91,17 @@ export default function SchedulePage({
   );
   const [savingCastoff, setSavingCastoff] = useState(false);
   const [startingPlayoffs, setStartingPlayoffs] = useState(false);
+  function applyTournamentData(result: TournamentResponse) {
+    setData(result);
+
+    const newCastoffOrders: Record<number, number[]> = {};
+
+    result.castoffGroups.forEach((group) => {
+      newCastoffOrders[group.wins] = group.teams.map((team) => team.teamId);
+    });
+
+    setCastoffOrders(newCastoffOrders);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -108,17 +119,7 @@ export default function SchedulePage({
         const result: TournamentResponse = await response.json();
 
         if (!cancelled) {
-          setData(result);
-
-          const initialCastoffOrders: Record<number, number[]> = {};
-
-          result.castoffGroups.forEach((group) => {
-            initialCastoffOrders[group.wins] = group.teams.map(
-              (team) => team.teamId,
-            );
-          });
-
-          setCastoffOrders(initialCastoffOrders);
+          applyTournamentData(result);
         }
       } catch {
         if (!cancelled) {
@@ -283,7 +284,7 @@ export default function SchedulePage({
 
       const updatedData: TournamentResponse = await updatedResponse.json();
 
-      setData(updatedData);
+      applyTournamentData(updatedData);
     } catch {
       setError("Kunde inte spara castoff-resultatet.");
     } finally {
@@ -320,7 +321,7 @@ export default function SchedulePage({
 
       const updatedData: TournamentResponse = await updatedResponse.json();
 
-      setData(updatedData);
+      applyTournamentData(updatedData);
     } catch {
       setError("Kunde inte starta slutspelet.");
     } finally {
@@ -376,7 +377,7 @@ export default function SchedulePage({
 
       const updatedData: TournamentResponse = await updatedResponse.json();
 
-      setData(updatedData);
+      applyTournamentData(updatedData);
     } catch {
       setError("Kunde inte spara matchresultatet.");
     }
