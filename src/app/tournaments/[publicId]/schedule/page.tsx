@@ -142,6 +142,8 @@ export default function SchedulePage({
 
   const [creatingFinal, setCreatingFinal] = useState(false);
 
+  const [showGroupHistory, setShowGroupHistory] = useState(false);
+
   function applyTournamentData(result: TournamentResponse) {
     setData(result);
 
@@ -241,6 +243,8 @@ export default function SchedulePage({
     data.tournament.status === "finished" ||
     semifinalMatches.length > 0 ||
     finalMatches.length > 0;
+
+  const isPlayoffView = playoffsStarted && !showGroupHistory;
 
   const roundNumbers = [
     ...new Set(
@@ -586,7 +590,7 @@ export default function SchedulePage({
                     </Typography>
                   </Box>
 
-                  {playoffsStarted && (
+                  {isPlayoffView && (
                     <Box
                       sx={{
                         minWidth: { sm: 175 },
@@ -647,7 +651,7 @@ export default function SchedulePage({
                       gap: 1,
                     }}
                   >
-                    {playoffsStarted && (
+                    {isPlayoffView && (
                       <Typography
                         variant="caption"
                         sx={{
@@ -664,7 +668,7 @@ export default function SchedulePage({
                       variant="body2"
                       sx={{ color: "text.secondary" }}
                     >
-                      {playoffsStarted ? (
+                      {isPlayoffView ? (
                         <>
                           {data.tournament.gameType} · Bäst av{" "}
                           {data.tournament.playoffBestOf}
@@ -688,7 +692,44 @@ export default function SchedulePage({
             </Box>
           </Paper>
 
-          {!playoffsStarted && (
+          {playoffsStarted && (
+            <Stack
+              sx={{
+                flexDirection: "row",
+                gap: 1,
+                borderBottom: "1px solid rgba(255,255,255,0.12)",
+                pb: 1,
+              }}
+            >
+              <Button
+                size="small"
+                variant={showGroupHistory ? "text" : "contained"}
+                onClick={() => setShowGroupHistory(false)}
+                sx={{
+                  borderRadius: 0.75,
+                  boxShadow: "none",
+                  px: 1.5,
+                }}
+              >
+                Slutspel
+              </Button>
+
+              <Button
+                size="small"
+                variant={showGroupHistory ? "contained" : "text"}
+                onClick={() => setShowGroupHistory(true)}
+                sx={{
+                  borderRadius: 0.75,
+                  boxShadow: "none",
+                  px: 1.5,
+                }}
+              >
+                Gruppspel
+              </Button>
+            </Stack>
+          )}
+
+          {(!playoffsStarted || showGroupHistory) && (
             <Paper
               elevation={0}
               sx={{
@@ -921,7 +962,7 @@ export default function SchedulePage({
             </Paper>
           )}
 
-          {!playoffsStarted &&
+          {(!playoffsStarted || showGroupHistory) &&
             roundNumbers.map((roundNumber) => (
               <Stack key={roundNumber} spacing={2}>
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
@@ -1084,7 +1125,7 @@ export default function SchedulePage({
               </Stack>
             ))}
 
-          {playoffsStarted && (
+          {isPlayoffView && (
             <Box
               sx={{
                 display: "grid",
@@ -1651,34 +1692,38 @@ export default function SchedulePage({
             </Box>
           )}
 
-          {data.tournament.status === "finished" && winnerTeam && (
-            <Paper
-              elevation={0}
-              sx={{
-                p: 3,
+          {isPlayoffView &&
+            data.tournament.status === "finished" &&
+            winnerTeam && (
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
 
-                border: "1px solid",
+                  border: "1px solid",
 
-                borderColor: "divider",
+                  borderColor: "divider",
 
-                textAlign: "center",
-              }}
-            >
-              <Stack spacing={1}>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  Turneringen är avslutad
-                </Typography>
+                  textAlign: "center",
+                }}
+              >
+                <Stack spacing={1}>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    Turneringen är avslutad
+                  </Typography>
 
-                <Typography variant="h5">
-                  Vinnare: Lag {winnerTeam.teamNumber}
-                </Typography>
+                  <Typography variant="h5">
+                    Vinnare: Lag {winnerTeam.teamNumber}
+                  </Typography>
 
-                <Typography sx={{ color: "text.secondary" }}>
-                  {winnerTeam.players.map((player) => player.name).join(" + ")}
-                </Typography>
-              </Stack>
-            </Paper>
-          )}
+                  <Typography sx={{ color: "text.secondary" }}>
+                    {winnerTeam.players
+                      .map((player) => player.name)
+                      .join(" + ")}
+                  </Typography>
+                </Stack>
+              </Paper>
+            )}
         </Stack>
       </Box>
     </Container>
