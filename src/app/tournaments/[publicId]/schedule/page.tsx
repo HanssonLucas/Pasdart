@@ -560,7 +560,7 @@ export default function SchedulePage({
             </Box>
 
             <Box sx={{ p: { xs: 2.25, sm: 3 } }}>
-              <Stack spacing={2.25}>
+              <Stack spacing={2}>
                 <Stack
                   sx={{
                     flexDirection: { xs: "column", sm: "row" },
@@ -1755,11 +1755,11 @@ export default function SchedulePage({
 
                                 borderRadius: 1,
 
-                                backgroundColor: teamAWon
+                                backgroundColor: teamBWon
                                   ? "rgba(46,125,50,0.07)"
                                   : "rgba(255,255,255,0.012)",
 
-                                borderLeft: teamAWon
+                                borderLeft: teamBWon
                                   ? "3px solid rgba(76,175,80,0.80)"
                                   : "3px solid transparent",
 
@@ -2004,7 +2004,7 @@ export default function SchedulePage({
 
                                 borderRadius: 1,
 
-                                backgroundColor: teamBWon
+                                backgroundColor: teamAWon
                                   ? "rgba(46,125,50,0.07)"
                                   : "rgba(255,255,255,0.012)",
 
@@ -2221,36 +2221,207 @@ export default function SchedulePage({
           {isPlayoffView &&
             data.tournament.status === "finished" &&
             winnerTeam && (
-              <Paper
-                elevation={0}
+              <Box
                 sx={{
-                  p: 3,
-
-                  border: "1px solid",
-
-                  borderColor: "divider",
-
-                  textAlign: "center",
+                  display: "flex",
+                  justifyContent: "center",
                 }}
               >
-                <Stack spacing={1}>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    Turneringen är avslutad
-                  </Typography>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    width: "100%",
+                    maxWidth: 860,
+                    overflow: "hidden",
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    borderRadius: 1,
+                    backgroundColor: "rgba(255,255,255,0.015)",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: 3,
+                      display: "grid",
+                      gridTemplateColumns: "42px 12px 42px",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Box sx={{ backgroundColor: "success.dark" }} />
+                    <Box sx={{ backgroundColor: "rgba(255,255,255,0.78)" }} />
+                    <Box sx={{ backgroundColor: "error.dark" }} />
+                  </Box>
 
-                  <Typography variant="h5">
-                    Vinnare: Lag {winnerTeam.teamNumber}
-                  </Typography>
+                  <Box
+                    sx={{
+                      px: { xs: 2.25, sm: 3.5 },
+                      py: { xs: 2.5, sm: 3.25 },
+                    }}
+                  >
+                    <Stack spacing={2.5}>
+                      <Box sx={{ textAlign: "center" }}>
+                        <Typography
+                          variant="overline"
+                          sx={{
+                            color: "error.light",
+                            fontWeight: 800,
+                            letterSpacing: "0.09em",
+                          }}
+                        >
+                          TURNERINGEN ÄR AVGJORD
+                        </Typography>
 
-                  <Typography sx={{ color: "text.secondary" }}>
-                    {winnerTeam.players
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            mt: 0.3,
+                            fontWeight: 800,
+                            letterSpacing: "-0.02em",
+                          }}
+                        >
+                          Vinnare
+                        </Typography>
 
-                      .map((player) => player.name)
+                        <Box
+                          sx={{
+                            width: 46,
+                            height: 2,
+                            mx: "auto",
+                            mt: 1.15,
+                            backgroundColor: "error.dark",
+                          }}
+                        />
+                      </Box>
 
-                      .join(" + ")}
-                  </Typography>
-                </Stack>
-              </Paper>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: "100%",
+                            maxWidth: 680,
+                            borderTop: "1px solid rgba(255,255,255,0.14)",
+                            borderBottom: "1px solid rgba(255,255,255,0.10)",
+                            borderLeft: "3px solid rgba(76,175,80,0.82)",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "grid",
+                              gridTemplateColumns: {
+                                xs: "1fr",
+                                sm: finishedFinal ? "1fr 1fr" : "1fr",
+                              },
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                px: { xs: 2, sm: 2.75 },
+                                py: { xs: 2.25, sm: 2.75 },
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                textAlign: "center",
+                              }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: "error.light",
+                                  fontWeight: 800,
+                                  letterSpacing: "0.08em",
+                                }}
+                              >
+                                VINNARE
+                              </Typography>
+
+                              <Typography
+                                variant="h4"
+                                sx={{
+                                  mt: 0.4,
+                                  fontWeight: 800,
+                                  lineHeight: 1.1,
+                                }}
+                              >
+                                Lag {winnerTeam.teamNumber}
+                              </Typography>
+
+                              <Typography
+                                sx={{
+                                  color: "text.secondary",
+                                  mt: 0.45,
+                                }}
+                              >
+                                {winnerTeam.players
+                                  .map((player) => player.name)
+                                  .join(" + ")}
+                              </Typography>
+                            </Box>
+
+                            {finishedFinal && (
+                              <Box
+                                sx={{
+                                  px: { xs: 2, sm: 2.75 },
+                                  py: { xs: 2.25, sm: 2.75 },
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                  textAlign: "center",
+                                  borderTop: {
+                                    xs: "1px solid rgba(255,255,255,0.10)",
+                                    sm: "none",
+                                  },
+                                  borderLeft: {
+                                    xs: "none",
+                                    sm: "1px solid rgba(255,255,255,0.10)",
+                                  },
+                                }}
+                              >
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: "text.secondary",
+                                    fontWeight: 700,
+                                    letterSpacing: "0.06em",
+                                  }}
+                                >
+                                  FINALRESULTAT
+                                </Typography>
+
+                                <Typography
+                                  variant="h3"
+                                  sx={{
+                                    mt: 0.4,
+                                    fontWeight: 800,
+                                    lineHeight: 1,
+                                  }}
+                                >
+                                  {finishedFinal.teamALegs} -{" "}
+                                  {finishedFinal.teamBLegs}
+                                </Typography>
+                              </Box>
+                            )}
+                          </Box>
+                        </Box>
+                      </Box>
+
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "text.secondary",
+                          textAlign: "center",
+                        }}
+                      >
+                        Pas d&apos;Art · {data.tournament.name}
+                      </Typography>
+                    </Stack>
+                  </Box>
+                </Paper>
+              </Box>
             )}
         </Stack>
       </Box>
