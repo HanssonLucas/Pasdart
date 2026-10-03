@@ -6,7 +6,6 @@ import {
   Alert,
   Box,
   Button,
-  Chip,
   Container,
   Paper,
   Stack,
@@ -1142,167 +1141,262 @@ export default function SchedulePage({
           )}
 
           {(!playoffsStarted || showGroupHistory) &&
-            roundNumbers.map((roundNumber) => (
-              <Stack key={roundNumber} spacing={2}>
-                <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                  Omgång {roundNumber}
-                </Typography>
+            roundNumbers.map((roundNumber) => {
+              const roundMatches = groupMatches.filter(
+                (match) => match.roundNumber === roundNumber,
+              );
 
-                {groupMatches
+              const finishedMatches = roundMatches.filter(
+                (match) => match.status === "finished",
+              ).length;
 
-                  .filter((match) => match.roundNumber === roundNumber)
-
-                  .map((match) => {
-                    const teamA = getTeam(match.teamAId);
-
-                    const teamB = getTeam(match.teamBId);
-
-                    return (
-                      <Paper
-                        key={match.id}
-                        elevation={0}
+              return (
+                <Stack key={roundNumber} spacing={1.5}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-end",
+                      gap: 2,
+                      pb: 1,
+                      borderBottom: "1px solid rgba(255,255,255,0.14)",
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        variant="overline"
                         sx={{
-                          p: 2.5,
-
-                          border: "1px solid",
-
-                          borderColor: "divider",
+                          color: "error.light",
+                          fontWeight: 800,
+                          letterSpacing: "0.08em",
                         }}
                       >
-                        <Stack spacing={2}>
-                          <Stack
-                            sx={{
-                              flexDirection: "row",
+                        GRUPPSPEL
+                      </Typography>
 
-                              justifyContent: "space-between",
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          fontWeight: 800,
+                          letterSpacing: "-0.01em",
+                        }}
+                      >
+                        Omgång {roundNumber}
+                      </Typography>
+                    </Box>
 
-                              alignItems: "center",
-                            }}
-                          >
-                            <Chip
-                              label={`Tavla ${match.boardNumber}`}
-                              size="small"
-                            />
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "text.secondary",
+                        letterSpacing: "0.03em",
+                      }}
+                    >
+                      {finishedMatches} av {roundMatches.length} matcher klara
+                    </Typography>
+                  </Box>
 
-                            <Typography
-                              variant="body2"
-                              sx={{ color: "text.secondary" }}
-                            >
-                              Match {match.matchNumber}
-                            </Typography>
-                          </Stack>
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: {
+                        xs: "1fr",
+                        md: "repeat(2, minmax(0, 1fr))",
+                      },
+                      gap: 1.5,
+                    }}
+                  >
+                    {roundMatches.map((match) => {
+                      const teamA = getTeam(match.teamAId);
+                      const teamB = getTeam(match.teamBId);
+                      const teamAWon =
+                        match.status === "finished" &&
+                        match.winnerTeamId === match.teamAId;
+                      const teamBWon =
+                        match.status === "finished" &&
+                        match.winnerTeamId === match.teamBId;
 
-                          <Box>
-                            <Typography sx={{ fontWeight: 700 }}>
-                              Lag {teamA?.teamNumber}
-                            </Typography>
-
-                            <Typography sx={{ color: "text.secondary" }}>
-                              {teamA?.players
-
-                                .map((player) => player.name)
-
-                                .join(" + ")}
-                            </Typography>
-                          </Box>
-
-                          <Typography
-                            sx={{
-                              textAlign: "center",
-
-                              color: "text.secondary",
-
-                              fontWeight: 700,
-                            }}
-                          >
-                            VS
-                          </Typography>
-
-                          <Box>
-                            <Typography sx={{ fontWeight: 700 }}>
-                              Lag {teamB?.teamNumber}
-                            </Typography>
-
-                            <Typography sx={{ color: "text.secondary" }}>
-                              {teamB?.players
-
-                                .map((player) => player.name)
-
-                                .join(" + ")}
-                            </Typography>
-                          </Box>
-
-                          {match.status === "finished" ? (
-                            <Box
+                      return (
+                        <Paper
+                          key={match.id}
+                          elevation={0}
+                          sx={{
+                            p: 2,
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            borderRadius: 0.75,
+                            backgroundColor: "rgba(255,255,255,0.012)",
+                          }}
+                        >
+                          <Stack spacing={1.5}>
+                            <Stack
                               sx={{
-                                textAlign: "center",
-
-                                pt: 1,
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 2,
                               }}
                             >
-                              <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                                {match.teamALegs} - {match.teamBLegs}
-                              </Typography>
-
                               <Typography
+                                variant="caption"
                                 sx={{
                                   color: "text.secondary",
-
-                                  mt: 0.5,
+                                  fontWeight: 700,
+                                  letterSpacing: "0.04em",
                                 }}
                               >
-                                Match avslutad
+                                TAVLA {match.boardNumber}
                               </Typography>
-                            </Box>
-                          ) : (
-                            <Box>
+
                               <Typography
-                                sx={{
-                                  fontWeight: 600,
-
-                                  mb: 1,
-                                }}
+                                variant="caption"
+                                sx={{ color: "text.secondary" }}
                               >
-                                Registrera resultat
+                                MATCH {match.matchNumber}
                               </Typography>
+                            </Stack>
 
-                              <Stack
+                            <Stack spacing={0.75}>
+                              <Box
                                 sx={{
-                                  flexDirection: "row",
-
-                                  flexWrap: "wrap",
-
-                                  gap: 1,
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  gap: 2,
+                                  py: 1,
+                                  px: 1.25,
+                                  borderLeft: teamAWon
+                                    ? "3px solid rgba(76,175,80,0.80)"
+                                    : "3px solid transparent",
+                                  borderBottom:
+                                    "1px solid rgba(255,255,255,0.08)",
+                                  opacity:
+                                    match.status === "finished" && !teamAWon
+                                      ? 0.58
+                                      : 1,
                                 }}
                               >
-                                {getPossibleResults(
-                                  data.tournament.groupBestOf,
-                                ).map(([teamALegs, teamBLegs]) => (
-                                  <Button
-                                    key={`${teamALegs}-${teamBLegs}`}
-                                    variant="outlined"
-                                    onClick={() =>
-                                      handleResult(
-                                        match.id,
+                                <Box sx={{ minWidth: 0 }}>
+                                  <Typography sx={{ fontWeight: 700 }}>
+                                    Lag {teamA?.teamNumber}
+                                    {teamAWon ? " ✓" : ""}
+                                  </Typography>
 
-                                        teamALegs,
-
-                                        teamBLegs,
-                                      )
-                                    }
+                                  <Typography
+                                    variant="body2"
+                                    sx={{ color: "text.secondary" }}
                                   >
-                                    {teamALegs} - {teamBLegs}
-                                  </Button>
-                                ))}
-                              </Stack>
-                            </Box>
-                          )}
-                        </Stack>
-                      </Paper>
-                    );
-                  })}
-              </Stack>
-            ))}
+                                    {teamA?.players
+                                      .map((player) => player.name)
+                                      .join(" + ")}
+                                  </Typography>
+                                </Box>
+
+                                {match.status === "finished" && (
+                                  <Typography
+                                    variant="h6"
+                                    sx={{ fontWeight: 800 }}
+                                  >
+                                    {match.teamALegs}
+                                  </Typography>
+                                )}
+                              </Box>
+
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  gap: 2,
+                                  py: 1,
+                                  px: 1.25,
+                                  borderLeft: teamBWon
+                                    ? "3px solid rgba(76,175,80,0.80)"
+                                    : "3px solid transparent",
+                                  opacity:
+                                    match.status === "finished" && !teamBWon
+                                      ? 0.58
+                                      : 1,
+                                }}
+                              >
+                                <Box sx={{ minWidth: 0 }}>
+                                  <Typography sx={{ fontWeight: 700 }}>
+                                    Lag {teamB?.teamNumber}
+                                    {teamBWon ? " ✓" : ""}
+                                  </Typography>
+
+                                  <Typography
+                                    variant="body2"
+                                    sx={{ color: "text.secondary" }}
+                                  >
+                                    {teamB?.players
+                                      .map((player) => player.name)
+                                      .join(" + ")}
+                                  </Typography>
+                                </Box>
+
+                                {match.status === "finished" && (
+                                  <Typography
+                                    variant="h6"
+                                    sx={{ fontWeight: 800 }}
+                                  >
+                                    {match.teamBLegs}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Stack>
+
+                            {match.status !== "finished" && (
+                              <Box>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    fontWeight: 700,
+                                    mb: 0.75,
+                                  }}
+                                >
+                                  Registrera resultat
+                                </Typography>
+
+                                <Stack
+                                  sx={{
+                                    flexDirection: "row",
+                                    flexWrap: "wrap",
+                                    gap: 0.75,
+                                  }}
+                                >
+                                  {getPossibleResults(
+                                    data.tournament.groupBestOf,
+                                  ).map(([teamALegs, teamBLegs]) => (
+                                    <Button
+                                      key={`${teamALegs}-${teamBLegs}`}
+                                      size="small"
+                                      variant="outlined"
+                                      onClick={() =>
+                                        handleResult(
+                                          match.id,
+                                          teamALegs,
+                                          teamBLegs,
+                                        )
+                                      }
+                                      sx={{
+                                        minWidth: 54,
+                                        borderRadius: 0.75,
+                                      }}
+                                    >
+                                      {teamALegs} - {teamBLegs}
+                                    </Button>
+                                  ))}
+                                </Stack>
+                              </Box>
+                            )}
+                          </Stack>
+                        </Paper>
+                      );
+                    })}
+                  </Box>
+                </Stack>
+              );
+            })}
 
           {isPlayoffView && (
             <Box
