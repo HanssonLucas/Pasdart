@@ -16,13 +16,14 @@ export async function GET(
     .select({
       id: tournaments.id,
       name: tournaments.name,
+      status: tournaments.status,
       gameType: tournaments.gameType,
       groupBestOf: tournaments.groupBestOf,
+      playoffBestOf: tournaments.playoffBestOf,
       groupMaxDarts: tournaments.groupMaxDarts,
+      playoffMaxDarts: tournaments.playoffMaxDarts,
       tiebreakMethod: tournaments.tiebreakMethod,
       playoffQualifiers: tournaments.playoffQualifiers,
-      playoffBestOf: tournaments.playoffBestOf,
-      playoffMaxDarts: tournaments.playoffMaxDarts,
     })
     .from(tournaments)
     .where(eq(tournaments.publicId, publicId));
