@@ -9,13 +9,13 @@ import {
   Container,
   Paper,
   Stack,
-  Typography,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from "@mui/material";
 
 type Player = {
@@ -55,6 +55,11 @@ type Standing = {
   legDifference: number;
 };
 
+type CastoffGroup = {
+  wins: number;
+  teams: Standing[];
+};
+
 type TournamentResponse = {
   tournament: {
     id: number;
@@ -71,11 +76,6 @@ type TournamentResponse = {
   groupStageComplete: boolean;
   requiresCastoff: boolean;
   castoffGroups: CastoffGroup[];
-};
-
-type CastoffGroup = {
-  wins: number;
-  teams: Standing[];
 };
 
 export default function SchedulePage({
@@ -160,9 +160,15 @@ export default function SchedulePage({
     );
   }
 
+  const groupMatches = data.matches.filter((match) => match.stage === "group");
+
+  const semifinalMatches = data.matches.filter(
+    (match) => match.stage === "semifinal",
+  );
+
   const roundNumbers = [
     ...new Set(
-      data.matches
+      groupMatches
         .map((match) => match.roundNumber)
         .filter((round): round is number => round !== null),
     ),
@@ -430,9 +436,7 @@ export default function SchedulePage({
                       </TableCell>
 
                       <TableCell align="center">{standing.played}</TableCell>
-
                       <TableCell align="center">{standing.wins}</TableCell>
-
                       <TableCell align="center">{standing.losses}</TableCell>
 
                       <TableCell align="center">
@@ -601,7 +605,7 @@ export default function SchedulePage({
                 Omgång {roundNumber}
               </Typography>
 
-              {data.matches
+              {groupMatches
                 .filter((match) => match.roundNumber === roundNumber)
                 .map((match) => {
                   const teamA = getTeam(match.teamAId);
@@ -732,6 +736,87 @@ export default function SchedulePage({
                 })}
             </Stack>
           ))}
+
+          {semifinalMatches.length > 0 && (
+            <Stack spacing={2}>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                Semifinaler
+              </Typography>
+
+              {semifinalMatches.map((match) => {
+                const teamA = getTeam(match.teamAId);
+                const teamB = getTeam(match.teamBId);
+
+                return (
+                  <Paper
+                    key={match.id}
+                    elevation={0}
+                    sx={{
+                      p: 2.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  >
+                    <Stack spacing={2}>
+                      <Stack
+                        sx={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Chip
+                          label={`Tavla ${match.boardNumber}`}
+                          size="small"
+                        />
+
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          Semifinal {match.matchNumber}
+                        </Typography>
+                      </Stack>
+
+                      <Box>
+                        <Typography sx={{ fontWeight: 700 }}>
+                          Lag {teamA?.teamNumber}
+                        </Typography>
+
+                        <Typography sx={{ color: "text.secondary" }}>
+                          {teamA?.players
+                            .map((player) => player.name)
+                            .join(" + ")}
+                        </Typography>
+                      </Box>
+
+                      <Typography
+                        sx={{
+                          textAlign: "center",
+                          color: "text.secondary",
+                          fontWeight: 700,
+                        }}
+                      >
+                        VS
+                      </Typography>
+
+                      <Box>
+                        <Typography sx={{ fontWeight: 700 }}>
+                          Lag {teamB?.teamNumber}
+                        </Typography>
+
+                        <Typography sx={{ color: "text.secondary" }}>
+                          {teamB?.players
+                            .map((player) => player.name)
+                            .join(" + ")}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Paper>
+                );
+              })}
+            </Stack>
+          )}
         </Stack>
       </Box>
     </Container>
