@@ -90,6 +90,7 @@ export default function SchedulePage({
     {},
   );
   const [savingCastoff, setSavingCastoff] = useState(false);
+  const [startingPlayoffs, setStartingPlayoffs] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -271,6 +272,43 @@ export default function SchedulePage({
       setError("Kunde inte spara castoff-resultatet.");
     } finally {
       setSavingCastoff(false);
+    }
+  }
+
+  async function handleStartPlayoffs() {
+    if (!data) {
+      return;
+    }
+
+    setStartingPlayoffs(true);
+    setError("");
+
+    try {
+      const { publicId } = await params;
+
+      const response = await fetch(`/api/tournaments/${publicId}/playoffs`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      const updatedResponse = await fetch(
+        `/api/tournaments/${publicId}/matches`,
+      );
+
+      if (!updatedResponse.ok) {
+        throw new Error();
+      }
+
+      const updatedData: TournamentResponse = await updatedResponse.json();
+
+      setData(updatedData);
+    } catch {
+      setError("Kunde inte starta slutspelet.");
+    } finally {
+      setStartingPlayoffs(false);
     }
   }
 
@@ -541,8 +579,16 @@ export default function SchedulePage({
                     </Typography>
                   </Box>
 
-                  <Button variant="contained" size="large" fullWidth>
-                    Fortsätt till slutspel
+                  <Button
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    onClick={handleStartPlayoffs}
+                    disabled={startingPlayoffs}
+                  >
+                    {startingPlayoffs
+                      ? "Startar slutspel..."
+                      : "Fortsätt till slutspel"}
                   </Button>
                 </Stack>
               )}
