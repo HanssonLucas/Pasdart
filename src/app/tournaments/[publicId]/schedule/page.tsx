@@ -66,7 +66,9 @@ type TournamentResponse = {
     name: string;
     gameType: number;
     groupBestOf: number;
+    playoffBestOf: number;
     groupMaxDarts: number | null;
+    playoffMaxDarts: number | null;
     tiebreakMethod: string;
     playoffQualifiers: number;
   };
