@@ -215,10 +215,53 @@ export async function POST(
     );
   }
 
+  if (qualifiedTeams.length === 3) {
+    const teamBySeed = new Map(
+      qualifiedTeams.map((team) => [team.seed, team.id]),
+    );
+
+    const seed1 = teamBySeed.get(1);
+    const seed2 = teamBySeed.get(2);
+    const seed3 = teamBySeed.get(3);
+
+    if (!seed1 || !seed2 || !seed3) {
+      return NextResponse.json(
+        { error: "Seedningen är ofullständig." },
+        { status: 400 },
+      );
+    }
+
+    await db.insert(matches).values({
+      tournamentId: tournament.id,
+      stage: "semifinal",
+      roundNumber: 1,
+      boardNumber: 1,
+      matchNumber: 1,
+      teamAId: seed2,
+      teamBId: seed3,
+      status: "scheduled",
+    });
+
+    await db
+      .update(tournaments)
+      .set({
+        status: "playoffs",
+        updatedAt: new Date(),
+      })
+      .where(eq(tournaments.id, tournament.id));
+
+    return NextResponse.json(
+      {
+        success: true,
+      },
+      { status: 201 },
+    );
+  }
+
   if (qualifiedTeams.length !== 4) {
     return NextResponse.json(
       {
-        error: "Slutspelet kräver antingen 2 eller 4 seedade lag.",
+        error: "Slutspelet kräver 2, 3 eller 4 seedade lag.",
       },
       { status: 400 },
     );
