@@ -19,6 +19,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 type Player = {
   id: number;
@@ -26,6 +27,7 @@ type Player = {
 };
 
 export default function NewTournamentPage() {
+  const router = useRouter();
   const [players, setPlayers] = useState<Player[]>([]);
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<number[]>([]);
   const [loadingPlayers, setLoadingPlayers] = useState(true);
@@ -113,7 +115,7 @@ export default function NewTournamentPage() {
 
       const data = await response.json();
 
-      console.log("Tournament created:", data);
+      router.push(`/tournaments/${data.publicId}/teams`);
     } catch {
       setError("Kunde inte skapa cupen.");
     } finally {
