@@ -134,11 +134,41 @@ export async function GET(
       return b.legDifference - a.legDifference;
     });
 
+  const castoffGroups: Array<{
+    wins: number;
+    teams: typeof standings;
+  }> = [];
+
+  if (groupStageComplete && tournament.tiebreakMethod === "castoff") {
+    const relevantStandings = standings.filter(
+      (_, index) => index < tournament.playoffQualifiers,
+    );
+
+    const winsInPlayoffs = new Set(
+      relevantStandings.map((standing) => standing.wins),
+    );
+
+    for (const wins of winsInPlayoffs) {
+      const tiedTeams = standings.filter((standing) => standing.wins === wins);
+
+      if (tiedTeams.length > 1) {
+        castoffGroups.push({
+          wins,
+          teams: tiedTeams,
+        });
+      }
+    }
+  }
+
+  const requiresCastoff = castoffGroups.length > 0;
+
   return NextResponse.json({
     tournament,
     teams: teamsWithPlayers,
     matches: tournamentMatches,
     standings,
     groupStageComplete,
+    requiresCastoff,
+    castoffGroups,
   });
 }

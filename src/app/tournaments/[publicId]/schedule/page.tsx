@@ -69,6 +69,13 @@ type TournamentResponse = {
   matches: Match[];
   standings: Standing[];
   groupStageComplete: boolean;
+  requiresCastoff: boolean;
+  castoffGroups: CastoffGroup[];
+};
+
+type CastoffGroup = {
+  wins: number;
+  teams: Standing[];
 };
 
 export default function SchedulePage({
@@ -79,6 +86,10 @@ export default function SchedulePage({
   const [data, setData] = useState<TournamentResponse | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [castoffOrders, setCastoffOrders] = useState<Record<number, number[]>>(
+    {},
+  );
+  const [savingCastoff, setSavingCastoff] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,6 +108,16 @@ export default function SchedulePage({
 
         if (!cancelled) {
           setData(result);
+
+          const initialCastoffOrders: Record<number, number[]> = {};
+
+          result.castoffGroups.forEach((group) => {
+            initialCastoffOrders[group.wins] = group.teams.map(
+              (team) => team.teamId,
+            );
+          });
+
+          setCastoffOrders(initialCastoffOrders);
         }
       } catch {
         if (!cancelled) {
@@ -148,6 +169,109 @@ export default function SchedulePage({
 
   function getTeam(teamId: number) {
     return data?.teams.find((team) => team.id === teamId);
+  }
+
+  function moveCastoffTeam(
+    wins: number,
+    teamId: number,
+    direction: "up" | "down",
+  ) {
+    setCastoffOrders((current) => {
+      const currentOrder = current[wins];
+
+      if (!currentOrder) {
+        return current;
+      }
+
+      const currentIndex = currentOrder.indexOf(teamId);
+
+      if (currentIndex === -1) {
+        return current;
+      }
+
+      const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+      if (newIndex < 0 || newIndex >= currentOrder.length) {
+        return current;
+      }
+
+      const newOrder = [...currentOrder];
+
+      [newOrder[currentIndex], newOrder[newIndex]] = [
+        newOrder[newIndex],
+        newOrder[currentIndex],
+      ];
+
+      return {
+        ...current,
+        [wins]: newOrder,
+      };
+    });
+  }
+
+  async function handleConfirmCastoff() {
+    if (!data) {
+      return;
+    }
+
+    setSavingCastoff(true);
+    setError("");
+
+    try {
+      const finalOrder = [...data.standings];
+
+      for (const group of data.castoffGroups) {
+        const selectedOrder = castoffOrders[group.wins];
+
+        if (!selectedOrder) {
+          continue;
+        }
+
+        const tiedIndexes = finalOrder
+          .map((standing, index) => ({
+            teamId: standing.teamId,
+            index,
+          }))
+          .filter(({ teamId }) =>
+            group.teams.some((team) => team.teamId === teamId),
+          )
+          .map(({ index }) => index);
+
+        selectedOrder.forEach((teamId, orderIndex) => {
+          const targetIndex = tiedIndexes[orderIndex];
+          const standing = finalOrder.find((item) => item.teamId === teamId);
+
+          if (standing && targetIndex !== undefined) {
+            finalOrder[targetIndex] = standing;
+          }
+        });
+      }
+
+      const { publicId } = await params;
+
+      const response = await fetch(`/api/tournaments/${publicId}/castoff`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          order: finalOrder.map((standing, index) => ({
+            teamId: standing.teamId,
+            seed: index + 1,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      console.log("Castoff saved");
+    } catch {
+      setError("Kunde inte spara castoff-resultatet.");
+    } finally {
+      setSavingCastoff(false);
+    }
   }
 
   function getPossibleResults(bestOf: number) {
@@ -298,21 +422,130 @@ export default function SchedulePage({
                 borderColor: "divider",
               }}
             >
-              <Stack spacing={2}>
-                <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                    Gruppspelet är klart
-                  </Typography>
+              {data.requiresCastoff ? (
+                <Stack spacing={3}>
+                  <Box>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                      Castoff krävs
+                    </Typography>
 
-                  <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
-                    Alla gruppmatcher är färdigspelade.
-                  </Typography>
-                </Box>
+                    <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
+                      Ett eller flera lag har samma antal vinster. Ordna lagen
+                      efter resultatet från castoffen.
+                    </Typography>
+                  </Box>
 
-                <Button variant="contained" size="large" fullWidth>
-                  Fortsätt till slutspel
-                </Button>
-              </Stack>
+                  {data.castoffGroups.map((group) => {
+                    const order = castoffOrders[group.wins] ?? [];
+
+                    return (
+                      <Stack key={group.wins} spacing={1.5}>
+                        <Typography sx={{ fontWeight: 600 }}>
+                          {group.wins} {group.wins === 1 ? "vinst" : "vinster"}
+                        </Typography>
+
+                        {order.map((teamId, index) => {
+                          const standing = group.teams.find(
+                            (team) => team.teamId === teamId,
+                          );
+
+                          if (!standing) {
+                            return null;
+                          }
+
+                          return (
+                            <Paper
+                              key={teamId}
+                              elevation={0}
+                              sx={{
+                                p: 2,
+                                border: "1px solid",
+                                borderColor: "divider",
+                              }}
+                            >
+                              <Stack spacing={1.5}>
+                                <Box>
+                                  <Typography sx={{ fontWeight: 700 }}>
+                                    {index + 1}. Lag {standing.teamNumber}
+                                  </Typography>
+
+                                  <Typography
+                                    variant="body2"
+                                    sx={{ color: "text.secondary" }}
+                                  >
+                                    {standing.players
+                                      .map((player) => player.name)
+                                      .join(" + ")}
+                                  </Typography>
+                                </Box>
+
+                                <Stack
+                                  sx={{
+                                    flexDirection: "row",
+                                    gap: 1,
+                                  }}
+                                >
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    disabled={index === 0}
+                                    onClick={() =>
+                                      moveCastoffTeam(group.wins, teamId, "up")
+                                    }
+                                  >
+                                    Flytta upp
+                                  </Button>
+
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    disabled={index === order.length - 1}
+                                    onClick={() =>
+                                      moveCastoffTeam(
+                                        group.wins,
+                                        teamId,
+                                        "down",
+                                      )
+                                    }
+                                  >
+                                    Flytta ner
+                                  </Button>
+                                </Stack>
+                              </Stack>
+                            </Paper>
+                          );
+                        })}
+                      </Stack>
+                    );
+                  })}
+
+                  <Button
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    onClick={handleConfirmCastoff}
+                    disabled={savingCastoff}
+                  >
+                    {savingCastoff ? "Sparar castoff..." : "Bekräfta castoff"}
+                  </Button>
+                </Stack>
+              ) : (
+                <Stack spacing={2}>
+                  <Box>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                      Gruppspelet är klart
+                    </Typography>
+
+                    <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
+                      Alla gruppmatcher är färdigspelade.
+                    </Typography>
+                  </Box>
+
+                  <Button variant="contained" size="large" fullWidth>
+                    Fortsätt till slutspel
+                  </Button>
+                </Stack>
+              )}
             </Paper>
           )}
 
