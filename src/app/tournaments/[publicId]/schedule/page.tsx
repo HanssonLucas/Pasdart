@@ -10,6 +10,12 @@ import {
   Paper,
   Stack,
   Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from "@mui/material";
 
 type Player = {
@@ -36,6 +42,18 @@ type Match = {
   winnerTeamId: number | null;
 };
 
+type Standing = {
+  teamId: number;
+  teamNumber: number;
+  players: Player[];
+  played: number;
+  wins: number;
+  losses: number;
+  legsWon: number;
+  legsLost: number;
+  legDifference: number;
+};
+
 type TournamentResponse = {
   tournament: {
     id: number;
@@ -46,6 +64,7 @@ type TournamentResponse = {
   };
   teams: Team[];
   matches: Match[];
+  standings: Standing[];
 };
 
 export default function SchedulePage({
@@ -163,20 +182,19 @@ export default function SchedulePage({
         throw new Error();
       }
 
-      const updatedMatch: Match = await response.json();
+      const { publicId } = await params;
 
-      setData((current) => {
-        if (!current) {
-          return current;
-        }
+      const updatedResponse = await fetch(
+        `/api/tournaments/${publicId}/matches`,
+      );
 
-        return {
-          ...current,
-          matches: current.matches.map((match) =>
-            match.id === updatedMatch.id ? updatedMatch : match,
-          ),
-        };
-      });
+      if (!updatedResponse.ok) {
+        throw new Error();
+      }
+
+      const updatedData: TournamentResponse = await updatedResponse.json();
+
+      setData(updatedData);
     } catch {
       setError("Kunde inte spara matchresultatet.");
     }
@@ -198,6 +216,74 @@ export default function SchedulePage({
                 : ""}
             </Typography>
           </Box>
+
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2.5,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+              Tabell
+            </Typography>
+
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>#</TableCell>
+                    <TableCell>Lag</TableCell>
+                    <TableCell align="center">M</TableCell>
+                    <TableCell align="center">V</TableCell>
+                    <TableCell align="center">F</TableCell>
+                    <TableCell align="center">Legs</TableCell>
+                    <TableCell align="center">+/-</TableCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {data.standings.map((standing, index) => (
+                    <TableRow key={standing.teamId}>
+                      <TableCell>{index + 1}</TableCell>
+
+                      <TableCell>
+                        <Typography sx={{ fontWeight: 600 }}>
+                          Lag {standing.teamNumber}
+                        </Typography>
+
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          {standing.players
+                            .map((player) => player.name)
+                            .join(" + ")}
+                        </Typography>
+                      </TableCell>
+
+                      <TableCell align="center">{standing.played}</TableCell>
+
+                      <TableCell align="center">{standing.wins}</TableCell>
+
+                      <TableCell align="center">{standing.losses}</TableCell>
+
+                      <TableCell align="center">
+                        {standing.legsWon}-{standing.legsLost}
+                      </TableCell>
+
+                      <TableCell align="center">
+                        {standing.legDifference > 0
+                          ? `+${standing.legDifference}`
+                          : standing.legDifference}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
 
           {roundNumbers.map((roundNumber) => (
             <Stack key={roundNumber} spacing={2}>

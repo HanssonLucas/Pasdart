@@ -73,9 +73,60 @@ export async function GET(
       })),
   }));
 
+  const standings = teamsWithPlayers
+    .map((team) => {
+      const teamMatches = tournamentMatches.filter(
+        (match) =>
+          match.status === "finished" &&
+          (match.teamAId === team.id || match.teamBId === team.id),
+      );
+
+      let wins = 0;
+      let losses = 0;
+      let legsWon = 0;
+      let legsLost = 0;
+
+      for (const match of teamMatches) {
+        const isTeamA = match.teamAId === team.id;
+
+        const teamLegs = isTeamA ? match.teamALegs : match.teamBLegs;
+
+        const opponentLegs = isTeamA ? match.teamBLegs : match.teamALegs;
+
+        legsWon += teamLegs;
+        legsLost += opponentLegs;
+
+        if (match.winnerTeamId === team.id) {
+          wins += 1;
+        } else {
+          losses += 1;
+        }
+      }
+
+      return {
+        teamId: team.id,
+        teamNumber: team.teamNumber,
+        players: team.players,
+        played: teamMatches.length,
+        wins,
+        losses,
+        legsWon,
+        legsLost,
+        legDifference: legsWon - legsLost,
+      };
+    })
+    .sort((a, b) => {
+      if (b.wins !== a.wins) {
+        return b.wins - a.wins;
+      }
+
+      return b.legDifference - a.legDifference;
+    });
+
   return NextResponse.json({
     tournament,
     teams: teamsWithPlayers,
     matches: tournamentMatches,
+    standings,
   });
 }
