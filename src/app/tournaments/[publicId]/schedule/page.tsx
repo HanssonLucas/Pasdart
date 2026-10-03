@@ -167,6 +167,8 @@ export default function SchedulePage({
     (match) => match.stage === "semifinal",
   );
 
+  const playoffsStarted = semifinalMatches.length > 0;
+
   const roundNumbers = [
     ...new Set(
       groupMatches
@@ -466,7 +468,7 @@ export default function SchedulePage({
             </TableContainer>
           </Paper>
 
-          {data.groupStageComplete && (
+          {data.groupStageComplete && !playoffsStarted && (
             <Paper
               elevation={0}
               sx={{
