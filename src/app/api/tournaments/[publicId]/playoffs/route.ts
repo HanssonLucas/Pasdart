@@ -53,6 +53,93 @@ export async function POST(
     );
   }
 
+  const tournamentTeams = await db
+    .select({
+      id: teams.id,
+      seed: teams.seed,
+    })
+    .from(teams)
+    .where(eq(teams.tournamentId, tournament.id));
+
+  const hasAnySeeds = tournamentTeams.some((team) => team.seed !== null);
+
+  if (!hasAnySeeds) {
+    const groupMatches = await db
+      .select({
+        teamAId: matches.teamAId,
+        teamBId: matches.teamBId,
+        teamALegs: matches.teamALegs,
+        teamBLegs: matches.teamBLegs,
+        winnerTeamId: matches.winnerTeamId,
+        status: matches.status,
+      })
+      .from(matches)
+      .where(
+        and(
+          eq(matches.tournamentId, tournament.id),
+          eq(matches.stage, "group"),
+        ),
+      );
+
+    const unfinishedGroupMatch = groupMatches.some(
+      (match) => match.status !== "finished",
+    );
+
+    if (unfinishedGroupMatch) {
+      return NextResponse.json(
+        { error: "Gruppspelet måste vara färdigspelat först." },
+        { status: 400 },
+      );
+    }
+
+    const standings = tournamentTeams.map((team) => {
+      let wins = 0;
+      let legsWon = 0;
+      let legsLost = 0;
+
+      for (const match of groupMatches) {
+        if (match.teamAId !== team.id && match.teamBId !== team.id) {
+          continue;
+        }
+
+        if (match.teamAId === team.id) {
+          legsWon += match.teamALegs;
+          legsLost += match.teamBLegs;
+        } else {
+          legsWon += match.teamBLegs;
+          legsLost += match.teamALegs;
+        }
+
+        if (match.winnerTeamId === team.id) {
+          wins += 1;
+        }
+      }
+
+      return {
+        teamId: team.id,
+        wins,
+        legDifference: legsWon - legsLost,
+      };
+    });
+
+    standings.sort((a, b) => {
+      if (b.wins !== a.wins) {
+        return b.wins - a.wins;
+      }
+
+      return b.legDifference - a.legDifference;
+    });
+
+    for (let index = 0; index < standings.length; index += 1) {
+      await db
+        .update(teams)
+        .set({
+          seed: index + 1,
+        })
+        .where(eq(teams.id, standings[index].teamId));
+    }
+  }
+
   const qualifiedTeams = await db
     .select({
       id: teams.id,
