@@ -273,7 +273,17 @@ export default function SchedulePage({
         throw new Error();
       }
 
-      console.log("Castoff saved");
+      const updatedResponse = await fetch(
+        `/api/tournaments/${publicId}/matches`,
+      );
+
+      if (!updatedResponse.ok) {
+        throw new Error();
+      }
+
+      const updatedData: TournamentResponse = await updatedResponse.json();
+
+      setData(updatedData);
     } catch {
       setError("Kunde inte spara castoff-resultatet.");
     } finally {
