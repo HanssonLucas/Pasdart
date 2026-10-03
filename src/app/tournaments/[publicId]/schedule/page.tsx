@@ -184,7 +184,7 @@ export default function SchedulePage({
     : undefined;
 
   const semifinalsFinished =
-    semifinalMatches.length === 2 &&
+    (semifinalMatches.length === 1 || semifinalMatches.length === 2) &&
     semifinalMatches.every(
       (match) => match.status === "finished" && match.winnerTeamId !== null,
     );
