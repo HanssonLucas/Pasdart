@@ -269,9 +269,13 @@ export default function SchedulePage({
           )
           .map(({ index }) => index);
 
+        const tiedStandingsByTeamId = new Map(
+          group.teams.map((team) => [team.teamId, team]),
+        );
+
         selectedOrder.forEach((teamId, orderIndex) => {
           const targetIndex = tiedIndexes[orderIndex];
-          const standing = finalOrder.find((item) => item.teamId === teamId);
+          const standing = tiedStandingsByTeamId.get(teamId);
 
           if (standing && targetIndex !== undefined) {
             finalOrder[targetIndex] = standing;

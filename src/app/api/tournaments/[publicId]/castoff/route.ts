@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { db } from "@/db";
@@ -51,15 +51,37 @@ export async function POST(
   }
 
   for (const item of order) {
-    await db
+    const [updatedTeam] = await db
       .update(teams)
       .set({
         seed: item.seed,
       })
-      .where(eq(teams.id, item.teamId));
+      .where(
+        and(eq(teams.id, item.teamId), eq(teams.tournamentId, tournament.id)),
+      )
+      .returning({
+        id: teams.id,
+      });
+
+    if (!updatedTeam) {
+      return NextResponse.json(
+        { error: "Ett av lagen kunde inte uppdateras." },
+        { status: 400 },
+      );
+    }
   }
+
+  const savedTeams = await db
+    .select({
+      id: teams.id,
+      teamNumber: teams.teamNumber,
+      seed: teams.seed,
+    })
+    .from(teams)
+    .where(eq(teams.tournamentId, tournament.id));
 
   return NextResponse.json({
     success: true,
+    teams: savedTeams,
   });
 }
