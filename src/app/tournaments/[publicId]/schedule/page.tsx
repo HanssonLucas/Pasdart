@@ -530,12 +530,74 @@ export default function SchedulePage({
             </Typography>
 
             <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
-              {data.tournament.gameType} · Bäst av {data.tournament.groupBestOf}
-              {data.tournament.groupMaxDarts
-                ? ` · Max ${data.tournament.groupMaxDarts} darts`
-                : ""}
+              {playoffsStarted ? (
+                <>
+                  {data.tournament.gameType} · Slutspel · Bäst av{" "}
+                  {data.tournament.playoffBestOf}
+                  {data.tournament.playoffMaxDarts
+                    ? ` · Max ${data.tournament.playoffMaxDarts} darts`
+                    : ""}
+                </>
+              ) : (
+                <>
+                  {data.tournament.gameType} · Gruppspel · Bäst av{" "}
+                  {data.tournament.groupBestOf}
+                  {data.tournament.groupMaxDarts
+                    ? ` · Max ${data.tournament.groupMaxDarts} darts`
+                    : ""}
+                </>
+              )}
             </Typography>
           </Box>
+
+          {playoffsStarted && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                border: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Stack
+                sx={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 2,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Stack
+                  sx={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <Chip label="SLUTSPEL" size="small" />
+
+                  <Typography sx={{ fontWeight: 700 }}>
+                    {data.tournament.status === "finished"
+                      ? "Turneringen är avslutad"
+                      : finalCreated
+                        ? "Final"
+                        : semifinalMatches.length === 1
+                          ? "1 semifinal"
+                          : `${semifinalMatches.length} semifinaler`}
+                  </Typography>
+                </Stack>
+
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  {finalCreated
+                    ? "Finalen är skapad"
+                    : semifinalMatches.length > 0
+                      ? "Final väntar"
+                      : "Slutspelet är igång"}
+                </Typography>
+              </Stack>
+            </Paper>
+          )}
 
           {!playoffsStarted && (
             <Paper
@@ -913,7 +975,9 @@ export default function SchedulePage({
                                     onClick={() =>
                                       handleResult(
                                         match.id,
+
                                         teamALegs,
+
                                         teamBLegs,
                                       )
                                     }
