@@ -10,6 +10,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  MenuItem,
   Paper,
   Stack,
   TextField,
@@ -36,10 +37,12 @@ export default function PlayersPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const [manageOpen, setManageOpen] = useState(false);
+  const [selectedPlayerId, setSelectedPlayerId] = useState("");
   const [editName, setEditName] = useState("");
-  const [editError, setEditError] = useState("");
-  const [editing, setEditing] = useState(false);
+  const [manageError, setManageError] = useState("");
+  const [updatingPlayer, setUpdatingPlayer] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,43 +115,66 @@ export default function PlayersPage() {
     }
   }
 
-  function handleOpenEdit(player: Player) {
-    setEditingPlayer(player);
-    setEditName(player.name);
-    setEditError("");
+  function resetManageState() {
+    setManageOpen(false);
+    setSelectedPlayerId("");
+    setEditName("");
+    setManageError("");
+    setConfirmingDelete(false);
   }
 
-  function handleCloseEdit() {
-    if (editing) {
+  function handleOpenManage() {
+    setManageOpen(true);
+    setSelectedPlayerId("");
+    setEditName("");
+    setManageError("");
+    setConfirmingDelete(false);
+  }
+
+  function handleCloseManage() {
+    if (updatingPlayer) {
       return;
     }
 
-    setEditingPlayer(null);
-    setEditName("");
-    setEditError("");
+    resetManageState();
   }
 
-  async function handleEditSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSelectPlayer(playerId: string) {
+    setSelectedPlayerId(playerId);
+    setManageError("");
+    setConfirmingDelete(false);
+
+    const player = players.find(
+      (currentPlayer) => currentPlayer.id === Number(playerId),
+    );
+
+    setEditName(player?.name ?? "");
+  }
+
+  async function handleRenamePlayer(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!editingPlayer) {
-      return;
-    }
-
+    const playerId = Number(selectedPlayerId);
+    const selectedPlayer = players.find((player) => player.id === playerId);
     const trimmedName = editName.trim();
 
+    if (!selectedPlayer) {
+      setManageError("Välj en spelare först.");
+      return;
+    }
+
     if (!trimmedName) {
-      setEditError("Spelarens namn får inte vara tomt.");
+      setManageError("Spelarens namn får inte vara tomt.");
       return;
     }
 
-    if (trimmedName === editingPlayer.name) {
-      handleCloseEdit();
+    if (trimmedName === selectedPlayer.name) {
+      resetManageState();
       return;
     }
 
-    setEditing(true);
-    setEditError("");
+    setUpdatingPlayer(true);
+    setManageError("");
 
     try {
       const response = await fetch("/api/players", {
@@ -157,7 +183,7 @@ export default function PlayersPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          id: editingPlayer.id,
+          id: playerId,
           name: trimmedName,
         }),
       });
@@ -174,14 +200,56 @@ export default function PlayersPage() {
         ),
       );
 
-      setEditingPlayer(null);
-      setEditName("");
+      resetManageState();
     } catch {
-      setEditError("Kunde inte spara ändringen. Försök igen om en stund.");
+      setManageError("Kunde inte spara ändringen. Försök igen om en stund.");
     } finally {
-      setEditing(false);
+      setUpdatingPlayer(false);
     }
   }
+
+  async function handleDeactivatePlayer() {
+    const playerId = Number(selectedPlayerId);
+    const selectedPlayer = players.find((player) => player.id === playerId);
+
+    if (!selectedPlayer) {
+      setManageError("Välj en spelare först.");
+      return;
+    }
+
+    setUpdatingPlayer(true);
+    setManageError("");
+
+    try {
+      const response = await fetch("/api/players", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: playerId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      setPlayers((currentPlayers) =>
+        currentPlayers.filter((player) => player.id !== playerId),
+      );
+
+      resetManageState();
+    } catch {
+      setManageError("Kunde inte ta bort spelaren. Försök igen om en stund.");
+    } finally {
+      setUpdatingPlayer(false);
+    }
+  }
+
+  const selectedPlayer = players.find(
+    (player) => player.id === Number(selectedPlayerId),
+  );
 
   return (
     <>
@@ -200,14 +268,35 @@ export default function PlayersPage() {
               <Box
                 sx={{
                   height: 3,
-                  display: "grid",
-                  gridTemplateColumns: "42px 12px 42px",
+                  display: "flex",
                   justifyContent: "center",
+                  alignItems: "center",
+                  gap: 0.5,
                 }}
               >
-                <Box sx={{ backgroundColor: "success.dark" }} />
-                <Box sx={{ backgroundColor: "rgba(255,255,255,0.78)" }} />
-                <Box sx={{ backgroundColor: "error.dark" }} />
+                <Box
+                  sx={{
+                    width: 28,
+                    height: 3,
+                    backgroundColor: "success.dark",
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    width: 28,
+                    height: 3,
+                    backgroundColor: "error.dark",
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    width: 28,
+                    height: 3,
+                    backgroundColor: "success.dark",
+                  }}
+                />
               </Box>
 
               <Box
@@ -303,6 +392,8 @@ export default function PlayersPage() {
               <Paper
                 elevation={0}
                 sx={{
+                  position: "relative",
+                  overflow: "hidden",
                   border: "1px solid rgba(255,255,255,0.12)",
                   borderRadius: 1,
                   backgroundColor: "rgba(255,255,255,0.014)",
@@ -310,11 +401,20 @@ export default function PlayersPage() {
               >
                 <Box
                   sx={{
+                    position: "relative",
                     px: { xs: 2, sm: 2.5 },
                     pt: 2.25,
                     pb: 1.75,
                     borderBottom: "1px solid rgba(255,255,255,0.10)",
-                    borderLeft: "3px solid rgba(198,40,40,0.70)",
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 3,
+                      backgroundColor: "error.dark",
+                    },
                   }}
                 >
                   <Typography
@@ -382,27 +482,37 @@ export default function PlayersPage() {
               <Paper
                 elevation={0}
                 sx={{
+                  position: "relative",
+                  overflow: "hidden",
                   border: "1px solid rgba(255,255,255,0.12)",
                   borderRadius: 1,
                   backgroundColor: "rgba(255,255,255,0.014)",
-                  overflow: "hidden",
                 }}
               >
                 <Box
                   sx={{
+                    position: "relative",
                     px: { xs: 2, sm: 2.5 },
                     pt: 2.25,
                     pb: 1.75,
                     borderBottom: "1px solid rgba(255,255,255,0.10)",
-                    borderLeft: "3px solid rgba(198,40,40,0.70)",
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 3,
+                      backgroundColor: "error.dark",
+                    },
                   }}
                 >
                   <Stack
                     sx={{
-                      flexDirection: { xs: "column", sm: "row" },
+                      flexDirection: "row",
                       justifyContent: "space-between",
-                      alignItems: { xs: "flex-start", sm: "flex-end" },
-                      gap: 1,
+                      alignItems: "flex-end",
+                      gap: 2,
                     }}
                   >
                     <Box>
@@ -424,7 +534,7 @@ export default function PlayersPage() {
 
                     <Typography
                       variant="caption"
-                      sx={{ color: "text.secondary" }}
+                      sx={{ color: "text.secondary", pb: 0.25, flexShrink: 0 }}
                     >
                       {players.length} totalt
                     </Typography>
@@ -445,84 +555,92 @@ export default function PlayersPage() {
                       Inga spelare sparade ännu.
                     </Typography>
                   ) : (
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns: {
-                          xs: "1fr",
-                          sm: "repeat(2, minmax(0, 1fr))",
-                        },
-                        gap: 1,
-                      }}
-                    >
-                      {players.map((player, index) => (
-                        <Box
-                          key={player.id}
-                          sx={{
-                            minHeight: 58,
-                            display: "grid",
-                            gridTemplateColumns: "36px minmax(0, 1fr) auto",
-                            alignItems: "center",
-                            border: "1px solid rgba(255,255,255,0.09)",
-                            borderRadius: 0.75,
-                            backgroundColor: "rgba(255,255,255,0.01)",
-                            overflow: "hidden",
-                          }}
-                        >
+                    <Stack spacing={1.5}>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "repeat(2, minmax(0, 1fr))",
+                          },
+                          gap: 1,
+                        }}
+                      >
+                        {players.map((player, index) => (
                           <Box
+                            key={player.id}
                             sx={{
-                              alignSelf: "stretch",
-                              display: "flex",
+                              minHeight: 58,
+                              display: "grid",
+                              gridTemplateColumns: "36px minmax(0, 1fr)",
                               alignItems: "center",
-                              justifyContent: "center",
-                              borderRight: "1px solid rgba(255,255,255,0.07)",
-                              backgroundColor: "rgba(198,40,40,0.045)",
+                              border: "1px solid rgba(255,255,255,0.09)",
+                              borderRadius: 0.75,
+                              backgroundColor: "rgba(255,255,255,0.01)",
+                              overflow: "hidden",
                             }}
                           >
-                            <Typography
-                              variant="caption"
+                            <Box
                               sx={{
-                                color: "error.light",
-                                fontWeight: 800,
+                                alignSelf: "stretch",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                borderRight: "1px solid rgba(255,255,255,0.07)",
+                                backgroundColor: "rgba(198,40,40,0.045)",
                               }}
                             >
-                              {index + 1}
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: "error.light",
+                                  fontWeight: 800,
+                                }}
+                              >
+                                {index + 1}
+                              </Typography>
+                            </Box>
+
+                            <Typography
+                              sx={{
+                                px: 1.5,
+                                fontWeight: 700,
+                                minWidth: 0,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {player.name}
                             </Typography>
                           </Box>
+                        ))}
+                      </Box>
 
-                          <Typography
-                            sx={{
-                              px: 1.5,
-                              fontWeight: 700,
-                              minWidth: 0,
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {player.name}
-                          </Typography>
-
-                          <Button
-                            size="small"
-                            variant="text"
-                            onClick={() => handleOpenEdit(player)}
-                            sx={{
-                              mr: 0.75,
-                              minWidth: 0,
-                              px: 1,
-                              color: "text.secondary",
-                              fontWeight: 700,
-                              "&:hover": {
-                                color: "text.primary",
-                              },
-                            }}
-                          >
-                            Redigera
-                          </Button>
-                        </Box>
-                      ))}
-                    </Box>
+                      <Box
+                        sx={{
+                          pt: 1.5,
+                          borderTop: "1px solid rgba(255,255,255,0.08)",
+                          display: "flex",
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        <Button
+                          type="button"
+                          variant="outlined"
+                          onClick={handleOpenManage}
+                          disabled={players.length === 0}
+                          sx={{
+                            width: { xs: "100%", sm: "auto" },
+                            minHeight: 42,
+                            borderRadius: 0.75,
+                            fontWeight: 700,
+                          }}
+                        >
+                          Hantera spelare
+                        </Button>
+                      </Box>
+                    </Stack>
                   )}
                 </Box>
               </Paper>
@@ -532,84 +650,266 @@ export default function PlayersPage() {
       </Container>
 
       <Dialog
-        open={Boolean(editingPlayer)}
-        onClose={handleCloseEdit}
+        open={manageOpen}
+        onClose={handleCloseManage}
         fullWidth
-        maxWidth="xs"
+        maxWidth="sm"
         slotProps={{
           paper: {
             sx: {
+              width: "100%",
+              maxWidth: 560,
               borderRadius: 1,
               border: "1px solid rgba(255,255,255,0.14)",
               backgroundImage: "none",
+              overflow: "hidden",
             },
           },
         }}
       >
-        <Stack component="form" onSubmit={handleEditSubmit} spacing={0}>
-          <DialogTitle sx={{ pb: 1 }}>
-            <Typography
-              variant="overline"
+        <Box
+          sx={{
+            height: 3,
+            backgroundColor: "error.dark",
+          }}
+        />
+
+        {confirmingDelete && selectedPlayer ? (
+          <>
+            <DialogTitle sx={{ px: { xs: 2.5, sm: 3.5 }, pt: 3, pb: 1 }}>
+              <Typography
+                sx={{
+                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontStyle: "italic",
+                  fontSize: "1rem",
+                  color: "text.secondary",
+                }}
+              >
+                Pas d&apos;Art
+              </Typography>
+
+              <Typography
+                component="div"
+                variant="h5"
+                sx={{ fontWeight: 800, mt: 0.5 }}
+              >
+                Ta bort {selectedPlayer.name}?
+              </Typography>
+            </DialogTitle>
+
+            <DialogContent
+              sx={{ px: { xs: 2.5, sm: 3.5 }, pt: "8px !important" }}
+            >
+              <Stack spacing={2}>
+                <Box
+                  sx={{
+                    border: "1px solid rgba(198,40,40,0.28)",
+                    borderRadius: 0.75,
+                    backgroundColor: "rgba(198,40,40,0.05)",
+                    p: 2,
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 800, mb: 0.5 }}>
+                    Spelaren tas bort från framtida cuper
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "text.secondary", lineHeight: 1.6 }}
+                  >
+                    {selectedPlayer.name} försvinner från spelarregistret och
+                    kan inte väljas i nya cuper. Gamla cuper och resultat
+                    påverkas inte.
+                  </Typography>
+                </Box>
+
+                {manageError && <PasdartInlineError message={manageError} />}
+              </Stack>
+            </DialogContent>
+
+            <DialogActions
               sx={{
-                display: "block",
-                color: "error.light",
-                fontWeight: 800,
-                letterSpacing: "0.08em",
+                px: { xs: 2.5, sm: 3.5 },
+                pb: 3,
+                pt: 1.5,
+                gap: 1,
+                flexDirection: { xs: "column-reverse", sm: "row" },
               }}
             >
-              REDIGERA SPELARE
-            </Typography>
-
-            <Typography
-              component="div"
-              variant="h5"
-              sx={{ fontWeight: 800, mt: 0.25 }}
-            >
-              Ändra namn
-            </Typography>
-          </DialogTitle>
-
-          <DialogContent>
-            <Stack spacing={1.5} sx={{ pt: 0.5 }}>
-              <TextField
-                autoFocus
-                label="Spelarens namn"
-                value={editName}
-                onChange={(event) => {
-                  setEditName(event.target.value);
-
-                  if (editError) {
-                    setEditError("");
-                  }
+              <Button
+                type="button"
+                variant="outlined"
+                onClick={() => {
+                  setConfirmingDelete(false);
+                  setManageError("");
                 }}
-                disabled={editing}
-                fullWidth
-              />
+                disabled={updatingPlayer}
+                sx={{
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: 110,
+                }}
+              >
+                Tillbaka
+              </Button>
 
-              {editError && <PasdartInlineError message={editError} />}
-            </Stack>
-          </DialogContent>
+              <Button
+                type="button"
+                variant="contained"
+                onClick={handleDeactivatePlayer}
+                disabled={updatingPlayer}
+                sx={{
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: 150,
+                  backgroundColor: "error.dark",
+                  color: "common.white",
+                  "&:hover": {
+                    backgroundColor: "error.main",
+                  },
+                }}
+              >
+                {updatingPlayer ? "Tar bort..." : "Ta bort spelare"}
+              </Button>
+            </DialogActions>
+          </>
+        ) : (
+          <Stack component="form" onSubmit={handleRenamePlayer}>
+            <DialogTitle sx={{ px: { xs: 2.5, sm: 3.5 }, pt: 3, pb: 1 }}>
+              <Typography
+                sx={{
+                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontStyle: "italic",
+                  fontSize: "1rem",
+                  color: "text.secondary",
+                }}
+              >
+                Pas d&apos;Art
+              </Typography>
 
-          <DialogActions sx={{ px: 3, pb: 2.5, gap: 0.5 }}>
-            <Button
-              type="button"
-              variant="text"
-              onClick={handleCloseEdit}
-              disabled={editing}
+              <Typography
+                component="div"
+                variant="h5"
+                sx={{ fontWeight: 800, mt: 0.5 }}
+              >
+                Hantera spelare
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{ color: "text.secondary", mt: 0.6, lineHeight: 1.55 }}
+              >
+                Välj en spelare för att ändra namn eller ta bort personen från
+                framtida cuper.
+              </Typography>
+            </DialogTitle>
+
+            <DialogContent
+              sx={{ px: { xs: 2.5, sm: 3.5 }, pt: "14px !important" }}
             >
-              Avbryt
-            </Button>
+              <Stack spacing={2}>
+                <TextField
+                  select
+                  label="Välj spelare"
+                  value={selectedPlayerId}
+                  onChange={(event) => handleSelectPlayer(event.target.value)}
+                  disabled={updatingPlayer}
+                  fullWidth
+                >
+                  {players.map((player) => (
+                    <MenuItem key={player.id} value={String(player.id)}>
+                      {player.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
 
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={editing}
-              sx={{ minWidth: 110 }}
+                {selectedPlayer && (
+                  <>
+                    <TextField
+                      label="Redigera namn"
+                      value={editName}
+                      onChange={(event) => {
+                        setEditName(event.target.value);
+
+                        if (manageError) {
+                          setManageError("");
+                        }
+                      }}
+                      disabled={updatingPlayer}
+                      fullWidth
+                    />
+
+                    <Box
+                      sx={{
+                        pt: 1.75,
+                        borderTop: "1px solid rgba(255,255,255,0.08)",
+                      }}
+                    >
+                      <Button
+                        type="button"
+                        variant="outlined"
+                        onClick={() => {
+                          setConfirmingDelete(true);
+                          setManageError("");
+                        }}
+                        disabled={updatingPlayer}
+                        sx={{
+                          width: { xs: "100%", sm: "auto" },
+                          minWidth: 150,
+                          borderColor: "rgba(198,40,40,0.55)",
+                          color: "error.light",
+                          fontWeight: 700,
+                          "&:hover": {
+                            borderColor: "error.main",
+                            backgroundColor: "rgba(198,40,40,0.06)",
+                          },
+                        }}
+                      >
+                        Ta bort spelare
+                      </Button>
+                    </Box>
+                  </>
+                )}
+
+                {manageError && <PasdartInlineError message={manageError} />}
+              </Stack>
+            </DialogContent>
+
+            <DialogActions
+              sx={{
+                px: { xs: 2.5, sm: 3.5 },
+                pb: 3,
+                pt: 1.5,
+                gap: 1,
+                flexDirection: { xs: "column-reverse", sm: "row" },
+                justifyContent: "flex-end",
+              }}
             >
-              {editing ? "Sparar..." : "Spara"}
-            </Button>
-          </DialogActions>
-        </Stack>
+              <Button
+                type="button"
+                variant="outlined"
+                onClick={handleCloseManage}
+                disabled={updatingPlayer}
+                sx={{
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: 100,
+                }}
+              >
+                Stäng
+              </Button>
+
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={!selectedPlayer || updatingPlayer}
+                sx={{
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: 130,
+                }}
+              >
+                {updatingPlayer ? "Sparar..." : "Spara namn"}
+              </Button>
+            </DialogActions>
+          </Stack>
+        )}
       </Dialog>
     </>
   );
