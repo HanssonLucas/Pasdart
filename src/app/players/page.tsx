@@ -6,6 +6,10 @@ import {
   Box,
   Button,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Paper,
   Stack,
   TextField,
@@ -17,23 +21,25 @@ import PasdartLoadingState from "@/components/PasdartLoadingState";
 
 type Player = {
   id: number;
-
   name: string;
-
   createdAt: string;
+  isActive?: boolean;
 };
 
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([]);
-
   const [name, setName] = useState("");
 
   const [loadError, setLoadError] = useState("");
   const [formError, setFormError] = useState("");
 
   const [loading, setLoading] = useState(true);
-
   const [saving, setSaving] = useState(false);
+
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editError, setEditError] = useState("");
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,19 +52,16 @@ export default function PlayersPage() {
 
         return response.json();
       })
-
       .then((data) => {
         if (!cancelled) {
           setPlayers(data);
         }
       })
-
       .catch(() => {
         if (!cancelled) {
           setLoadError("Kunde inte hämta spelarna. Försök att ladda om sidan.");
         }
       })
-
       .finally(() => {
         if (!cancelled) {
           setLoading(false);
@@ -77,22 +80,18 @@ export default function PlayersPage() {
 
     if (!trimmedName) {
       setFormError("Skriv in ett namn innan du fortsätter.");
-
       return;
     }
 
     setSaving(true);
-
     setFormError("");
 
     try {
       const response = await fetch("/api/players", {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({
           name: trimmedName,
         }),
@@ -102,10 +101,9 @@ export default function PlayersPage() {
         throw new Error();
       }
 
-      const newPlayer = await response.json();
+      const newPlayer: Player = await response.json();
 
       setPlayers((currentPlayers) => [...currentPlayers, newPlayer]);
-
       setName("");
     } catch {
       setFormError("Kunde inte lägga till spelaren. Försök igen om en stund.");
@@ -114,398 +112,505 @@ export default function PlayersPage() {
     }
   }
 
+  function handleOpenEdit(player: Player) {
+    setEditingPlayer(player);
+    setEditName(player.name);
+    setEditError("");
+  }
+
+  function handleCloseEdit() {
+    if (editing) {
+      return;
+    }
+
+    setEditingPlayer(null);
+    setEditName("");
+    setEditError("");
+  }
+
+  async function handleEditSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!editingPlayer) {
+      return;
+    }
+
+    const trimmedName = editName.trim();
+
+    if (!trimmedName) {
+      setEditError("Spelarens namn får inte vara tomt.");
+      return;
+    }
+
+    if (trimmedName === editingPlayer.name) {
+      handleCloseEdit();
+      return;
+    }
+
+    setEditing(true);
+    setEditError("");
+
+    try {
+      const response = await fetch("/api/players", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: editingPlayer.id,
+          name: trimmedName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      const updatedPlayer: Player = await response.json();
+
+      setPlayers((currentPlayers) =>
+        currentPlayers.map((player) =>
+          player.id === updatedPlayer.id ? updatedPlayer : player,
+        ),
+      );
+
+      setEditingPlayer(null);
+      setEditName("");
+    } catch {
+      setEditError("Kunde inte spara ändringen. Försök igen om en stund.");
+    } finally {
+      setEditing(false);
+    }
+  }
+
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ py: { xs: 3, sm: 4 } }}>
-        <Stack spacing={3}>
-          <Paper
-            elevation={0}
-            sx={{
-              overflow: "hidden",
-
-              border: "1px solid rgba(255,255,255,0.14)",
-
-              borderRadius: 1.25,
-
-              backgroundColor: "rgba(255,255,255,0.018)",
-            }}
-          >
-            <Box
-              sx={{
-                height: 3,
-
-                display: "grid",
-
-                gridTemplateColumns: "42px 12px 42px",
-
-                justifyContent: "center",
-              }}
-            >
-              <Box sx={{ backgroundColor: "success.dark" }} />
-
-              <Box sx={{ backgroundColor: "rgba(255,255,255,0.78)" }} />
-
-              <Box sx={{ backgroundColor: "error.dark" }} />
-            </Box>
-
-            <Box
-              sx={{
-                p: { xs: 2.5, sm: 3.5 },
-
-                display: "grid",
-
-                gridTemplateColumns: {
-                  xs: "1fr",
-
-                  sm: "minmax(0, 1fr) auto",
-                },
-
-                gap: 2,
-
-                alignItems: "center",
-              }}
-            >
-              <Box>
-                <Typography
-                  sx={{
-                    fontFamily: 'Georgia, "Times New Roman", serif',
-
-                    fontStyle: "italic",
-
-                    fontSize: { xs: "1.1rem", sm: "1.25rem" },
-
-                    color: "rgba(255,255,255,0.82)",
-
-                    lineHeight: 1,
-                  }}
-                >
-                  Pas d&apos;Art
-                </Typography>
-
-                <Typography
-                  variant="h3"
-                  component="h1"
-                  sx={{
-                    mt: 0.8,
-
-                    fontWeight: 800,
-
-                    letterSpacing: "-0.025em",
-
-                    fontSize: { xs: "2rem", sm: "2.5rem" },
-                  }}
-                >
-                  Spelare
-                </Typography>
-
-                <Typography sx={{ color: "text.secondary", mt: 0.75 }}>
-                  Lägg till personer som kan användas i kommande cuper.
-                </Typography>
-              </Box>
-
-              <Box
-                sx={{
-                  minWidth: { sm: 150 },
-
-                  pl: { sm: 2.5 },
-
-                  borderLeft: {
-                    xs: "none",
-
-                    sm: "1px solid rgba(255,255,255,0.10)",
-                  },
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: "block",
-
-                    color: "error.light",
-
-                    fontWeight: 800,
-
-                    letterSpacing: "0.08em",
-                  }}
-                >
-                  SPELARREGISTER
-                </Typography>
-
-                <Typography sx={{ mt: 0.25, fontWeight: 800 }}>
-                  {players.length} spelare
-                </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ color: "text.secondary", mt: 0.2 }}
-                >
-                  Redo för nästa cup
-                </Typography>
-              </Box>
-            </Box>
-          </Paper>
-
-          <Box
-            sx={{
-              display: "grid",
-
-              gridTemplateColumns: {
-                xs: "1fr",
-
-                md: "minmax(280px, 0.8fr) minmax(0, 1.2fr)",
-              },
-
-              gap: 2,
-
-              alignItems: "start",
-            }}
-          >
+    <>
+      <Container maxWidth="lg">
+        <Box sx={{ py: { xs: 3, sm: 4 } }}>
+          <Stack spacing={3}>
             <Paper
               elevation={0}
               sx={{
-                border: "1px solid rgba(255,255,255,0.12)",
-
-                borderRadius: 1,
-
-                backgroundColor: "rgba(255,255,255,0.014)",
-              }}
-            >
-              <Box
-                sx={{
-                  px: { xs: 2, sm: 2.5 },
-
-                  pt: 2.25,
-
-                  pb: 1.75,
-
-                  borderBottom: "1px solid rgba(255,255,255,0.10)",
-
-                  borderLeft: "3px solid rgba(198,40,40,0.70)",
-                }}
-              >
-                <Typography
-                  variant="overline"
-                  sx={{
-                    color: "error.light",
-
-                    fontWeight: 800,
-
-                    letterSpacing: "0.08em",
-                  }}
-                >
-                  NY SPELARE
-                </Typography>
-
-                <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                  Lägg till spelare
-                </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ color: "text.secondary", mt: 0.35 }}
-                >
-                  Lägg till spelaren en gång så finns den kvar till framtida
-                  cuper.
-                </Typography>
-              </Box>
-
-              <Stack
-                component="form"
-                spacing={1.5}
-                onSubmit={handleSubmit}
-                sx={{ p: { xs: 2, sm: 2.5 } }}
-              >
-                <TextField
-                  label="Spelarens namn"
-                  value={name}
-                  onChange={(event) => {
-                    setName(event.target.value);
-                    if (formError) {
-                      setFormError("");
-                    }
-                  }}
-                  fullWidth
-                />
-
-                {formError && <PasdartInlineError message={formError} />}
-
-                <Button
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  disabled={saving}
-                  sx={{
-                    minHeight: 50,
-
-                    borderRadius: 0.75,
-
-                    boxShadow: "none",
-
-                    fontWeight: 800,
-                  }}
-                >
-                  {saving ? "Lägger till..." : "Lägg till spelare"}
-                </Button>
-              </Stack>
-            </Paper>
-
-            <Paper
-              elevation={0}
-              sx={{
-                border: "1px solid rgba(255,255,255,0.12)",
-
-                borderRadius: 1,
-
-                backgroundColor: "rgba(255,255,255,0.014)",
-
                 overflow: "hidden",
+                border: "1px solid rgba(255,255,255,0.14)",
+                borderRadius: 1.25,
+                backgroundColor: "rgba(255,255,255,0.018)",
               }}
             >
               <Box
                 sx={{
-                  px: { xs: 2, sm: 2.5 },
-
-                  pt: 2.25,
-
-                  pb: 1.75,
-
-                  borderBottom: "1px solid rgba(255,255,255,0.10)",
-
-                  borderLeft: "3px solid rgba(198,40,40,0.70)",
+                  height: 3,
+                  display: "grid",
+                  gridTemplateColumns: "42px 12px 42px",
+                  justifyContent: "center",
                 }}
               >
-                <Stack
-                  sx={{
-                    flexDirection: { xs: "column", sm: "row" },
+                <Box sx={{ backgroundColor: "success.dark" }} />
+                <Box sx={{ backgroundColor: "rgba(255,255,255,0.78)" }} />
+                <Box sx={{ backgroundColor: "error.dark" }} />
+              </Box>
 
-                    justifyContent: "space-between",
-
-                    alignItems: { xs: "flex-start", sm: "flex-end" },
-
-                    gap: 1,
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      variant="overline"
-                      sx={{
-                        color: "error.light",
-
-                        fontWeight: 800,
-
-                        letterSpacing: "0.08em",
-                      }}
-                    >
-                      SPARAT
-                    </Typography>
-
-                    <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                      Spelarregister
-                    </Typography>
-                  </Box>
+              <Box
+                sx={{
+                  p: { xs: 2.5, sm: 3.5 },
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "minmax(0, 1fr) auto",
+                  },
+                  gap: 2,
+                  alignItems: "center",
+                }}
+              >
+                <Box>
+                  <Typography
+                    sx={{
+                      fontFamily: 'Georgia, "Times New Roman", serif',
+                      fontStyle: "italic",
+                      fontSize: { xs: "1.1rem", sm: "1.25rem" },
+                      color: "rgba(255,255,255,0.82)",
+                      lineHeight: 1,
+                    }}
+                  >
+                    Pas d&apos;Art
+                  </Typography>
 
                   <Typography
-                    variant="caption"
-                    sx={{ color: "text.secondary" }}
-                  >
-                    {players.length} totalt
-                  </Typography>
-                </Stack>
-              </Box>
-
-              <Box sx={{ p: { xs: 2, sm: 2.5 } }}>
-                {loading ? (
-                  <PasdartLoadingState
-                    variant="inline"
-                    title="Hämtar spelare"
-                    description="Förbereder spelarregistret."
-                  />
-                ) : loadError ? (
-                  <PasdartInlineError message={loadError} />
-                ) : players.length === 0 ? (
-                  <Typography sx={{ color: "text.secondary" }}>
-                    Inga spelare sparade ännu.
-                  </Typography>
-                ) : (
-                  <Box
+                    variant="h3"
+                    component="h1"
                     sx={{
-                      display: "grid",
+                      mt: 0.8,
+                      fontWeight: 800,
+                      letterSpacing: "-0.025em",
+                      fontSize: { xs: "2rem", sm: "2.5rem" },
+                    }}
+                  >
+                    Spelare
+                  </Typography>
 
-                      gridTemplateColumns: {
-                        xs: "1fr",
+                  <Typography sx={{ color: "text.secondary", mt: 0.75 }}>
+                    Lägg till personer som kan användas i kommande cuper.
+                  </Typography>
+                </Box>
 
-                        sm: "repeat(2, minmax(0, 1fr))",
-                      },
+                <Box
+                  sx={{
+                    minWidth: { sm: 150 },
+                    pl: { sm: 2.5 },
+                    borderLeft: {
+                      xs: "none",
+                      sm: "1px solid rgba(255,255,255,0.10)",
+                    },
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      display: "block",
+                      color: "error.light",
+                      fontWeight: 800,
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    SPELARREGISTER
+                  </Typography>
 
+                  <Typography sx={{ mt: 0.25, fontWeight: 800 }}>
+                    {players.length} spelare
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "text.secondary", mt: 0.2 }}
+                  >
+                    Redo för nästa cup
+                  </Typography>
+                </Box>
+              </Box>
+            </Paper>
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  md: "minmax(280px, 0.8fr) minmax(0, 1.2fr)",
+                },
+                gap: 2,
+                alignItems: "start",
+              }}
+            >
+              <Paper
+                elevation={0}
+                sx={{
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  borderRadius: 1,
+                  backgroundColor: "rgba(255,255,255,0.014)",
+                }}
+              >
+                <Box
+                  sx={{
+                    px: { xs: 2, sm: 2.5 },
+                    pt: 2.25,
+                    pb: 1.75,
+                    borderBottom: "1px solid rgba(255,255,255,0.10)",
+                    borderLeft: "3px solid rgba(198,40,40,0.70)",
+                  }}
+                >
+                  <Typography
+                    variant="overline"
+                    sx={{
+                      color: "error.light",
+                      fontWeight: 800,
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    NY SPELARE
+                  </Typography>
+
+                  <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                    Lägg till spelare
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "text.secondary", mt: 0.35 }}
+                  >
+                    Lägg till spelaren en gång så finns den kvar till framtida
+                    cuper.
+                  </Typography>
+                </Box>
+
+                <Stack
+                  component="form"
+                  spacing={1.5}
+                  onSubmit={handleSubmit}
+                  sx={{ p: { xs: 2, sm: 2.5 } }}
+                >
+                  <TextField
+                    label="Spelarens namn"
+                    value={name}
+                    onChange={(event) => {
+                      setName(event.target.value);
+
+                      if (formError) {
+                        setFormError("");
+                      }
+                    }}
+                    fullWidth
+                  />
+
+                  {formError && <PasdartInlineError message={formError} />}
+
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    disabled={saving}
+                    sx={{
+                      minHeight: 50,
+                      borderRadius: 0.75,
+                      boxShadow: "none",
+                      fontWeight: 800,
+                    }}
+                  >
+                    {saving ? "Lägger till..." : "Lägg till spelare"}
+                  </Button>
+                </Stack>
+              </Paper>
+
+              <Paper
+                elevation={0}
+                sx={{
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  borderRadius: 1,
+                  backgroundColor: "rgba(255,255,255,0.014)",
+                  overflow: "hidden",
+                }}
+              >
+                <Box
+                  sx={{
+                    px: { xs: 2, sm: 2.5 },
+                    pt: 2.25,
+                    pb: 1.75,
+                    borderBottom: "1px solid rgba(255,255,255,0.10)",
+                    borderLeft: "3px solid rgba(198,40,40,0.70)",
+                  }}
+                >
+                  <Stack
+                    sx={{
+                      flexDirection: { xs: "column", sm: "row" },
+                      justifyContent: "space-between",
+                      alignItems: { xs: "flex-start", sm: "flex-end" },
                       gap: 1,
                     }}
                   >
-                    {players.map((player, index) => (
-                      <Box
-                        key={player.id}
+                    <Box>
+                      <Typography
+                        variant="overline"
                         sx={{
-                          minHeight: 58,
-
-                          display: "grid",
-
-                          gridTemplateColumns: "36px minmax(0, 1fr)",
-
-                          alignItems: "center",
-
-                          border: "1px solid rgba(255,255,255,0.09)",
-
-                          borderRadius: 0.75,
-
-                          backgroundColor: "rgba(255,255,255,0.01)",
-
-                          overflow: "hidden",
+                          color: "error.light",
+                          fontWeight: 800,
+                          letterSpacing: "0.08em",
                         }}
                       >
+                        SPARAT
+                      </Typography>
+
+                      <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                        Spelarregister
+                      </Typography>
+                    </Box>
+
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "text.secondary" }}
+                    >
+                      {players.length} totalt
+                    </Typography>
+                  </Stack>
+                </Box>
+
+                <Box sx={{ p: { xs: 2, sm: 2.5 } }}>
+                  {loading ? (
+                    <PasdartLoadingState
+                      variant="inline"
+                      title="Hämtar spelare"
+                      description="Förbereder spelarregistret."
+                    />
+                  ) : loadError ? (
+                    <PasdartInlineError message={loadError} />
+                  ) : players.length === 0 ? (
+                    <Typography sx={{ color: "text.secondary" }}>
+                      Inga spelare sparade ännu.
+                    </Typography>
+                  ) : (
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                          xs: "1fr",
+                          sm: "repeat(2, minmax(0, 1fr))",
+                        },
+                        gap: 1,
+                      }}
+                    >
+                      {players.map((player, index) => (
                         <Box
+                          key={player.id}
                           sx={{
-                            alignSelf: "stretch",
-
-                            display: "flex",
-
+                            minHeight: 58,
+                            display: "grid",
+                            gridTemplateColumns: "36px minmax(0, 1fr) auto",
                             alignItems: "center",
-
-                            justifyContent: "center",
-
-                            borderRight: "1px solid rgba(255,255,255,0.07)",
-
-                            backgroundColor: "rgba(198,40,40,0.045)",
+                            border: "1px solid rgba(255,255,255,0.09)",
+                            borderRadius: 0.75,
+                            backgroundColor: "rgba(255,255,255,0.01)",
+                            overflow: "hidden",
                           }}
                         >
-                          <Typography
-                            variant="caption"
+                          <Box
                             sx={{
-                              color: "error.light",
-
-                              fontWeight: 800,
+                              alignSelf: "stretch",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRight: "1px solid rgba(255,255,255,0.07)",
+                              backgroundColor: "rgba(198,40,40,0.045)",
                             }}
                           >
-                            {index + 1}
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: "error.light",
+                                fontWeight: 800,
+                              }}
+                            >
+                              {index + 1}
+                            </Typography>
+                          </Box>
+
+                          <Typography
+                            sx={{
+                              px: 1.5,
+                              fontWeight: 700,
+                              minWidth: 0,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {player.name}
                           </Typography>
+
+                          <Button
+                            size="small"
+                            variant="text"
+                            onClick={() => handleOpenEdit(player)}
+                            sx={{
+                              mr: 0.75,
+                              minWidth: 0,
+                              px: 1,
+                              color: "text.secondary",
+                              fontWeight: 700,
+                              "&:hover": {
+                                color: "text.primary",
+                              },
+                            }}
+                          >
+                            Redigera
+                          </Button>
                         </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              </Paper>
+            </Box>
+          </Stack>
+        </Box>
+      </Container>
 
-                        <Typography
-                          sx={{
-                            px: 1.5,
+      <Dialog
+        open={Boolean(editingPlayer)}
+        onClose={handleCloseEdit}
+        fullWidth
+        maxWidth="xs"
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 1,
+              border: "1px solid rgba(255,255,255,0.14)",
+              backgroundImage: "none",
+            },
+          },
+        }}
+      >
+        <Stack component="form" onSubmit={handleEditSubmit} spacing={0}>
+          <DialogTitle sx={{ pb: 1 }}>
+            <Typography
+              variant="overline"
+              sx={{
+                display: "block",
+                color: "error.light",
+                fontWeight: 800,
+                letterSpacing: "0.08em",
+              }}
+            >
+              REDIGERA SPELARE
+            </Typography>
 
-                            fontWeight: 700,
-                          }}
-                        >
-                          {player.name}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            </Paper>
-          </Box>
+            <Typography
+              component="div"
+              variant="h5"
+              sx={{ fontWeight: 800, mt: 0.25 }}
+            >
+              Ändra namn
+            </Typography>
+          </DialogTitle>
+
+          <DialogContent>
+            <Stack spacing={1.5} sx={{ pt: 0.5 }}>
+              <TextField
+                autoFocus
+                label="Spelarens namn"
+                value={editName}
+                onChange={(event) => {
+                  setEditName(event.target.value);
+
+                  if (editError) {
+                    setEditError("");
+                  }
+                }}
+                disabled={editing}
+                fullWidth
+              />
+
+              {editError && <PasdartInlineError message={editError} />}
+            </Stack>
+          </DialogContent>
+
+          <DialogActions sx={{ px: 3, pb: 2.5, gap: 0.5 }}>
+            <Button
+              type="button"
+              variant="text"
+              onClick={handleCloseEdit}
+              disabled={editing}
+            >
+              Avbryt
+            </Button>
+
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={editing}
+              sx={{ minWidth: 110 }}
+            >
+              {editing ? "Sparar..." : "Spara"}
+            </Button>
+          </DialogActions>
         </Stack>
-      </Box>
-    </Container>
+      </Dialog>
+    </>
   );
 }

@@ -5,7 +5,10 @@ import { db } from "@/db";
 import { players } from "@/db/schema";
 
 export async function GET() {
-  const allPlayers = await db.select().from(players);
+  const allPlayers = await db
+    .select()
+    .from(players)
+    .where(eq(players.isActive, true));
 
   return NextResponse.json(allPlayers);
 }
@@ -40,6 +43,28 @@ export async function PATCH(request: Request) {
   const [updatedPlayer] = await db
     .update(players)
     .set({ name })
+    .where(eq(players.id, id))
+    .returning();
+
+  if (!updatedPlayer) {
+    return NextResponse.json({ error: "Player not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(updatedPlayer);
+}
+
+export async function DELETE(request: Request) {
+  const body = await request.json();
+
+  const id = Number(body.id);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    return NextResponse.json({ error: "Invalid player id" }, { status: 400 });
+  }
+
+  const [updatedPlayer] = await db
+    .update(players)
+    .set({ isActive: false })
     .where(eq(players.id, id))
     .returning();
 
