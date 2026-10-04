@@ -21,7 +21,7 @@ export function generateRoundRobinSchedule(
     teams.push(null);
   }
 
-  const rounds: Array<Array<[number, number]>> = [];
+  const roundRobinRounds: Array<Array<[number, number]>> = [];
   const totalRounds = teams.length - 1;
   const matchesPerRound = teams.length / 2;
 
@@ -37,7 +37,7 @@ export function generateRoundRobinSchedule(
       }
     }
 
-    rounds.push(roundMatches);
+    roundRobinRounds.push(roundMatches);
 
     // Första laget ligger kvar.
     // Övriga lag roteras ett steg.
@@ -49,39 +49,66 @@ export function generateRoundRobinSchedule(
     teams.splice(0, teams.length, fixedTeam, ...rotatingTeams);
   }
 
-  if (doubleRoundRobin) {
-    const returnRounds = rounds.map((roundMatches) =>
-      roundMatches.map(([teamA, teamB]) => [teamB, teamA] as [number, number]),
-    );
+  const allMatches: Array<[number, number]> = roundRobinRounds.flat();
 
-    rounds.push(...returnRounds);
+  if (doubleRoundRobin) {
+    const returnMatches = roundRobinRounds
+      .flat()
+      .map(([teamA, teamB]) => [teamB, teamA] as [number, number]);
+
+    allMatches.push(...returnMatches);
   }
 
+  /*
+   * Round-robin-rundorna ovan används bara för att skapa alla korrekta möten.
+   *
+   * Här bygger vi sedan det faktiska spelschemat oberoende av de ursprungliga
+   * round-robin-rundorna. På så sätt kan vi fylla alla tillgängliga tavlor så
+   * långt det går, utan att samma lag spelar två matcher i samma omgång.
+   *
+   * Exempel:
+   * 6 lag + 2 tavlor = 15 matcher.
+   * Det ger 8 spelomgångar: 2 + 2 + 2 + 2 + 2 + 2 + 2 + 1 matcher.
+   */
+  const remainingMatches = [...allMatches];
   const schedule: ScheduleMatch[] = [];
+
   let scheduleRound = 1;
 
-  for (const roundMatches of rounds) {
+  while (remainingMatches.length > 0) {
+    const usedTeamIds = new Set<number>();
+    const matchesForRound: Array<[number, number]> = [];
+
     for (
-      let startIndex = 0;
-      startIndex < roundMatches.length;
-      startIndex += boardCount
+      let index = 0;
+      index < remainingMatches.length && matchesForRound.length < boardCount;
     ) {
-      const matchesForBoards = roundMatches.slice(
-        startIndex,
-        startIndex + boardCount,
-      );
+      const [teamAId, teamBId] = remainingMatches[index];
 
-      matchesForBoards.forEach(([teamAId, teamBId], index) => {
-        schedule.push({
-          roundNumber: scheduleRound,
-          boardNumber: index + 1,
-          teamAId,
-          teamBId,
-        });
-      });
+      const teamAlreadyPlaying =
+        usedTeamIds.has(teamAId) || usedTeamIds.has(teamBId);
 
-      scheduleRound += 1;
+      if (teamAlreadyPlaying) {
+        index += 1;
+        continue;
+      }
+
+      matchesForRound.push([teamAId, teamBId]);
+      usedTeamIds.add(teamAId);
+      usedTeamIds.add(teamBId);
+      remainingMatches.splice(index, 1);
     }
+
+    matchesForRound.forEach(([teamAId, teamBId], index) => {
+      schedule.push({
+        roundNumber: scheduleRound,
+        boardNumber: index + 1,
+        teamAId,
+        teamBId,
+      });
+    });
+
+    scheduleRound += 1;
   }
 
   return schedule;
