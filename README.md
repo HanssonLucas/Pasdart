@@ -1,36 +1,170 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pas'dArt
 
-## Getting Started
+Pas'dArt is a full-stack dart tournament application built for running real tournament nights with friends.
 
-First, run the development server:
+The app handles player selection, team generation, round-robin scheduling, live standings, tiebreaks, playoffs and the final winner flow — all in one place.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+> Built as a personal portfolio project and designed to be used in real Pas'dArt dart nights.
+
+## Features
+
+- Permanent player registry
+- Singles and doubles tournaments
+- Random team generation
+- Support for an odd number of players in doubles
+- 301 and 501 game modes
+- Configurable best-of format for group stage and playoffs
+- Configurable maximum darts
+- Single or double round robin
+- Support for 1–3 dartboards
+- Automatic match scheduling
+- Live group standings
+- Leg difference tracking
+- Castoff support for tied standings
+- Manual castoff ordering
+- Automatic playoff seeding
+- Support for 2-, 3- and 4-team playoff scenarios
+- Semifinals and final
+- Winner presentation
+- Responsive UI for desktop and mobile
+- Persistent tournament data with PostgreSQL
+
+## Tech Stack
+
+### Frontend
+
+- Next.js
+- React
+- TypeScript
+- Material UI
+
+### Backend
+
+- Next.js Route Handlers
+- PostgreSQL
+- Neon
+- Drizzle ORM
+
+### Tooling
+
+- Yarn
+- Git
+- GitHub
+
+## Tournament Flow
+
+```text
+Players
+  ↓
+Create tournament
+  ↓
+Generate teams
+  ↓
+Group stage
+  ↓
+Standings / Castoff
+  ↓
+Playoffs
+  ↓
+Final
+  ↓
+Winner
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Clone the repository:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+git clone https://github.com/HanssonLucas/Pasdart.git
+cd Pasdart
+```
 
-## Learn More
+Install dependencies:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+yarn
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Create a `.env.local` file in the project root:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+DATABASE_URL=your_postgresql_connection_string
+```
 
-## Deploy on Vercel
+Start the development server:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+yarn dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Then open:
+
+```text
+http://localhost:3000
+```
+
+## Available Scripts
+
+```bash
+yarn dev
+```
+
+Starts the local development server.
+
+```bash
+yarn build
+```
+
+Creates a production build.
+
+```bash
+yarn start
+```
+
+Starts the production server.
+
+```bash
+yarn lint
+```
+
+Runs the project lint checks.
+
+## Database
+
+Pas'dArt uses PostgreSQL hosted with Neon and Drizzle ORM for schema and database access.
+
+Environment variables are kept outside Git and must not be committed.
+
+## Deployment
+
+Production deployment is planned with Vercel and Neon.
+
+A live demo link will be added here once the first production version is deployed.
+
+## Project Status
+
+**V1 is complete and ready for real-world testing.**
+
+Current focus:
+
+- deployment
+- real tournament testing
+- collecting feedback
+- improving the product based on actual use
+
+Potential future additions include tournament history, statistics and leaderboards.
+
+## Why I Built It
+
+The project started from a real need: our dart group needed a simple way to create teams, organize matches, follow standings and run playoffs without keeping track of everything manually.
+
+That made Pas'dArt a good opportunity to build a complete full-stack application around an actual use case rather than a purely fictional portfolio project.
+
+## Author
+
+**Lucas Hansson**
+
+Frontend developer with full-stack competence.
+
+GitHub: [HanssonLucas](https://github.com/HanssonLucas)
