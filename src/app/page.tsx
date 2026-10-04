@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Box,
   Button,
@@ -31,14 +33,33 @@ export default function Home() {
             <Box
               sx={{
                 height: 3,
-                display: "grid",
-                gridTemplateColumns: "42px 12px 42px",
+                display: "flex",
                 justifyContent: "center",
+                alignItems: "center",
+                gap: 0.5,
               }}
             >
-              <Box sx={{ backgroundColor: "success.dark" }} />
-              <Box sx={{ backgroundColor: "rgba(255,255,255,0.78)" }} />
-              <Box sx={{ backgroundColor: "error.dark" }} />
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "success.dark",
+                }}
+              />
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "error.dark",
+                }}
+              />
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "success.dark",
+                }}
+              />
             </Box>
 
             <Box
@@ -94,14 +115,32 @@ export default function Home() {
                   <Box
                     sx={{
                       display: "flex",
-                      width: 74,
-                      height: 2,
+                      alignItems: "center",
+                      gap: 0.5,
                       mt: 2.5,
                     }}
                   >
-                    <Box sx={{ flex: 1, backgroundColor: "success.dark" }} />
-                    <Box sx={{ width: 10 }} />
-                    <Box sx={{ flex: 1, backgroundColor: "error.dark" }} />
+                    <Box
+                      sx={{
+                        width: 24,
+                        height: 2,
+                        backgroundColor: "success.dark",
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        width: 24,
+                        height: 2,
+                        backgroundColor: "error.dark",
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        width: 24,
+                        height: 2,
+                        backgroundColor: "success.dark",
+                      }}
+                    />
                   </Box>
 
                   <Typography

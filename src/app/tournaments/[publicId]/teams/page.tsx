@@ -14,6 +14,7 @@ import {
 import { useRouter } from "next/navigation";
 
 import PasdartErrorState from "@/components/PasdartErrorState";
+
 import PasdartInlineError from "@/components/PasdartInlineError";
 
 import PasdartLoadingState from "@/components/PasdartLoadingState";
@@ -90,6 +91,7 @@ export default function TeamsPage({
   const [teams, setTeams] = useState<GeneratedTeam[]>([]);
 
   const [loadError, setLoadError] = useState("");
+
   const [saveError, setSaveError] = useState("");
 
   const [loading, setLoading] = useState(true);
@@ -235,19 +237,33 @@ export default function TeamsPage({
             <Box
               sx={{
                 height: 3,
-
-                display: "grid",
-
-                gridTemplateColumns: "42px 12px 42px",
-
+                display: "flex",
                 justifyContent: "center",
+                alignItems: "center",
+                gap: 0.5,
               }}
             >
-              <Box sx={{ backgroundColor: "success.dark" }} />
-
-              <Box sx={{ backgroundColor: "rgba(255,255,255,0.78)" }} />
-
-              <Box sx={{ backgroundColor: "error.dark" }} />
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "success.dark",
+                }}
+              />
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "error.dark",
+                }}
+              />
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "success.dark",
+                }}
+              />
             </Box>
 
             <Box
@@ -354,6 +370,8 @@ export default function TeamsPage({
               borderRadius: 1,
 
               backgroundColor: "rgba(255,255,255,0.014)",
+
+              overflow: "hidden",
             }}
           >
             <Box
@@ -608,6 +626,7 @@ export default function TeamsPage({
                 spacing={1}
                 sx={{
                   width: "100%",
+
                   minWidth: { md: 280 },
                 }}
               >

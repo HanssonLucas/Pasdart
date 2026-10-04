@@ -570,19 +570,33 @@ export default function SchedulePage({
             <Box
               sx={{
                 height: 3,
-
-                display: "grid",
-
-                gridTemplateColumns: "42px 12px 42px",
-
+                display: "flex",
                 justifyContent: "center",
+                alignItems: "center",
+                gap: 0.5,
               }}
             >
-              <Box sx={{ backgroundColor: "success.dark" }} />
-
-              <Box sx={{ backgroundColor: "rgba(255,255,255,0.78)" }} />
-
-              <Box sx={{ backgroundColor: "error.dark" }} />
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "success.dark",
+                }}
+              />
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "error.dark",
+                }}
+              />
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "success.dark",
+                }}
+              />
             </Box>
 
             <Box sx={{ p: { xs: 2.25, sm: 3 } }}>
