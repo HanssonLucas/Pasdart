@@ -7,6 +7,9 @@ import {
   Box,
   Button,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
   Paper,
   Stack,
   Table,
@@ -148,6 +151,8 @@ export default function SchedulePage({
 
   const [showGroupHistory, setShowGroupHistory] = useState(false);
 
+  const [winnerDialogOpen, setWinnerDialogOpen] = useState(false);
+
   function applyTournamentData(result: TournamentResponse) {
     setData(result);
 
@@ -158,6 +163,20 @@ export default function SchedulePage({
     });
 
     setCastoffOrders(newCastoffOrders);
+
+    const finishedFinal = result.matches.find(
+      (match) =>
+        match.stage === "final" &&
+        match.status === "finished" &&
+        match.winnerTeamId !== null,
+    );
+
+    if (
+      result.tournament.status === "finished" &&
+      finishedFinal?.winnerTeamId
+    ) {
+      setWinnerDialogOpen(true);
+    }
   }
 
   useEffect(() => {
@@ -653,7 +672,7 @@ export default function SchedulePage({
                     >
                       {isPlayoffView
                         ? data.tournament.status === "finished"
-                          ? "Vinnaren är korad"
+                          ? "Cupen är avgjord"
                           : finalCreated
                             ? "Finalen är skapad"
                             : semifinalMatches.length === 1
@@ -2282,14 +2301,33 @@ export default function SchedulePage({
                   <Box
                     sx={{
                       height: 3,
-                      display: "grid",
-                      gridTemplateColumns: "42px 12px 42px",
+                      display: "flex",
                       justifyContent: "center",
+                      alignItems: "center",
+                      gap: 0.5,
                     }}
                   >
-                    <Box sx={{ backgroundColor: "success.dark" }} />
-                    <Box sx={{ backgroundColor: "rgba(255,255,255,0.78)" }} />
-                    <Box sx={{ backgroundColor: "error.dark" }} />
+                    <Box
+                      sx={{
+                        width: 28,
+                        height: 3,
+                        backgroundColor: "success.dark",
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        width: 28,
+                        height: 3,
+                        backgroundColor: "error.dark",
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        width: 28,
+                        height: 3,
+                        backgroundColor: "success.dark",
+                      }}
+                    />
                   </Box>
 
                   <Box
@@ -2319,7 +2357,7 @@ export default function SchedulePage({
                             letterSpacing: "-0.02em",
                           }}
                         >
-                          Vinnare
+                          Kvällens vinnare
                         </Typography>
 
                         <Box
@@ -2466,6 +2504,227 @@ export default function SchedulePage({
             )}
         </Stack>
       </Box>
+
+      {winnerTeam && finishedFinal && (
+        <Dialog
+          open={winnerDialogOpen}
+          onClose={() => setWinnerDialogOpen(false)}
+          fullWidth
+          maxWidth="sm"
+          slotProps={{
+            paper: {
+              sx: {
+                width: "100%",
+                maxWidth: 600,
+                overflow: "hidden",
+                border: "1px solid rgba(255,255,255,0.16)",
+                borderRadius: 1,
+                backgroundImage: "none",
+                backgroundColor: "#191919",
+                boxShadow: "0 22px 70px rgba(0,0,0,0.55)",
+              },
+            },
+          }}
+        >
+          <Box
+            sx={{
+              height: 3,
+              backgroundColor: "error.dark",
+            }}
+          />
+
+          <DialogContent
+            sx={{
+              px: { xs: 2.5, sm: 4.5 },
+              pt: { xs: 3.25, sm: 4.25 },
+              pb: { xs: 2.5, sm: 3 },
+              textAlign: "center",
+            }}
+          >
+            <Stack
+              spacing={2.25}
+              sx={{
+                width: "100%",
+                alignItems: "center",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontStyle: "italic",
+                  fontSize: { xs: "1rem", sm: "1.08rem" },
+                  color: "rgba(255,255,255,0.70)",
+                  lineHeight: 1,
+                }}
+              >
+                Pas d&apos;Art
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 0.5,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 24,
+                    height: 3,
+                    backgroundColor: "success.dark",
+                  }}
+                />
+                <Box
+                  sx={{
+                    width: 24,
+                    height: 3,
+                    backgroundColor: "error.dark",
+                  }}
+                />
+                <Box
+                  sx={{
+                    width: 24,
+                    height: 3,
+                    backgroundColor: "success.dark",
+                  }}
+                />
+              </Box>
+
+              <Box sx={{ width: "100%" }}>
+                <Typography
+                  variant="overline"
+                  sx={{
+                    color: "error.light",
+                    fontWeight: 800,
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  KVÄLLENS VINNARE
+                </Typography>
+
+                <Typography
+                  variant="h2"
+                  component="div"
+                  sx={{
+                    mt: 0.45,
+                    fontWeight: 900,
+                    letterSpacing: "-0.035em",
+                    fontSize: { xs: "2.6rem", sm: "3.4rem" },
+                    lineHeight: 1,
+                  }}
+                >
+                  Lag {winnerTeam.teamNumber}
+                </Typography>
+
+                <Typography
+                  sx={{
+                    mt: 1.35,
+                    fontSize: { xs: "1.15rem", sm: "1.3rem" },
+                    fontWeight: 800,
+                  }}
+                >
+                  {winnerTeam.players.map((player) => player.name).join(" + ")}
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "text.secondary",
+                    mt: 0.5,
+                  }}
+                >
+                  Vinnare av {data.tournament.name}
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  width: "100%",
+                  maxWidth: 360,
+                  mx: "auto",
+                  py: { xs: 2, sm: 2.25 },
+                  px: 2,
+                  borderTop: "1px solid rgba(255,255,255,0.11)",
+                  borderBottom: "1px solid rgba(255,255,255,0.11)",
+                  textAlign: "center",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: "block",
+                    color: "text.secondary",
+                    fontWeight: 800,
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  FINALRESULTAT
+                </Typography>
+
+                <Typography
+                  variant="h2"
+                  sx={{
+                    mt: 0.6,
+                    fontWeight: 900,
+                    fontSize: { xs: "2.8rem", sm: "3.35rem" },
+                    letterSpacing: "-0.035em",
+                    lineHeight: 1,
+                  }}
+                >
+                  {finishedFinal.teamALegs} - {finishedFinal.teamBLegs}
+                </Typography>
+              </Box>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  maxWidth: 390,
+                  color: "rgba(255,255,255,0.62)",
+                  lineHeight: 1.6,
+                }}
+              >
+                Turneringen är avgjord. Grattis till kvällens vinnare!
+              </Typography>
+            </Stack>
+          </DialogContent>
+
+          <DialogActions
+            sx={{
+              px: { xs: 2.5, sm: 4.5 },
+              pb: { xs: 3, sm: 4 },
+              pt: 0.5,
+              gap: 1,
+              flexDirection: { xs: "column-reverse", sm: "row" },
+              justifyContent: "center",
+            }}
+          >
+            <Button
+              type="button"
+              variant="outlined"
+              onClick={() => router.push("/")}
+              sx={{
+                width: { xs: "100%", sm: "auto" },
+                minWidth: 170,
+              }}
+            >
+              Till startsidan
+            </Button>
+
+            <Button
+              type="button"
+              variant="contained"
+              onClick={() => router.push("/tournaments/new")}
+              sx={{
+                width: { xs: "100%", sm: "auto" },
+                minWidth: 170,
+              }}
+            >
+              Skapa ny cup
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </Container>
   );
 }
