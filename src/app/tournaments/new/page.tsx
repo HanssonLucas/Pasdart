@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import {
-  Alert,
   Box,
   Button,
   Checkbox,
@@ -23,6 +22,7 @@ import {
 
 import { useRouter } from "next/navigation";
 
+import PasdartInlineError from "@/components/PasdartInlineError";
 import PasdartLoadingState from "@/components/PasdartLoadingState";
 
 type Player = {
@@ -40,7 +40,9 @@ export default function NewTournamentPage() {
 
   const [loadingPlayers, setLoadingPlayers] = useState(true);
 
-  const [error, setError] = useState("");
+  const [playersError, setPlayersError] = useState("");
+
+  const [createError, setCreateError] = useState("");
 
   const [saving, setSaving] = useState(false);
 
@@ -84,7 +86,9 @@ export default function NewTournamentPage() {
 
       .catch(() => {
         if (!cancelled) {
-          setError("Kunde inte hämta spelare.");
+          setPlayersError(
+            "Kunde inte hämta spelarna. Försök att ladda om sidan.",
+          );
         }
       })
 
@@ -110,7 +114,7 @@ export default function NewTournamentPage() {
   async function handleContinue() {
     setSaving(true);
 
-    setError("");
+    setCreateError("");
 
     try {
       const response = await fetch("/api/tournaments", {
@@ -153,7 +157,7 @@ export default function NewTournamentPage() {
 
       router.push(`/tournaments/${data.publicId}/teams`);
     } catch {
-      setError("Kunde inte skapa cupen.");
+      setCreateError("Kunde inte skapa cupen. Försök igen om en stund.");
     } finally {
       setSaving(false);
     }
@@ -223,8 +227,6 @@ export default function NewTournamentPage() {
               </Typography>
             </Box>
           </Paper>
-
-          {error && <Alert severity="error">{error}</Alert>}
 
           <Box
             sx={{
@@ -313,6 +315,8 @@ export default function NewTournamentPage() {
                       title="Hämtar spelare"
                       description="Förbereder spelarregistret."
                     />
+                  ) : playersError ? (
+                    <PasdartInlineError message={playersError} />
                   ) : players.length === 0 ? (
                     <Typography sx={{ color: "text.secondary" }}>
                       Inga spelare finns sparade ännu.
@@ -642,22 +646,32 @@ export default function NewTournamentPage() {
                 </Typography>
               </Box>
 
-              <Button
-                variant="contained"
-                size="large"
-                disabled={selectedPlayerIds.length < 2 || saving}
-                onClick={handleContinue}
+              <Stack
+                spacing={1}
                 sx={{
                   width: { xs: "100%", md: "auto" },
-                  minWidth: { md: 220 },
-                  minHeight: 52,
-                  borderRadius: 0.75,
-                  boxShadow: "none",
-                  fontWeight: 800,
+                  minWidth: { md: 280 },
                 }}
               >
-                {saving ? "Skapar cup..." : "Fortsätt"}
-              </Button>
+                {createError && <PasdartInlineError message={createError} />}
+
+                <Button
+                  variant="contained"
+                  size="large"
+                  disabled={selectedPlayerIds.length < 2 || saving}
+                  onClick={handleContinue}
+                  sx={{
+                    width: "100%",
+                    minWidth: { md: 220 },
+                    minHeight: 52,
+                    borderRadius: 0.75,
+                    boxShadow: "none",
+                    fontWeight: 800,
+                  }}
+                >
+                  {saving ? "Skapar cup..." : "Fortsätt"}
+                </Button>
+              </Stack>
             </Box>
           </Paper>
         </Stack>
