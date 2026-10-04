@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 
+import PasdartLoadingState from "@/components/PasdartLoadingState";
+
 type Player = {
   id: number;
   name: string;
@@ -166,11 +168,10 @@ export default function TeamsPage({
 
   if (loading) {
     return (
-      <Container maxWidth="sm">
-        <Box sx={{ py: 4 }}>
-          <Typography>Hämtar lag...</Typography>
-        </Box>
-      </Container>
+      <PasdartLoadingState
+        title="Förbereder lagen"
+        description="Hämtar spelarna och gör lagindelningen redo."
+      />
     );
   }
 

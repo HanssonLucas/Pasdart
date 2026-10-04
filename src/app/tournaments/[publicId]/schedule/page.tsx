@@ -18,6 +18,8 @@ import {
   Typography,
 } from "@mui/material";
 
+import PasdartLoadingState from "@/components/PasdartLoadingState";
+
 type Player = {
   id: number;
 
@@ -193,11 +195,10 @@ export default function SchedulePage({
 
   if (loading) {
     return (
-      <Container maxWidth="sm">
-        <Box sx={{ py: { xs: 3, sm: 4 } }}>
-          <Typography>Hämtar spelschema...</Typography>
-        </Box>
-      </Container>
+      <PasdartLoadingState
+        title="Förbereder spelschemat"
+        description="Hämtar matcher, tabell och turneringsstatus."
+      />
     );
   }
 

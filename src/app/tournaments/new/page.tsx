@@ -23,6 +23,8 @@ import {
 
 import { useRouter } from "next/navigation";
 
+import PasdartLoadingState from "@/components/PasdartLoadingState";
+
 type Player = {
   id: number;
 
@@ -306,9 +308,11 @@ export default function NewTournamentPage() {
                   </Stack>
 
                   {loadingPlayers ? (
-                    <Typography sx={{ color: "text.secondary" }}>
-                      Hämtar spelare...
-                    </Typography>
+                    <PasdartLoadingState
+                      variant="inline"
+                      title="Hämtar spelare"
+                      description="Förbereder spelarregistret."
+                    />
                   ) : players.length === 0 ? (
                     <Typography sx={{ color: "text.secondary" }}>
                       Inga spelare finns sparade ännu.
