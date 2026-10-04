@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import {
-  Alert,
   Box,
   Button,
   Container,
@@ -18,6 +18,7 @@ import {
   Typography,
 } from "@mui/material";
 
+import PasdartErrorState from "@/components/PasdartErrorState";
 import PasdartLoadingState from "@/components/PasdartLoadingState";
 
 type Player = {
@@ -127,6 +128,8 @@ export default function SchedulePage({
 }: {
   params: Promise<{ publicId: string }>;
 }) {
+  const router = useRouter();
+
   const [data, setData] = useState<TournamentResponse | null>(null);
 
   const [error, setError] = useState("");
@@ -204,13 +207,16 @@ export default function SchedulePage({
 
   if (error || !data) {
     return (
-      <Container maxWidth="sm">
-        <Box sx={{ py: 4 }}>
-          <Alert severity="error">
-            {error || "Spelschemat kunde inte hittas."}
-          </Alert>
-        </Box>
-      </Container>
+      <PasdartErrorState
+        title="Spelschemat kunde inte öppnas"
+        message="Kontrollera länken eller försök igen."
+        actionLabel="Försök igen"
+        onAction={() => window.location.reload()}
+        secondaryActionLabel="Gå till startsidan"
+        onSecondaryAction={() => {
+          router.push("/");
+        }}
+      />
     );
   }
 
