@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 
+import PasdartErrorState from "@/components/PasdartErrorState";
 import PasdartLoadingState from "@/components/PasdartLoadingState";
 
 type Player = {
@@ -177,11 +178,16 @@ export default function TeamsPage({
 
   if (error || !tournament) {
     return (
-      <Container maxWidth="sm">
-        <Box sx={{ py: 4 }}>
-          <Alert severity="error">{error || "Cupen kunde inte hittas."}</Alert>
-        </Box>
-      </Container>
+      <PasdartErrorState
+        title="Cupen kunde inte öppnas"
+        message="Kontrollera länken eller försök igen."
+        actionLabel="Försök igen"
+        onAction={() => window.location.reload()}
+        secondaryActionLabel="Gå till startsidan"
+        onSecondaryAction={() => {
+          router.push("/");
+        }}
+      />
     );
   }
 

@@ -115,20 +115,20 @@ export default function PasdartLoadingState({
 
             <Box>
               <Typography
-                variant="overline"
                 sx={{
-                  color: "error.light",
-                  fontWeight: 800,
-                  letterSpacing: "0.09em",
+                  fontFamily: '"Times New Roman", Georgia, serif',
+                  fontStyle: "italic",
+                  fontSize: { xs: "1.1rem", sm: "1.2rem" },
+                  color: "text.primary",
+                  mb: 0.75,
                 }}
               >
-                PAS D&apos;ART
+                Pas d&apos;Art
               </Typography>
 
               <Typography
                 variant="h5"
                 sx={{
-                  mt: 0.25,
                   fontWeight: 800,
                 }}
               >
