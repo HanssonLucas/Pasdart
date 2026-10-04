@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+
 import {
-  Alert,
   Box,
   Button,
   Container,
@@ -10,25 +10,33 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+
 import { useRouter } from "next/navigation";
 
 import PasdartErrorState from "@/components/PasdartErrorState";
+import PasdartInlineError from "@/components/PasdartInlineError";
+
 import PasdartLoadingState from "@/components/PasdartLoadingState";
 
 type Player = {
   id: number;
+
   name: string;
 };
 
 type TournamentData = {
   id: number;
+
   publicId: string;
+
   teamMode: "singles" | "doubles";
+
   players: Player[];
 };
 
 type GeneratedTeam = {
   number: number;
+
   players: Player[];
 };
 
@@ -46,6 +54,7 @@ function shufflePlayers(players: Player[]) {
 
 function generateTeams(
   players: Player[],
+
   teamMode: "singles" | "doubles",
 ): GeneratedTeam[] {
   const shuffledPlayers = shufflePlayers(players);
@@ -53,6 +62,7 @@ function generateTeams(
   if (teamMode === "singles") {
     return shuffledPlayers.map((player, index) => ({
       number: index + 1,
+
       players: [player],
     }));
   }
@@ -62,6 +72,7 @@ function generateTeams(
   for (let i = 0; i < shuffledPlayers.length; i += 2) {
     generatedTeams.push({
       number: generatedTeams.length + 1,
+
       players: shuffledPlayers.slice(i, i + 2),
     });
   }
@@ -75,11 +86,18 @@ export default function TeamsPage({
   params: Promise<{ publicId: string }>;
 }) {
   const [tournament, setTournament] = useState<TournamentData | null>(null);
+
   const [teams, setTeams] = useState<GeneratedTeam[]>([]);
-  const [error, setError] = useState("");
+
+  const [loadError, setLoadError] = useState("");
+  const [saveError, setSaveError] = useState("");
+
   const [loading, setLoading] = useState(true);
+
   const [saving, setSaving] = useState(false);
+
   const [teamsSaved, setTeamsSaved] = useState(false);
+
   const router = useRouter();
 
   const resolvedParams = useMemo(() => params, [params]);
@@ -101,11 +119,12 @@ export default function TeamsPage({
 
         if (!cancelled) {
           setTournament(data);
+
           setTeams(generateTeams(data.players, data.teamMode));
         }
       } catch {
         if (!cancelled) {
-          setError("Kunde inte hämta cupen.");
+          setLoadError("Kunde inte hämta cupen.");
         }
       } finally {
         if (!cancelled) {
@@ -135,19 +154,24 @@ export default function TeamsPage({
     }
 
     setSaving(true);
-    setError("");
+
+    setSaveError("");
 
     try {
       const response = await fetch(
         `/api/tournaments/${tournament.publicId}/teams`,
+
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
             teams: teams.map((team) => ({
               number: team.number,
+
               playerIds: team.players.map((player) => player.id),
             })),
           }),
@@ -159,9 +183,10 @@ export default function TeamsPage({
       }
 
       setTeamsSaved(true);
+
       router.push(`/tournaments/${tournament.publicId}/schedule`);
     } catch {
-      setError("Kunde inte spara lagen.");
+      setSaveError("Kunde inte spara lagen. Försök igen om en stund.");
     } finally {
       setSaving(false);
     }
@@ -176,7 +201,7 @@ export default function TeamsPage({
     );
   }
 
-  if (error || !tournament) {
+  if (loadError || !tournament) {
     return (
       <PasdartErrorState
         title="Cupen kunde inte öppnas"
@@ -199,33 +224,46 @@ export default function TeamsPage({
             elevation={0}
             sx={{
               overflow: "hidden",
+
               border: "1px solid rgba(255,255,255,0.14)",
+
               borderRadius: 1.25,
+
               backgroundColor: "rgba(255,255,255,0.018)",
             }}
           >
             <Box
               sx={{
                 height: 3,
+
                 display: "grid",
+
                 gridTemplateColumns: "42px 12px 42px",
+
                 justifyContent: "center",
               }}
             >
               <Box sx={{ backgroundColor: "success.dark" }} />
+
               <Box sx={{ backgroundColor: "rgba(255,255,255,0.78)" }} />
+
               <Box sx={{ backgroundColor: "error.dark" }} />
             </Box>
 
             <Box
               sx={{
                 p: { xs: 2.5, sm: 3.5 },
+
                 display: "grid",
+
                 gridTemplateColumns: {
                   xs: "1fr",
+
                   sm: "minmax(0, 1fr) auto",
                 },
+
                 gap: 2,
+
                 alignItems: "center",
               }}
             >
@@ -233,9 +271,13 @@ export default function TeamsPage({
                 <Typography
                   sx={{
                     fontFamily: 'Georgia, "Times New Roman", serif',
+
                     fontStyle: "italic",
+
                     fontSize: { xs: "1.1rem", sm: "1.25rem" },
+
                     color: "rgba(255,255,255,0.82)",
+
                     lineHeight: 1,
                   }}
                 >
@@ -247,8 +289,11 @@ export default function TeamsPage({
                   component="h1"
                   sx={{
                     mt: 0.8,
+
                     fontWeight: 800,
+
                     letterSpacing: "-0.025em",
+
                     fontSize: { xs: "2rem", sm: "2.5rem" },
                   }}
                 >
@@ -263,8 +308,10 @@ export default function TeamsPage({
               <Box
                 sx={{
                   pl: { sm: 2.5 },
+
                   borderLeft: {
                     xs: "none",
+
                     sm: "1px solid rgba(255,255,255,0.10)",
                   },
                 }}
@@ -273,8 +320,11 @@ export default function TeamsPage({
                   variant="caption"
                   sx={{
                     display: "block",
+
                     color: "error.light",
+
                     fontWeight: 800,
+
                     letterSpacing: "0.08em",
                   }}
                 >
@@ -296,30 +346,37 @@ export default function TeamsPage({
             </Box>
           </Paper>
 
-          {error && <Alert severity="error">{error}</Alert>}
-
           <Paper
             elevation={0}
             sx={{
               border: "1px solid rgba(255,255,255,0.12)",
+
               borderRadius: 1,
+
               backgroundColor: "rgba(255,255,255,0.014)",
             }}
           >
             <Box
               sx={{
                 px: { xs: 2, sm: 2.5 },
+
                 pt: 2.25,
+
                 pb: 1.75,
+
                 borderBottom: "1px solid rgba(255,255,255,0.10)",
+
                 borderLeft: "3px solid rgba(198,40,40,0.70)",
               }}
             >
               <Stack
                 sx={{
                   flexDirection: { xs: "column", sm: "row" },
+
                   justifyContent: "space-between",
+
                   alignItems: { xs: "flex-start", sm: "flex-end" },
+
                   gap: 1.5,
                 }}
               >
@@ -328,7 +385,9 @@ export default function TeamsPage({
                     variant="overline"
                     sx={{
                       color: "error.light",
+
                       fontWeight: 800,
+
                       letterSpacing: "0.08em",
                     }}
                   >
@@ -352,8 +411,11 @@ export default function TeamsPage({
                   onClick={handleReshuffle}
                   sx={{
                     borderRadius: 0.75,
+
                     borderColor: "rgba(255,255,255,0.18)",
+
                     color: "text.primary",
+
                     minWidth: { sm: 150 },
                   }}
                 >
@@ -365,9 +427,13 @@ export default function TeamsPage({
             <Box
               sx={{
                 p: { xs: 2, sm: 2.5 },
+
                 display: "flex",
+
                 flexWrap: "wrap",
+
                 justifyContent: "center",
+
                 gap: 1.25,
               }}
             >
@@ -377,21 +443,36 @@ export default function TeamsPage({
                   sx={{
                     width: {
                       xs: "100%",
+
                       sm: "calc(50% - 5px)",
+
                       md: "calc(33.333% - 7px)",
                     },
+
                     minHeight: { xs: 106, md: 118 },
+
                     display: "flex",
+
                     flexDirection: "column",
+
                     justifyContent: "center",
+
                     alignItems: "center",
+
                     textAlign: "center",
+
                     position: "relative",
+
                     px: 2,
+
                     py: 2,
+
                     border: "1px solid rgba(255,255,255,0.11)",
+
                     borderRadius: 0.75,
+
                     backgroundColor: "rgba(255,255,255,0.012)",
+
                     overflow: "hidden",
                   }}
                 >
@@ -399,11 +480,17 @@ export default function TeamsPage({
                     aria-hidden="true"
                     sx={{
                       position: "absolute",
+
                       top: 0,
+
                       left: "50%",
+
                       transform: "translateX(-50%)",
+
                       width: 42,
+
                       height: 2,
+
                       backgroundColor: "error.dark",
                     }}
                   />
@@ -411,9 +498,13 @@ export default function TeamsPage({
                   <Typography
                     sx={{
                       color: "error.light",
+
                       fontWeight: 800,
+
                       fontSize: { xs: "1.15rem", md: "1.25rem" },
+
                       letterSpacing: "0.035em",
+
                       lineHeight: 1.1,
                     }}
                   >
@@ -423,8 +514,11 @@ export default function TeamsPage({
                   <Typography
                     sx={{
                       mt: 1,
+
                       fontWeight: 800,
+
                       fontSize: { xs: "1.05rem", md: "1.12rem" },
+
                       lineHeight: 1.35,
                     }}
                   >
@@ -437,6 +531,7 @@ export default function TeamsPage({
                         variant="caption"
                         sx={{
                           mt: 0.5,
+
                           color: "text.secondary",
                         }}
                       >
@@ -452,20 +547,28 @@ export default function TeamsPage({
             elevation={0}
             sx={{
               border: "1px solid rgba(255,255,255,0.12)",
+
               borderRadius: 1,
+
               backgroundColor: "rgba(255,255,255,0.014)",
             }}
           >
             <Box
               sx={{
                 px: { xs: 2, sm: 2.5 },
+
                 py: { xs: 2, sm: 2.25 },
+
                 display: "grid",
+
                 gridTemplateColumns: {
                   xs: "1fr",
+
                   md: "minmax(0, 1fr) auto",
                 },
+
                 gap: { xs: 1.5, md: 3 },
+
                 alignItems: "center",
               }}
             >
@@ -474,7 +577,9 @@ export default function TeamsPage({
                   variant="overline"
                   sx={{
                     color: "error.light",
+
                     fontWeight: 800,
+
                     letterSpacing: "0.08em",
                   }}
                 >
@@ -489,7 +594,9 @@ export default function TeamsPage({
                   variant="body2"
                   sx={{
                     color: "text.secondary",
+
                     mt: 0.35,
+
                     maxWidth: 620,
                   }}
                 >
@@ -497,26 +604,41 @@ export default function TeamsPage({
                 </Typography>
               </Box>
 
-              <Button
-                variant="contained"
-                size="large"
-                onClick={handleApproveTeams}
-                disabled={saving || teamsSaved}
+              <Stack
+                spacing={1}
                 sx={{
-                  width: { xs: "100%", md: "auto" },
-                  minWidth: { md: 220 },
-                  minHeight: 52,
-                  borderRadius: 0.75,
-                  boxShadow: "none",
-                  fontWeight: 800,
+                  width: "100%",
+                  minWidth: { md: 280 },
                 }}
               >
-                {saving
-                  ? "Sparar lag..."
-                  : teamsSaved
-                    ? "Lagen är sparade"
-                    : "Godkänn lag"}
-              </Button>
+                {saveError && <PasdartInlineError message={saveError} />}
+
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handleApproveTeams}
+                  disabled={saving || teamsSaved}
+                  sx={{
+                    width: { xs: "100%", md: "auto" },
+
+                    minWidth: { md: 220 },
+
+                    minHeight: 52,
+
+                    borderRadius: 0.75,
+
+                    boxShadow: "none",
+
+                    fontWeight: 800,
+                  }}
+                >
+                  {saving
+                    ? "Sparar lag..."
+                    : teamsSaved
+                      ? "Lagen är sparade"
+                      : "Godkänn lag"}
+                </Button>
+              </Stack>
             </Box>
           </Paper>
         </Stack>
