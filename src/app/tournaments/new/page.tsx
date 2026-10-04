@@ -23,6 +23,7 @@ import {
 import { useRouter } from "next/navigation";
 
 import PasdartInlineError from "@/components/PasdartInlineError";
+
 import PasdartLoadingState from "@/components/PasdartLoadingState";
 
 type Player = {
@@ -171,31 +172,59 @@ export default function NewTournamentPage() {
             elevation={0}
             sx={{
               overflow: "hidden",
+
               border: "1px solid rgba(255,255,255,0.14)",
+
               borderRadius: 1.25,
+
               backgroundColor: "rgba(255,255,255,0.018)",
             }}
           >
             <Box
               sx={{
                 height: 3,
-                display: "grid",
-                gridTemplateColumns: "42px 12px 42px",
+                display: "flex",
                 justifyContent: "center",
+                alignItems: "center",
+                gap: 0.5,
               }}
             >
-              <Box sx={{ backgroundColor: "success.dark" }} />
-              <Box sx={{ backgroundColor: "rgba(255,255,255,0.78)" }} />
-              <Box sx={{ backgroundColor: "error.dark" }} />
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "success.dark",
+                }}
+              />
+
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "error.dark",
+                }}
+              />
+
+              <Box
+                sx={{
+                  width: 28,
+                  height: 3,
+                  backgroundColor: "success.dark",
+                }}
+              />
             </Box>
 
             <Box sx={{ p: { xs: 2.5, sm: 3.5 } }}>
               <Typography
                 sx={{
                   fontFamily: 'Georgia, "Times New Roman", serif',
+
                   fontStyle: "italic",
+
                   fontSize: { xs: "1.1rem", sm: "1.25rem" },
+
                   color: "rgba(255,255,255,0.82)",
+
                   lineHeight: 1,
                 }}
               >
@@ -207,8 +236,11 @@ export default function NewTournamentPage() {
                 component="h1"
                 sx={{
                   mt: 0.8,
+
                   fontWeight: 800,
+
                   letterSpacing: "-0.025em",
+
                   fontSize: { xs: "2rem", sm: "2.5rem" },
                 }}
               >
@@ -218,7 +250,9 @@ export default function NewTournamentPage() {
               <Typography
                 sx={{
                   color: "text.secondary",
+
                   mt: 0.75,
+
                   maxWidth: 620,
                 }}
               >
@@ -231,12 +265,17 @@ export default function NewTournamentPage() {
           <Box
             sx={{
               display: "grid",
+
               gridTemplateColumns: {
                 xs: "1fr",
+
                 md: "repeat(2, minmax(0, 1fr))",
+
                 lg: "1.08fr 1fr 0.92fr",
               },
+
               gap: 2,
+
               alignItems: "stretch",
             }}
           >
@@ -244,17 +283,26 @@ export default function NewTournamentPage() {
               elevation={0}
               sx={{
                 border: "1px solid rgba(255,255,255,0.12)",
+
                 borderRadius: 1,
+
                 backgroundColor: "rgba(255,255,255,0.014)",
+
+                overflow: "hidden",
+
                 height: "100%",
               }}
             >
               <Box
                 sx={{
                   px: { xs: 2, sm: 2.5 },
+
                   pt: 2.25,
+
                   pb: 1.75,
+
                   borderBottom: "1px solid rgba(255,255,255,0.10)",
+
                   borderLeft: "3px solid rgba(198,40,40,0.70)",
                 }}
               >
@@ -262,7 +310,9 @@ export default function NewTournamentPage() {
                   variant="overline"
                   sx={{
                     color: "error.light",
+
                     fontWeight: 800,
+
                     letterSpacing: "0.08em",
                   }}
                 >
@@ -292,21 +342,54 @@ export default function NewTournamentPage() {
                 <Box>
                   <Stack
                     sx={{
-                      flexDirection: "row",
+                      flexDirection: { xs: "column", sm: "row" },
                       justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: 2,
+                      alignItems: { xs: "flex-start", sm: "center" },
+                      gap: 1,
                       mb: 1,
                     }}
                   >
                     <Typography sx={{ fontWeight: 800 }}>Spelare</Typography>
 
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "text.secondary" }}
+                    <Stack
+                      sx={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 1,
+                        width: { xs: "100%", sm: "auto" },
+                        justifyContent: {
+                          xs: "space-between",
+                          sm: "flex-end",
+                        },
+                      }}
                     >
-                      {selectedPlayerIds.length} valda
-                    </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "text.secondary" }}
+                      >
+                        {selectedPlayerIds.length} valda
+                      </Typography>
+
+                      <Button
+                        type="button"
+                        size="small"
+                        variant="outlined"
+                        onClick={() => router.push("/players")}
+                        sx={{
+                          minWidth: 0,
+                          px: 1.2,
+                          py: 0.4,
+                          borderRadius: 0.75,
+                          borderColor: "rgba(255,255,255,0.18)",
+                          color: "text.primary",
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Hantera spelare
+                      </Button>
+                    </Stack>
                   </Stack>
 
                   {loadingPlayers ? (
@@ -325,12 +408,17 @@ export default function NewTournamentPage() {
                     <FormGroup
                       sx={{
                         display: "grid",
+
                         gridTemplateColumns: {
                           xs: "1fr",
+
                           sm: "repeat(2, minmax(0, 1fr))",
+
                           lg: "1fr",
+
                           xl: "repeat(2, minmax(0, 1fr))",
                         },
+
                         gap: 0.5,
                       }}
                     >
@@ -349,14 +437,21 @@ export default function NewTournamentPage() {
                             label={player.name}
                             sx={{
                               m: 0,
+
                               px: 1,
+
                               py: 0.35,
+
                               minHeight: 44,
+
                               border: "1px solid",
+
                               borderColor: checked
                                 ? "rgba(76,175,80,0.55)"
                                 : "rgba(255,255,255,0.08)",
+
                               borderRadius: 0.75,
+
                               backgroundColor: checked
                                 ? "rgba(46,125,50,0.06)"
                                 : "transparent",
@@ -374,17 +469,26 @@ export default function NewTournamentPage() {
               elevation={0}
               sx={{
                 border: "1px solid rgba(255,255,255,0.12)",
+
                 borderRadius: 1,
+
                 backgroundColor: "rgba(255,255,255,0.014)",
+
+                overflow: "hidden",
+
                 height: "100%",
               }}
             >
               <Box
                 sx={{
                   px: { xs: 2, sm: 2.5 },
+
                   pt: 2.25,
+
                   pb: 1.75,
+
                   borderBottom: "1px solid rgba(255,255,255,0.10)",
+
                   borderLeft: "3px solid rgba(198,40,40,0.70)",
                 }}
               >
@@ -392,7 +496,9 @@ export default function NewTournamentPage() {
                   variant="overline"
                   sx={{
                     color: "error.light",
+
                     fontWeight: 800,
+
                     letterSpacing: "0.08em",
                   }}
                 >
@@ -407,6 +513,7 @@ export default function NewTournamentPage() {
               <Stack spacing={2} sx={{ p: { xs: 2, sm: 2.5 } }}>
                 <FormControl>
                   <FormLabel>Spelläge</FormLabel>
+
                   <RadioGroup
                     row
                     value={teamMode}
@@ -417,6 +524,7 @@ export default function NewTournamentPage() {
                       control={<Radio />}
                       label="Singel"
                     />
+
                     <FormControlLabel
                       value="doubles"
                       control={<Radio />}
@@ -433,17 +541,22 @@ export default function NewTournamentPage() {
                   fullWidth
                 >
                   <MenuItem value="301">301</MenuItem>
+
                   <MenuItem value="501">501</MenuItem>
                 </TextField>
 
                 <Box
                   sx={{
                     display: "grid",
+
                     gridTemplateColumns: {
                       xs: "1fr",
+
                       sm: "repeat(2, minmax(0, 1fr))",
+
                       lg: "1fr",
                     },
+
                     gap: 1.5,
                   }}
                 >
@@ -455,9 +568,13 @@ export default function NewTournamentPage() {
                     fullWidth
                   >
                     <MenuItem value="1">1 leg</MenuItem>
+
                     <MenuItem value="3">3 legs</MenuItem>
+
                     <MenuItem value="5">5 legs</MenuItem>
+
                     <MenuItem value="7">7 legs</MenuItem>
+
                     <MenuItem value="9">9 legs</MenuItem>
                   </TextField>
 
@@ -469,9 +586,13 @@ export default function NewTournamentPage() {
                     fullWidth
                   >
                     <MenuItem value="1">1 leg</MenuItem>
+
                     <MenuItem value="3">3 legs</MenuItem>
+
                     <MenuItem value="5">5 legs</MenuItem>
+
                     <MenuItem value="7">7 legs</MenuItem>
+
                     <MenuItem value="9">9 legs</MenuItem>
                   </TextField>
                 </Box>
@@ -479,11 +600,15 @@ export default function NewTournamentPage() {
                 <Box
                   sx={{
                     display: "grid",
+
                     gridTemplateColumns: {
                       xs: "1fr",
+
                       sm: "repeat(2, minmax(0, 1fr))",
+
                       lg: "1fr",
                     },
+
                     gap: 1.5,
                   }}
                 >
@@ -510,18 +635,28 @@ export default function NewTournamentPage() {
               elevation={0}
               sx={{
                 border: "1px solid rgba(255,255,255,0.12)",
+
                 borderRadius: 1,
+
                 backgroundColor: "rgba(255,255,255,0.014)",
+
+                overflow: "hidden",
+
                 height: "100%",
+
                 gridColumn: { md: "1 / -1", lg: "auto" },
               }}
             >
               <Box
                 sx={{
                   px: { xs: 2, sm: 2.5 },
+
                   pt: 2.25,
+
                   pb: 1.75,
+
                   borderBottom: "1px solid rgba(255,255,255,0.10)",
+
                   borderLeft: "3px solid rgba(198,40,40,0.70)",
                 }}
               >
@@ -529,7 +664,9 @@ export default function NewTournamentPage() {
                   variant="overline"
                   sx={{
                     color: "error.light",
+
                     fontWeight: 800,
+
                     letterSpacing: "0.08em",
                   }}
                 >
@@ -544,6 +681,7 @@ export default function NewTournamentPage() {
               <Stack spacing={2.25} sx={{ p: { xs: 2, sm: 2.5 } }}>
                 <FormControl>
                   <FormLabel>Möten</FormLabel>
+
                   <RadioGroup
                     row
                     value={roundRobinType}
@@ -554,6 +692,7 @@ export default function NewTournamentPage() {
                       control={<Radio />}
                       label="Enkelmöte"
                     />
+
                     <FormControlLabel
                       value="double"
                       control={<Radio />}
@@ -570,12 +709,15 @@ export default function NewTournamentPage() {
                   fullWidth
                 >
                   <MenuItem value="1">1 tavla</MenuItem>
+
                   <MenuItem value="2">2 tavlor</MenuItem>
+
                   <MenuItem value="3">3 tavlor</MenuItem>
                 </TextField>
 
                 <FormControl>
                   <FormLabel>Vid lika placering</FormLabel>
+
                   <RadioGroup
                     value={tiebreakMethod}
                     onChange={(event) => setTiebreakMethod(event.target.value)}
@@ -585,6 +727,7 @@ export default function NewTournamentPage() {
                       control={<Radio />}
                       label="Castoff"
                     />
+
                     <FormControlLabel
                       value="leg_difference"
                       control={<Radio />}
@@ -600,20 +743,28 @@ export default function NewTournamentPage() {
             elevation={0}
             sx={{
               border: "1px solid rgba(255,255,255,0.12)",
+
               borderRadius: 1,
+
               backgroundColor: "rgba(255,255,255,0.014)",
             }}
           >
             <Box
               sx={{
                 px: { xs: 2, sm: 2.5 },
+
                 py: { xs: 2, sm: 2.25 },
+
                 display: "grid",
+
                 gridTemplateColumns: {
                   xs: "1fr",
+
                   md: "minmax(0, 1fr) auto",
                 },
+
                 gap: { xs: 1.5, md: 3 },
+
                 alignItems: "center",
               }}
             >
@@ -622,7 +773,9 @@ export default function NewTournamentPage() {
                   variant="overline"
                   sx={{
                     color: "error.light",
+
                     fontWeight: 800,
+
                     letterSpacing: "0.08em",
                   }}
                 >
@@ -637,7 +790,9 @@ export default function NewTournamentPage() {
                   variant="body2"
                   sx={{
                     color: "text.secondary",
+
                     mt: 0.35,
+
                     maxWidth: 620,
                   }}
                 >
@@ -650,6 +805,7 @@ export default function NewTournamentPage() {
                 spacing={1}
                 sx={{
                   width: { xs: "100%", md: "auto" },
+
                   minWidth: { md: 280 },
                 }}
               >
@@ -662,10 +818,15 @@ export default function NewTournamentPage() {
                   onClick={handleContinue}
                   sx={{
                     width: "100%",
+
                     minWidth: { md: 220 },
+
                     minHeight: 52,
+
                     borderRadius: 0.75,
+
                     boxShadow: "none",
+
                     fontWeight: 800,
                   }}
                 >
