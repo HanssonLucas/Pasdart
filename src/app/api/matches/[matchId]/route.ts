@@ -103,6 +103,7 @@ export async function PATCH(
       .update(tournaments)
       .set({
         status: "finished",
+        isLive: false,
         finishedAt: new Date(),
         updatedAt: new Date(),
       })

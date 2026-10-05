@@ -1,8 +1,8 @@
-import { desc, eq, ne } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { db } from "@/db";
-import { matches, tournamentPlayers, tournaments } from "@/db/schema";
+import { tournamentPlayers, tournaments } from "@/db/schema";
 
 export async function GET() {
   const [activeTournament] = await db
@@ -12,8 +12,7 @@ export async function GET() {
       status: tournaments.status,
     })
     .from(tournaments)
-    .innerJoin(matches, eq(matches.tournamentId, tournaments.id))
-    .where(ne(tournaments.status, "finished"))
+    .where(eq(tournaments.isLive, true))
     .orderBy(desc(tournaments.id))
     .limit(1);
 

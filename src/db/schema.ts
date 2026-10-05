@@ -22,6 +22,7 @@ export const tournaments = pgTable("tournaments", {
 
   name: text("name").notNull(),
   status: text("status").notNull().default("setup"),
+  isLive: boolean("is_live").notNull().default(false),
 
   gameType: integer("game_type").notNull(),
   teamMode: text("team_mode").notNull(),

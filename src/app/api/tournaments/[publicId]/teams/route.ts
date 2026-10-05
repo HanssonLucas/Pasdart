@@ -125,6 +125,19 @@ export async function POST(
     );
   }
 
+  await db.update(tournaments).set({
+    isLive: false,
+    updatedAt: new Date(),
+  });
+
+  await db
+    .update(tournaments)
+    .set({
+      isLive: true,
+      updatedAt: new Date(),
+    })
+    .where(eq(tournaments.id, tournament.id));
+
   return NextResponse.json(
     {
       success: true,
