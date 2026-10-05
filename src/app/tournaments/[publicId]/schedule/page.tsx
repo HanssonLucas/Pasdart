@@ -70,21 +70,14 @@ type Match = {
 
 type Standing = {
   teamId: number;
-
   teamNumber: number;
-
   players: Player[];
-
   played: number;
-
   wins: number;
-
+  draws: number;
   losses: number;
-
   legsWon: number;
-
   legsLost: number;
-
   legDifference: number;
 };
 
@@ -389,6 +382,8 @@ export default function SchedulePage({
     finalMatches.length > 0;
 
   const isPlayoffView = playoffsStarted && !showGroupHistory;
+
+  const isFixedLegGroup = data.tournament.groupMatchMode === "fixedLegs";
 
   const roundNumbers = [
     ...new Set(
@@ -1006,7 +1001,9 @@ export default function SchedulePage({
                         letterSpacing: "0.04em",
                       }}
                     >
-                      M = matcher · V = vinster · F = förluster
+                      {isFixedLegGroup
+                        ? "M = matcher · V = vinster · O = oavgjorda · F = förluster"
+                        : "M = matcher · V = vinster · F = förluster"}
                     </Typography>
 
                     <Typography
@@ -1047,10 +1044,13 @@ export default function SchedulePage({
                         },
                       }}
                     >
-                      <TableCell sx={{ width: 52 }}>#</TableCell>
-                      <TableCell>Lag</TableCell>
                       <TableCell align="center">M</TableCell>
                       <TableCell align="center">V</TableCell>
+
+                      {isFixedLegGroup && (
+                        <TableCell align="center">O</TableCell>
+                      )}
+
                       <TableCell align="center">F</TableCell>
                       <TableCell align="center">Legs</TableCell>
                       <TableCell align="center">+/-</TableCell>
@@ -1130,6 +1130,12 @@ export default function SchedulePage({
                               {standing.wins}
                             </Typography>
                           </TableCell>
+
+                          {isFixedLegGroup && (
+                            <TableCell align="center">
+                              {standing.draws}
+                            </TableCell>
+                          )}
 
                           <TableCell align="center">
                             {standing.losses}
