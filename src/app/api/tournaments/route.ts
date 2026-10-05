@@ -40,7 +40,9 @@ export async function POST(request: Request) {
 
   const publicId = crypto.randomUUID();
   const adminToken = crypto.randomUUID();
-  const viewerCode = crypto.randomUUID().slice(0, 6).toUpperCase();
+  const viewerCode = String(
+    crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000,
+  ).padStart(6, "0");
 
   const [newTournament] = await db
     .insert(tournaments)
