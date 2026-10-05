@@ -178,6 +178,8 @@ export async function GET(
 
   const castoffGroups: Array<{
     wins: number;
+    key: string;
+    label: string;
     teams: typeof standings;
   }> = [];
 
@@ -186,26 +188,62 @@ export async function GET(
       (_, index) => index < tournament.playoffQualifiers,
     );
 
-    const winsInPlayoffs = new Set(
-      relevantStandings.map((standing) => standing.wins),
-    );
+    if (tournament.groupMatchMode === "fixedLegs") {
+      const legDifferencesInPlayoffs = new Set(
+        relevantStandings.map((standing) => standing.legDifference),
+      );
 
-    for (const wins of winsInPlayoffs) {
-      const tiedTeams = standings.filter((standing) => standing.wins === wins);
-
-      const castoffAlreadyCompleted = tiedTeams.every((standing) => {
-        const team = tournamentTeams.find(
-          (tournamentTeam) => tournamentTeam.id === standing.teamId,
+      for (const legDifference of legDifferencesInPlayoffs) {
+        const tiedTeams = standings.filter(
+          (standing) => standing.legDifference === legDifference,
         );
 
-        return team?.seed !== null && team?.seed !== undefined;
-      });
+        const castoffAlreadyCompleted = tiedTeams.every((standing) => {
+          const team = tournamentTeams.find(
+            (tournamentTeam) => tournamentTeam.id === standing.teamId,
+          );
 
-      if (tiedTeams.length > 1 && !castoffAlreadyCompleted) {
-        castoffGroups.push({
-          wins,
-          teams: tiedTeams,
+          return team?.seed !== null && team?.seed !== undefined;
         });
+
+        if (tiedTeams.length > 1 && !castoffAlreadyCompleted) {
+          const formattedLegDifference =
+            legDifference > 0 ? `+${legDifference}` : String(legDifference);
+
+          castoffGroups.push({
+            wins: tiedTeams[0]?.wins ?? 0,
+            key: `legDifference:${legDifference}`,
+            label: `${formattedLegDifference} i legdiff`,
+            teams: tiedTeams,
+          });
+        }
+      }
+    } else {
+      const winsInPlayoffs = new Set(
+        relevantStandings.map((standing) => standing.wins),
+      );
+
+      for (const wins of winsInPlayoffs) {
+        const tiedTeams = standings.filter(
+          (standing) => standing.wins === wins,
+        );
+
+        const castoffAlreadyCompleted = tiedTeams.every((standing) => {
+          const team = tournamentTeams.find(
+            (tournamentTeam) => tournamentTeam.id === standing.teamId,
+          );
+
+          return team?.seed !== null && team?.seed !== undefined;
+        });
+
+        if (tiedTeams.length > 1 && !castoffAlreadyCompleted) {
+          castoffGroups.push({
+            wins,
+            key: `wins:${wins}`,
+            label: `${wins} ${wins === 1 ? "vinst" : "vinster"}`,
+            teams: tiedTeams,
+          });
+        }
       }
     }
   }
