@@ -23,12 +23,10 @@ import {
 import { useRouter } from "next/navigation";
 
 import PasdartInlineError from "@/components/PasdartInlineError";
-
 import PasdartLoadingState from "@/components/PasdartLoadingState";
 
 type Player = {
   id: number;
-
   name: string;
 };
 
@@ -36,39 +34,27 @@ export default function NewTournamentPage() {
   const router = useRouter();
 
   const [players, setPlayers] = useState<Player[]>([]);
-
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<number[]>([]);
-
   const [loadingPlayers, setLoadingPlayers] = useState(true);
-
   const [playersError, setPlayersError] = useState("");
-
   const [createError, setCreateError] = useState("");
-
   const [saving, setSaving] = useState(false);
 
   const [name, setName] = useState("Onsdagscup");
-
   const [teamMode, setTeamMode] = useState("doubles");
-
   const [gameType, setGameType] = useState("501");
 
-  const [groupMatchMode] = useState("bestOf");
-
-  const [groupLegCount] = useState("3");
-
+  const [groupMatchMode, setGroupMatchMode] = useState("bestOf");
+  const [groupLegCount, setGroupLegCount] = useState("3");
   const [groupBestOf, setGroupBestOf] = useState("3");
 
   const [playoffBestOf, setPlayoffBestOf] = useState("5");
 
   const [groupMaxDarts, setGroupMaxDarts] = useState("39");
-
   const [playoffMaxDarts, setPlayoffMaxDarts] = useState("39");
 
   const [roundRobinType, setRoundRobinType] = useState("single");
-
   const [boardCount, setBoardCount] = useState("2");
-
   const [tiebreakMethod, setTiebreakMethod] = useState("castoff");
 
   useEffect(() => {
@@ -82,13 +68,11 @@ export default function NewTournamentPage() {
 
         return response.json();
       })
-
       .then((data) => {
         if (!cancelled) {
           setPlayers(data);
         }
       })
-
       .catch(() => {
         if (!cancelled) {
           setPlayersError(
@@ -96,7 +80,6 @@ export default function NewTournamentPage() {
           );
         }
       })
-
       .finally(() => {
         if (!cancelled) {
           setLoadingPlayers(false);
@@ -118,42 +101,27 @@ export default function NewTournamentPage() {
 
   async function handleContinue() {
     setSaving(true);
-
     setCreateError("");
 
     try {
       const response = await fetch("/api/tournaments", {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({
           name,
-
           gameType,
-
           teamMode,
-
           roundRobinType,
-
           groupMatchMode,
-
           groupLegCount,
-
           groupBestOf,
-
           playoffBestOf,
-
           groupMaxDarts,
-
           playoffMaxDarts,
-
           boardCount,
-
           tiebreakMethod,
-
           playerIds: selectedPlayerIds,
         }),
       });
@@ -165,6 +133,7 @@ export default function NewTournamentPage() {
       const data = await response.json();
 
       localStorage.setItem(`pasdart_admin_${data.publicId}`, data.adminToken);
+
       localStorage.setItem(
         `pasdart_viewer_code_${data.publicId}`,
         data.viewerCode,
@@ -186,33 +155,24 @@ export default function NewTournamentPage() {
             elevation={0}
             sx={{
               overflow: "hidden",
-
               border: "1px solid rgba(255,255,255,0.14)",
-
               borderRadius: 1.25,
-
               backgroundColor: "rgba(255,255,255,0.018)",
             }}
           >
             <Box
               sx={{
                 height: 3,
-
                 display: "flex",
-
                 justifyContent: "center",
-
                 alignItems: "center",
-
                 gap: 0.5,
               }}
             >
               <Box
                 sx={{
                   width: 28,
-
                   height: 3,
-
                   backgroundColor: "success.dark",
                 }}
               />
@@ -220,9 +180,7 @@ export default function NewTournamentPage() {
               <Box
                 sx={{
                   width: 28,
-
                   height: 3,
-
                   backgroundColor: "error.dark",
                 }}
               />
@@ -230,9 +188,7 @@ export default function NewTournamentPage() {
               <Box
                 sx={{
                   width: 28,
-
                   height: 3,
-
                   backgroundColor: "success.dark",
                 }}
               />
@@ -242,13 +198,9 @@ export default function NewTournamentPage() {
               <Typography
                 sx={{
                   fontFamily: 'Georgia, "Times New Roman", serif',
-
                   fontStyle: "italic",
-
                   fontSize: { xs: "1.1rem", sm: "1.25rem" },
-
                   color: "rgba(255,255,255,0.82)",
-
                   lineHeight: 1,
                 }}
               >
@@ -260,11 +212,8 @@ export default function NewTournamentPage() {
                 component="h1"
                 sx={{
                   mt: 0.8,
-
                   fontWeight: 800,
-
                   letterSpacing: "-0.025em",
-
                   fontSize: { xs: "2rem", sm: "2.5rem" },
                 }}
               >
@@ -274,9 +223,7 @@ export default function NewTournamentPage() {
               <Typography
                 sx={{
                   color: "text.secondary",
-
                   mt: 0.75,
-
                   maxWidth: 620,
                 }}
               >
@@ -289,44 +236,31 @@ export default function NewTournamentPage() {
           <Box
             sx={{
               display: "grid",
-
               gridTemplateColumns: {
                 xs: "1fr",
-
                 md: "repeat(2, minmax(0, 1fr))",
-
                 lg: "1.08fr 1fr 0.92fr",
               },
-
               gap: 2,
-
-              alignItems: "stretch",
+              alignItems: "start",
             }}
           >
+            {/* 01 · CUPEN */}
             <Paper
               elevation={0}
               sx={{
                 border: "1px solid rgba(255,255,255,0.12)",
-
                 borderRadius: 1,
-
                 backgroundColor: "rgba(255,255,255,0.014)",
-
                 overflow: "hidden",
-
-                height: "100%",
               }}
             >
               <Box
                 sx={{
                   px: { xs: 2, sm: 2.5 },
-
                   pt: 2.25,
-
                   pb: 1.75,
-
                   borderBottom: "1px solid rgba(255,255,255,0.10)",
-
                   borderLeft: "3px solid rgba(198,40,40,0.70)",
                 }}
               >
@@ -334,9 +268,7 @@ export default function NewTournamentPage() {
                   variant="overline"
                   sx={{
                     color: "error.light",
-
                     fontWeight: 800,
-
                     letterSpacing: "0.08em",
                   }}
                 >
@@ -349,7 +281,10 @@ export default function NewTournamentPage() {
 
                 <Typography
                   variant="body2"
-                  sx={{ color: "text.secondary", mt: 0.35 }}
+                  sx={{
+                    color: "text.secondary",
+                    mt: 0.35,
+                  }}
                 >
                   Börja med vilka som ska vara med ikväll.
                 </Typography>
@@ -363,195 +298,6 @@ export default function NewTournamentPage() {
                   fullWidth
                 />
 
-                <Box>
-                  <Stack
-                    sx={{
-                      flexDirection: { xs: "column", sm: "row" },
-
-                      justifyContent: "space-between",
-
-                      alignItems: { xs: "flex-start", sm: "center" },
-
-                      gap: 1,
-
-                      mb: 1,
-                    }}
-                  >
-                    <Typography sx={{ fontWeight: 800 }}>Spelare</Typography>
-
-                    <Stack
-                      sx={{
-                        flexDirection: "row",
-
-                        alignItems: "center",
-
-                        gap: 1,
-
-                        width: { xs: "100%", sm: "auto" },
-
-                        justifyContent: {
-                          xs: "space-between",
-
-                          sm: "flex-end",
-                        },
-                      }}
-                    >
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "text.secondary" }}
-                      >
-                        {selectedPlayerIds.length} valda
-                      </Typography>
-
-                      <Button
-                        type="button"
-                        size="small"
-                        variant="outlined"
-                        onClick={() => router.push("/players")}
-                        sx={{
-                          minWidth: 0,
-
-                          px: 1.2,
-
-                          py: 0.4,
-
-                          borderRadius: 0.75,
-
-                          borderColor: "rgba(255,255,255,0.18)",
-
-                          color: "text.primary",
-
-                          fontSize: "0.75rem",
-
-                          fontWeight: 700,
-
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        Hantera spelare
-                      </Button>
-                    </Stack>
-                  </Stack>
-
-                  {loadingPlayers ? (
-                    <PasdartLoadingState
-                      variant="inline"
-                      title="Hämtar spelare"
-                      description="Förbereder spelarregistret."
-                    />
-                  ) : playersError ? (
-                    <PasdartInlineError message={playersError} />
-                  ) : players.length === 0 ? (
-                    <Typography sx={{ color: "text.secondary" }}>
-                      Inga spelare finns sparade ännu.
-                    </Typography>
-                  ) : (
-                    <FormGroup
-                      sx={{
-                        display: "grid",
-
-                        gridTemplateColumns: {
-                          xs: "1fr",
-
-                          sm: "repeat(2, minmax(0, 1fr))",
-
-                          lg: "1fr",
-
-                          xl: "repeat(2, minmax(0, 1fr))",
-                        },
-
-                        gap: 0.5,
-                      }}
-                    >
-                      {players.map((player) => {
-                        const checked = selectedPlayerIds.includes(player.id);
-
-                        return (
-                          <FormControlLabel
-                            key={player.id}
-                            control={
-                              <Checkbox
-                                checked={checked}
-                                onChange={() => togglePlayer(player.id)}
-                              />
-                            }
-                            label={player.name}
-                            sx={{
-                              m: 0,
-
-                              px: 1,
-
-                              py: 0.35,
-
-                              minHeight: 44,
-
-                              border: "1px solid",
-
-                              borderColor: checked
-                                ? "rgba(76,175,80,0.55)"
-                                : "rgba(255,255,255,0.08)",
-
-                              borderRadius: 0.75,
-
-                              backgroundColor: checked
-                                ? "rgba(46,125,50,0.06)"
-                                : "transparent",
-                            }}
-                          />
-                        );
-                      })}
-                    </FormGroup>
-                  )}
-                </Box>
-              </Stack>
-            </Paper>
-
-            <Paper
-              elevation={0}
-              sx={{
-                border: "1px solid rgba(255,255,255,0.12)",
-
-                borderRadius: 1,
-
-                backgroundColor: "rgba(255,255,255,0.014)",
-
-                overflow: "hidden",
-
-                height: "100%",
-              }}
-            >
-              <Box
-                sx={{
-                  px: { xs: 2, sm: 2.5 },
-
-                  pt: 2.25,
-
-                  pb: 1.75,
-
-                  borderBottom: "1px solid rgba(255,255,255,0.10)",
-
-                  borderLeft: "3px solid rgba(198,40,40,0.70)",
-                }}
-              >
-                <Typography
-                  variant="overline"
-                  sx={{
-                    color: "error.light",
-
-                    fontWeight: 800,
-
-                    letterSpacing: "0.08em",
-                  }}
-                >
-                  02 · MATCHFORMAT
-                </Typography>
-
-                <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                  Hur spelar vi?
-                </Typography>
-              </Box>
-
-              <Stack spacing={2} sx={{ p: { xs: 2, sm: 2.5 } }}>
                 <FormControl>
                   <FormLabel>Spelläge</FormLabel>
 
@@ -574,6 +320,178 @@ export default function NewTournamentPage() {
                   </RadioGroup>
                 </FormControl>
 
+                <Box>
+                  <Stack
+                    sx={{
+                      flexDirection: { xs: "column", sm: "row" },
+                      justifyContent: "space-between",
+                      alignItems: {
+                        xs: "flex-start",
+                        sm: "center",
+                      },
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <Typography sx={{ fontWeight: 800 }}>Spelare</Typography>
+
+                    <Stack
+                      sx={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 1,
+                        width: {
+                          xs: "100%",
+                          sm: "auto",
+                        },
+                        justifyContent: {
+                          xs: "space-between",
+                          sm: "flex-end",
+                        },
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "text.secondary",
+                        }}
+                      >
+                        {selectedPlayerIds.length} valda
+                      </Typography>
+
+                      <Button
+                        type="button"
+                        size="small"
+                        variant="outlined"
+                        onClick={() => router.push("/players")}
+                        sx={{
+                          minWidth: 0,
+                          px: 1.2,
+                          py: 0.4,
+                          borderRadius: 0.75,
+                          borderColor: "rgba(255,255,255,0.18)",
+                          color: "text.primary",
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Hantera spelare
+                      </Button>
+                    </Stack>
+                  </Stack>
+
+                  {loadingPlayers ? (
+                    <PasdartLoadingState
+                      variant="inline"
+                      title="Hämtar spelare"
+                      description="Förbereder spelarregistret."
+                    />
+                  ) : playersError ? (
+                    <PasdartInlineError message={playersError} />
+                  ) : players.length === 0 ? (
+                    <Typography
+                      sx={{
+                        color: "text.secondary",
+                      }}
+                    >
+                      Inga spelare finns sparade ännu.
+                    </Typography>
+                  ) : (
+                    <FormGroup
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                          xs: "1fr",
+                          sm: "repeat(2, minmax(0, 1fr))",
+                          lg: "1fr",
+                          xl: "repeat(2, minmax(0, 1fr))",
+                        },
+                        gap: 0.5,
+                      }}
+                    >
+                      {players.map((player) => {
+                        const checked = selectedPlayerIds.includes(player.id);
+
+                        return (
+                          <FormControlLabel
+                            key={player.id}
+                            control={
+                              <Checkbox
+                                checked={checked}
+                                onChange={() => togglePlayer(player.id)}
+                              />
+                            }
+                            label={player.name}
+                            sx={{
+                              m: 0,
+                              px: 1,
+                              py: 0.35,
+                              minHeight: 44,
+                              border: "1px solid",
+                              borderColor: checked
+                                ? "rgba(76,175,80,0.55)"
+                                : "rgba(255,255,255,0.08)",
+                              borderRadius: 0.75,
+                              backgroundColor: checked
+                                ? "rgba(46,125,50,0.06)"
+                                : "transparent",
+                            }}
+                          />
+                        );
+                      })}
+                    </FormGroup>
+                  )}
+                </Box>
+              </Stack>
+            </Paper>
+
+            {/* 02 · GRUPPSPEL */}
+            <Paper
+              elevation={0}
+              sx={{
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: 1,
+                backgroundColor: "rgba(255,255,255,0.014)",
+                overflow: "hidden",
+              }}
+            >
+              <Box
+                sx={{
+                  px: { xs: 2, sm: 2.5 },
+                  pt: 2.25,
+                  pb: 1.75,
+                  borderBottom: "1px solid rgba(255,255,255,0.10)",
+                  borderLeft: "3px solid rgba(198,40,40,0.70)",
+                }}
+              >
+                <Typography
+                  variant="overline"
+                  sx={{
+                    color: "error.light",
+                    fontWeight: 800,
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  02 · GRUPPSPEL
+                </Typography>
+
+                <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                  Gruppens upplägg
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "text.secondary",
+                    mt: 0.35,
+                  }}
+                >
+                  Välj hur gruppmatcherna ska spelas och räknas.
+                </Typography>
+              </Box>
+
+              <Stack spacing={2.1} sx={{ p: { xs: 2, sm: 2.5 } }}>
                 <TextField
                   select
                   label="Spel"
@@ -582,144 +500,94 @@ export default function NewTournamentPage() {
                   fullWidth
                 >
                   <MenuItem value="301">301</MenuItem>
-
                   <MenuItem value="501">501</MenuItem>
                 </TextField>
 
-                <Box
-                  sx={{
-                    display: "grid",
+                <FormControl fullWidth>
+                  <FormLabel>Matchformat</FormLabel>
 
-                    gridTemplateColumns: {
-                      xs: "1fr",
+                  <RadioGroup
+                    row
+                    value={groupMatchMode}
+                    onChange={(event) => {
+                      const mode = event.target.value;
 
-                      sm: "repeat(2, minmax(0, 1fr))",
+                      setGroupMatchMode(mode);
 
-                      lg: "1fr",
-                    },
+                      if (mode === "bestOf") {
+                        setGroupLegCount(groupBestOf);
+                      }
+                    }}
+                  >
+                    <FormControlLabel
+                      value="bestOf"
+                      control={<Radio />}
+                      label="Bäst av"
+                    />
 
-                    gap: 1.5,
-                  }}
-                >
+                    <FormControlLabel
+                      value="fixedLegs"
+                      control={<Radio />}
+                      label="Alla legs spelas"
+                    />
+                  </RadioGroup>
+
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "text.secondary",
+                      mt: 0.25,
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {groupMatchMode === "bestOf"
+                      ? "Matchen avslutas när ett lag har säkrat segern."
+                      : "Alla valda legs spelas. Vid jämnt antal legs kan matchen sluta oavgjort."}
+                  </Typography>
+                </FormControl>
+
+                {groupMatchMode === "bestOf" ? (
                   <TextField
                     select
-                    label="Gruppspel - bäst av"
+                    label="Bäst av"
                     value={groupBestOf}
-                    onChange={(event) => setGroupBestOf(event.target.value)}
+                    onChange={(event) => {
+                      setGroupBestOf(event.target.value);
+                      setGroupLegCount(event.target.value);
+                    }}
                     fullWidth
                   >
                     <MenuItem value="1">1 leg</MenuItem>
-
                     <MenuItem value="3">3 legs</MenuItem>
-
                     <MenuItem value="5">5 legs</MenuItem>
-
                     <MenuItem value="7">7 legs</MenuItem>
-
                     <MenuItem value="9">9 legs</MenuItem>
                   </TextField>
-
+                ) : (
                   <TextField
                     select
-                    label="Slutspel - bäst av"
-                    value={playoffBestOf}
-                    onChange={(event) => setPlayoffBestOf(event.target.value)}
+                    label="Antal legs"
+                    value={groupLegCount}
+                    onChange={(event) => setGroupLegCount(event.target.value)}
                     fullWidth
                   >
                     <MenuItem value="1">1 leg</MenuItem>
-
+                    <MenuItem value="2">2 legs</MenuItem>
                     <MenuItem value="3">3 legs</MenuItem>
-
+                    <MenuItem value="4">4 legs</MenuItem>
                     <MenuItem value="5">5 legs</MenuItem>
-
-                    <MenuItem value="7">7 legs</MenuItem>
-
-                    <MenuItem value="9">9 legs</MenuItem>
+                    <MenuItem value="6">6 legs</MenuItem>
                   </TextField>
-                </Box>
+                )}
 
-                <Box
-                  sx={{
-                    display: "grid",
+                <TextField
+                  label="Max darts"
+                  type="number"
+                  value={groupMaxDarts}
+                  onChange={(event) => setGroupMaxDarts(event.target.value)}
+                  fullWidth
+                />
 
-                    gridTemplateColumns: {
-                      xs: "1fr",
-
-                      sm: "repeat(2, minmax(0, 1fr))",
-
-                      lg: "1fr",
-                    },
-
-                    gap: 1.5,
-                  }}
-                >
-                  <TextField
-                    label="Gruppspel - max darts"
-                    type="number"
-                    value={groupMaxDarts}
-                    onChange={(event) => setGroupMaxDarts(event.target.value)}
-                    fullWidth
-                  />
-
-                  <TextField
-                    label="Slutspel - max darts"
-                    type="number"
-                    value={playoffMaxDarts}
-                    onChange={(event) => setPlayoffMaxDarts(event.target.value)}
-                    fullWidth
-                  />
-                </Box>
-              </Stack>
-            </Paper>
-
-            <Paper
-              elevation={0}
-              sx={{
-                border: "1px solid rgba(255,255,255,0.12)",
-
-                borderRadius: 1,
-
-                backgroundColor: "rgba(255,255,255,0.014)",
-
-                overflow: "hidden",
-
-                height: "100%",
-
-                gridColumn: { md: "1 / -1", lg: "auto" },
-              }}
-            >
-              <Box
-                sx={{
-                  px: { xs: 2, sm: 2.5 },
-
-                  pt: 2.25,
-
-                  pb: 1.75,
-
-                  borderBottom: "1px solid rgba(255,255,255,0.10)",
-
-                  borderLeft: "3px solid rgba(198,40,40,0.70)",
-                }}
-              >
-                <Typography
-                  variant="overline"
-                  sx={{
-                    color: "error.light",
-
-                    fontWeight: 800,
-
-                    letterSpacing: "0.08em",
-                  }}
-                >
-                  03 · TURNERINGSFORMAT
-                </Typography>
-
-                <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                  Kvällens upplägg
-                </Typography>
-              </Box>
-
-              <Stack spacing={2.25} sx={{ p: { xs: 2, sm: 2.5 } }}>
                 <FormControl>
                   <FormLabel>Möten</FormLabel>
 
@@ -750,14 +618,86 @@ export default function NewTournamentPage() {
                   fullWidth
                 >
                   <MenuItem value="1">1 tavla</MenuItem>
-
                   <MenuItem value="2">2 tavlor</MenuItem>
-
                   <MenuItem value="3">3 tavlor</MenuItem>
                 </TextField>
+              </Stack>
+            </Paper>
+
+            {/* 03 · SLUTSPEL */}
+            <Paper
+              elevation={0}
+              sx={{
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: 1,
+                backgroundColor: "rgba(255,255,255,0.014)",
+                overflow: "hidden",
+                gridColumn: {
+                  md: "1 / -1",
+                  lg: "auto",
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  px: { xs: 2, sm: 2.5 },
+                  pt: 2.25,
+                  pb: 1.75,
+                  borderBottom: "1px solid rgba(255,255,255,0.10)",
+                  borderLeft: "3px solid rgba(198,40,40,0.70)",
+                }}
+              >
+                <Typography
+                  variant="overline"
+                  sx={{
+                    color: "error.light",
+                    fontWeight: 800,
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  03 · SLUTSPEL
+                </Typography>
+
+                <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                  Vägen till finalen
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "text.secondary",
+                    mt: 0.35,
+                  }}
+                >
+                  Slutspelet spelas alltid som Bäst av.
+                </Typography>
+              </Box>
+
+              <Stack spacing={2.25} sx={{ p: { xs: 2, sm: 2.5 } }}>
+                <TextField
+                  select
+                  label="Slutspel - bäst av"
+                  value={playoffBestOf}
+                  onChange={(event) => setPlayoffBestOf(event.target.value)}
+                  fullWidth
+                >
+                  <MenuItem value="1">1 leg</MenuItem>
+                  <MenuItem value="3">3 legs</MenuItem>
+                  <MenuItem value="5">5 legs</MenuItem>
+                  <MenuItem value="7">7 legs</MenuItem>
+                  <MenuItem value="9">9 legs</MenuItem>
+                </TextField>
+
+                <TextField
+                  label="Slutspel - max darts"
+                  type="number"
+                  value={playoffMaxDarts}
+                  onChange={(event) => setPlayoffMaxDarts(event.target.value)}
+                  fullWidth
+                />
 
                 <FormControl>
-                  <FormLabel>Vid lika placering</FormLabel>
+                  <FormLabel>Vid lika placering i gruppen</FormLabel>
 
                   <RadioGroup
                     value={tiebreakMethod}
@@ -776,6 +716,41 @@ export default function NewTournamentPage() {
                     />
                   </RadioGroup>
                 </FormControl>
+
+                {groupMatchMode === "fixedLegs" && (
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: 0.75,
+                      backgroundColor: "rgba(255,255,255,0.018)",
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        display: "block",
+                        color: "success.light",
+                        fontWeight: 800,
+                        letterSpacing: "0.06em",
+                      }}
+                    >
+                      SLUTSPEL
+                    </Typography>
+
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "text.secondary",
+                        mt: 0.35,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Formatet Alla legs spelas används bara i gruppspelet.
+                      Semifinal och final avgörs alltid med Bäst av.
+                    </Typography>
+                  </Box>
+                )}
               </Stack>
             </Paper>
           </Box>
@@ -784,28 +759,22 @@ export default function NewTournamentPage() {
             elevation={0}
             sx={{
               border: "1px solid rgba(255,255,255,0.12)",
-
               borderRadius: 1,
-
               backgroundColor: "rgba(255,255,255,0.014)",
+              overflow: "hidden",
             }}
           >
             <Box
               sx={{
                 px: { xs: 2, sm: 2.5 },
-
                 py: { xs: 2, sm: 2.25 },
-
+                borderLeft: "3px solid rgba(198,40,40,0.70)",
                 display: "grid",
-
                 gridTemplateColumns: {
                   xs: "1fr",
-
                   md: "minmax(0, 1fr) auto",
                 },
-
                 gap: { xs: 1.5, md: 3 },
-
                 alignItems: "center",
               }}
             >
@@ -814,13 +783,11 @@ export default function NewTournamentPage() {
                   variant="overline"
                   sx={{
                     color: "error.light",
-
                     fontWeight: 800,
-
                     letterSpacing: "0.08em",
                   }}
                 >
-                  REDO?
+                  04 · NU KÖR VI!
                 </Typography>
 
                 <Typography variant="h5" sx={{ fontWeight: 800 }}>
@@ -831,9 +798,7 @@ export default function NewTournamentPage() {
                   variant="body2"
                   sx={{
                     color: "text.secondary",
-
                     mt: 0.35,
-
                     maxWidth: 620,
                   }}
                 >
@@ -846,7 +811,6 @@ export default function NewTournamentPage() {
                 spacing={1}
                 sx={{
                   width: { xs: "100%", md: "auto" },
-
                   minWidth: { md: 280 },
                 }}
               >
@@ -859,15 +823,10 @@ export default function NewTournamentPage() {
                   onClick={handleContinue}
                   sx={{
                     width: "100%",
-
                     minWidth: { md: 220 },
-
                     minHeight: 52,
-
                     borderRadius: 0.75,
-
                     boxShadow: "none",
-
                     fontWeight: 800,
                   }}
                 >
