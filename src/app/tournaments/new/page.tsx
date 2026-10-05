@@ -156,6 +156,8 @@ export default function NewTournamentPage() {
 
       const data = await response.json();
 
+      localStorage.setItem(`pasdart_admin_${data.publicId}`, data.adminToken);
+
       router.push(`/tournaments/${data.publicId}/teams`);
     } catch {
       setCreateError("Kunde inte skapa cupen. Försök igen om en stund.");
