@@ -878,8 +878,10 @@ export default function SchedulePage({
                         </>
                       ) : (
                         <>
-                          {data.tournament.gameType} · Gruppspel · Bäst av{" "}
-                          {data.tournament.groupBestOf}
+                          {data.tournament.gameType} · Gruppspel ·{" "}
+                          {data.tournament.groupMatchMode === "fixedLegs"
+                            ? `Alla ${data.tournament.groupLegCount} legs spelas`
+                            : `Bäst av ${data.tournament.groupBestOf}`}
                           {data.tournament.groupMaxDarts
                             ? ` · Max ${data.tournament.groupMaxDarts} darts`
                             : ""}
