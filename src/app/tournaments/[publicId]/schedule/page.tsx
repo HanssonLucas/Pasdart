@@ -26,6 +26,7 @@ import PasdartInlineError from "@/components/PasdartInlineError";
 import PasdartLoadingState from "@/components/PasdartLoadingState";
 import MatchResultControls from "@/components/tournaments/MatchResultControls";
 import TournamentCreatedDialog from "@/components/tournaments/TournamentCreatedDialog";
+import TournamentShareCode from "@/components/tournaments/TournamentShareCode";
 
 type Player = {
   id: number;
@@ -194,6 +195,8 @@ export default function SchedulePage({
 
   const [viewerCodeDialog, setViewerCodeDialog] = useState("");
 
+  const [viewerCode, setViewerCode] = useState("");
+
   function applyTournamentData(result: TournamentResponse) {
     setData(result);
 
@@ -244,16 +247,22 @@ export default function SchedulePage({
             localStorage.getItem(`pasdart_show_viewer_code_${publicId}`) ===
             "1";
 
-          if (result.isAdmin && shouldShowViewerCode) {
+          if (result.isAdmin) {
             const storedViewerCode = localStorage.getItem(
               `pasdart_viewer_code_${publicId}`,
             );
 
             if (storedViewerCode) {
-              setViewerCodeDialog(storedViewerCode);
+              setViewerCode(storedViewerCode);
+
+              if (shouldShowViewerCode) {
+                setViewerCodeDialog(storedViewerCode);
+              }
             }
 
-            localStorage.removeItem(`pasdart_show_viewer_code_${publicId}`);
+            if (shouldShowViewerCode) {
+              localStorage.removeItem(`pasdart_show_viewer_code_${publicId}`);
+            }
           }
         }
       } catch {
@@ -815,6 +824,10 @@ export default function SchedulePage({
                           ? "Gruppspelet är klart"
                           : `${groupMatches.filter((match) => match.status === "finished").length} av ${groupMatches.length} matcher klara`}
                     </Typography>
+
+                    {data.isAdmin && viewerCode && (
+                      <TournamentShareCode viewerCode={viewerCode} />
+                    )}
                   </Box>
                 </Stack>
 
