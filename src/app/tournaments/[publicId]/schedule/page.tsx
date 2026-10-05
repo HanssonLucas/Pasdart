@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -25,6 +25,7 @@ import PasdartErrorState from "@/components/PasdartErrorState";
 import PasdartInlineError from "@/components/PasdartInlineError";
 import PasdartLoadingState from "@/components/PasdartLoadingState";
 import MatchResultControls from "@/components/tournaments/MatchResultControls";
+import TournamentCreatedDialog from "@/components/tournaments/TournamentCreatedDialog";
 
 type Player = {
   id: number;
@@ -130,6 +131,29 @@ type TournamentResponse = {
   isAdmin: boolean;
 };
 
+function getTournamentAdminToken(publicId: string) {
+  const isViewerMode =
+    sessionStorage.getItem(`pasdart_viewer_${publicId}`) === "1";
+
+  if (isViewerMode) {
+    return null;
+  }
+
+  return localStorage.getItem(`pasdart_admin_${publicId}`);
+}
+
+async function fetchTournamentSchedule(publicId: string) {
+  const adminToken = getTournamentAdminToken(publicId);
+
+  return fetch(`/api/tournaments/${publicId}/matches`, {
+    headers: adminToken
+      ? {
+          "x-admin-token": adminToken,
+        }
+      : undefined,
+  });
+}
+
 export default function SchedulePage({
   params,
 }: {
@@ -166,6 +190,10 @@ export default function SchedulePage({
 
   const [winnerDialogOpen, setWinnerDialogOpen] = useState(false);
 
+  const winnerDialogShownRef = useRef(false);
+
+  const [viewerCodeDialog, setViewerCodeDialog] = useState("");
+
   function applyTournamentData(result: TournamentResponse) {
     setData(result);
 
@@ -186,8 +214,10 @@ export default function SchedulePage({
 
     if (
       result.tournament.status === "finished" &&
-      finishedFinal?.winnerTeamId
+      finishedFinal?.winnerTeamId &&
+      !winnerDialogShownRef.current
     ) {
+      winnerDialogShownRef.current = true;
       setWinnerDialogOpen(true);
     }
   }
@@ -209,6 +239,22 @@ export default function SchedulePage({
 
         if (!cancelled) {
           applyTournamentData(result);
+
+          const shouldShowViewerCode =
+            localStorage.getItem(`pasdart_show_viewer_code_${publicId}`) ===
+            "1";
+
+          if (result.isAdmin && shouldShowViewerCode) {
+            const storedViewerCode = localStorage.getItem(
+              `pasdart_viewer_code_${publicId}`,
+            );
+
+            if (storedViewerCode) {
+              setViewerCodeDialog(storedViewerCode);
+            }
+
+            localStorage.removeItem(`pasdart_show_viewer_code_${publicId}`);
+          }
         }
       } catch {
         if (!cancelled) {
@@ -227,6 +273,53 @@ export default function SchedulePage({
       cancelled = true;
     };
   }, [params]);
+
+  const isViewer = data?.isAdmin === false;
+
+  useEffect(() => {
+    if (!isViewer) {
+      return;
+    }
+
+    let cancelled = false;
+    let requestInProgress = false;
+
+    async function refreshViewerSchedule() {
+      if (requestInProgress || document.visibilityState === "hidden") {
+        return;
+      }
+
+      requestInProgress = true;
+
+      try {
+        const { publicId } = await params;
+        const response = await fetchTournamentSchedule(publicId);
+
+        if (!response.ok) {
+          return;
+        }
+
+        const result: TournamentResponse = await response.json();
+
+        if (!cancelled) {
+          applyTournamentData(result);
+        }
+      } catch {
+        // Keep the currently visible data if one polling request fails.
+      } finally {
+        requestInProgress = false;
+      }
+    }
+
+    const intervalId = window.setInterval(() => {
+      void refreshViewerSchedule();
+    }, 2000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [isViewer, params]);
 
   if (loading) {
     return (
@@ -340,18 +433,6 @@ export default function SchedulePage({
     });
   }
 
-  async function fetchTournamentSchedule(publicId: string) {
-    const adminToken = localStorage.getItem(`pasdart_admin_${publicId}`);
-
-    return fetch(`/api/tournaments/${publicId}/matches`, {
-      headers: adminToken
-        ? {
-            "x-admin-token": adminToken,
-          }
-        : undefined,
-    });
-  }
-
   async function handleConfirmCastoff() {
     if (!data) {
       return;
@@ -402,7 +483,7 @@ export default function SchedulePage({
 
       const { publicId } = await params;
 
-      const adminToken = localStorage.getItem(`pasdart_admin_${publicId}`);
+      const adminToken = getTournamentAdminToken(publicId);
 
       if (!adminToken) {
         setCastoffError("Du saknar behörighet att spara castoff.");
@@ -457,7 +538,7 @@ export default function SchedulePage({
     try {
       const { publicId } = await params;
 
-      const adminToken = localStorage.getItem(`pasdart_admin_${publicId}`);
+      const adminToken = getTournamentAdminToken(publicId);
 
       if (!adminToken) {
         setPlayoffError("Du saknar behörighet att starta slutspelet.");
@@ -498,11 +579,19 @@ export default function SchedulePage({
     try {
       const { publicId } = await params;
 
+      const adminToken = getTournamentAdminToken(publicId);
+
+      if (!adminToken) {
+        return;
+      }
+
       const response = await fetch(
         `/api/tournaments/${publicId}/playoffs/final`,
-
         {
           method: "POST",
+          headers: {
+            "x-admin-token": adminToken,
+          },
         },
       );
 
@@ -536,7 +625,7 @@ export default function SchedulePage({
 
       setActionError(null);
 
-      const adminToken = localStorage.getItem(`pasdart_admin_${publicId}`);
+      const adminToken = getTournamentAdminToken(publicId);
 
       if (!adminToken) {
         setActionError({
@@ -2232,7 +2321,7 @@ export default function SchedulePage({
                         </Typography>
                       </Box>
 
-                      {semifinalsFinished && (
+                      {data.isAdmin && semifinalsFinished && (
                         <Button
                           variant="contained"
                           size="large"
@@ -2476,6 +2565,12 @@ export default function SchedulePage({
             )}
         </Stack>
       </Box>
+
+      <TournamentCreatedDialog
+        open={viewerCodeDialog !== ""}
+        viewerCode={viewerCodeDialog}
+        onClose={() => setViewerCodeDialog("")}
+      />
 
       {winnerTeam && finishedFinal && (
         <Dialog

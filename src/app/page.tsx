@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { useRouter } from "next/navigation";
 
 import {
@@ -19,7 +20,9 @@ export default function Home() {
   const router = useRouter();
 
   const [viewerCode, setViewerCode] = useState("");
+
   const [viewerError, setViewerError] = useState("");
+
   const [joiningViewer, setJoiningViewer] = useState(false);
 
   async function handleFollowTournament() {
@@ -27,18 +30,22 @@ export default function Home() {
 
     if (!normalizedCode) {
       setViewerError("Ange en följkod.");
+
       return;
     }
 
     setViewerError("");
+
     setJoiningViewer(true);
 
     try {
       const response = await fetch("/api/tournaments/viewer", {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify({
           viewerCode: normalizedCode,
         }),
@@ -46,13 +53,17 @@ export default function Home() {
 
       const result = (await response.json()) as {
         publicId?: string;
+
         error?: string;
       };
 
       if (!response.ok || !result.publicId) {
         setViewerError(result.error ?? "Kunde inte hitta cupen.");
+
         return;
       }
+
+      sessionStorage.setItem(`pasdart_viewer_${result.publicId}`, "1");
 
       router.push(`/tournaments/${result.publicId}/schedule`);
     } catch {
@@ -329,6 +340,7 @@ export default function Home() {
                     >
                       Hantera spelare
                     </Button>
+
                     <Typography
                       variant="body2"
                       sx={{
@@ -345,6 +357,7 @@ export default function Home() {
                   <Box
                     sx={{
                       my: 2.5,
+
                       borderTop: "1px solid rgba(255,255,255,0.10)",
                     }}
                   />
@@ -353,7 +366,9 @@ export default function Home() {
                     variant="overline"
                     sx={{
                       color: "success.light",
+
                       fontWeight: 800,
+
                       letterSpacing: "0.08em",
                     }}
                   >
@@ -364,7 +379,9 @@ export default function Home() {
                     variant="body2"
                     sx={{
                       color: "text.secondary",
+
                       mt: 0.35,
+
                       mb: 1.25,
                     }}
                   >
@@ -390,8 +407,11 @@ export default function Home() {
                       slotProps={{
                         htmlInput: {
                           maxLength: 6,
+
                           inputMode: "numeric",
+
                           pattern: "[0-9]*",
+
                           "aria-label": "Följkod",
                         },
                       }}
@@ -410,9 +430,13 @@ export default function Home() {
                       disabled={joiningViewer}
                       sx={{
                         minHeight: 50,
+
                         borderRadius: 0.75,
+
                         borderColor: "rgba(255,255,255,0.18)",
+
                         color: "text.primary",
+
                         fontWeight: 800,
                       }}
                     >
@@ -430,7 +454,9 @@ export default function Home() {
 
               gridTemplateColumns: {
                 xs: "1fr",
+
                 sm: "repeat(2, 1fr)",
+
                 lg: "repeat(4, 1fr)",
               },
 
@@ -464,6 +490,7 @@ export default function Home() {
                 description:
                   "Castoff vid behov och sedan raka vägen till final.",
               },
+
               {
                 number: "04",
 
@@ -482,17 +509,22 @@ export default function Home() {
 
                   borderLeft: {
                     xs: "none",
+
                     sm:
                       index % 2 === 0
                         ? "none"
                         : "1px solid rgba(255,255,255,0.08)",
+
                     lg:
                       index === 0 ? "none" : "1px solid rgba(255,255,255,0.08)",
                   },
+
                   borderTop: {
                     xs:
                       index === 0 ? "none" : "1px solid rgba(255,255,255,0.08)",
+
                     sm: index < 2 ? "none" : "1px solid rgba(255,255,255,0.08)",
+
                     lg: "none",
                   },
                 }}

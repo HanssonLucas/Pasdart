@@ -157,6 +157,10 @@ export default function NewTournamentPage() {
       const data = await response.json();
 
       localStorage.setItem(`pasdart_admin_${data.publicId}`, data.adminToken);
+      localStorage.setItem(
+        `pasdart_viewer_code_${data.publicId}`,
+        data.viewerCode,
+      );
 
       router.push(`/tournaments/${data.publicId}/teams`);
     } catch {
@@ -185,16 +189,22 @@ export default function NewTournamentPage() {
             <Box
               sx={{
                 height: 3,
+
                 display: "flex",
+
                 justifyContent: "center",
+
                 alignItems: "center",
+
                 gap: 0.5,
               }}
             >
               <Box
                 sx={{
                   width: 28,
+
                   height: 3,
+
                   backgroundColor: "success.dark",
                 }}
               />
@@ -202,7 +212,9 @@ export default function NewTournamentPage() {
               <Box
                 sx={{
                   width: 28,
+
                   height: 3,
+
                   backgroundColor: "error.dark",
                 }}
               />
@@ -210,7 +222,9 @@ export default function NewTournamentPage() {
               <Box
                 sx={{
                   width: 28,
+
                   height: 3,
+
                   backgroundColor: "success.dark",
                 }}
               />
@@ -345,9 +359,13 @@ export default function NewTournamentPage() {
                   <Stack
                     sx={{
                       flexDirection: { xs: "column", sm: "row" },
+
                       justifyContent: "space-between",
+
                       alignItems: { xs: "flex-start", sm: "center" },
+
                       gap: 1,
+
                       mb: 1,
                     }}
                   >
@@ -356,11 +374,16 @@ export default function NewTournamentPage() {
                     <Stack
                       sx={{
                         flexDirection: "row",
+
                         alignItems: "center",
+
                         gap: 1,
+
                         width: { xs: "100%", sm: "auto" },
+
                         justifyContent: {
                           xs: "space-between",
+
                           sm: "flex-end",
                         },
                       }}
@@ -379,13 +402,21 @@ export default function NewTournamentPage() {
                         onClick={() => router.push("/players")}
                         sx={{
                           minWidth: 0,
+
                           px: 1.2,
+
                           py: 0.4,
+
                           borderRadius: 0.75,
+
                           borderColor: "rgba(255,255,255,0.18)",
+
                           color: "text.primary",
+
                           fontSize: "0.75rem",
+
                           fontWeight: 700,
+
                           whiteSpace: "nowrap",
                         }}
                       >

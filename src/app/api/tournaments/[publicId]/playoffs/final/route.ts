@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { matches, teams, tournaments } from "@/db/schema";
 
 export async function POST(
-  _request: Request,
+  request: Request,
   context: {
     params: Promise<{ publicId: string }>;
   },
@@ -15,6 +15,7 @@ export async function POST(
   const [tournament] = await db
     .select({
       id: tournaments.id,
+      adminToken: tournaments.adminToken,
     })
     .from(tournaments)
     .where(eq(tournaments.publicId, publicId));
@@ -23,6 +24,15 @@ export async function POST(
     return NextResponse.json(
       { error: "Cupen hittades inte." },
       { status: 404 },
+    );
+  }
+
+  const adminToken = request.headers.get("x-admin-token");
+
+  if (!adminToken || adminToken !== tournament.adminToken) {
+    return NextResponse.json(
+      { error: "Du saknar behörighet att skapa finalen." },
+      { status: 403 },
     );
   }
 

@@ -186,6 +186,11 @@ export default function TeamsPage({
 
       setTeamsSaved(true);
 
+      localStorage.setItem(
+        `pasdart_show_viewer_code_${tournament.publicId}`,
+        "1",
+      );
+
       router.push(`/tournaments/${tournament.publicId}/schedule`);
     } catch {
       setSaveError("Kunde inte spara lagen. Försök igen om en stund.");
@@ -237,30 +242,42 @@ export default function TeamsPage({
             <Box
               sx={{
                 height: 3,
+
                 display: "flex",
+
                 justifyContent: "center",
+
                 alignItems: "center",
+
                 gap: 0.5,
               }}
             >
               <Box
                 sx={{
                   width: 28,
+
                   height: 3,
+
                   backgroundColor: "success.dark",
                 }}
               />
+
               <Box
                 sx={{
                   width: 28,
+
                   height: 3,
+
                   backgroundColor: "error.dark",
                 }}
               />
+
               <Box
                 sx={{
                   width: 28,
+
                   height: 3,
+
                   backgroundColor: "success.dark",
                 }}
               />
