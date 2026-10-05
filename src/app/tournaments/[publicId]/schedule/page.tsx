@@ -1372,6 +1372,12 @@ export default function SchedulePage({
                               <MatchResultControls
                                 matchId={match.id}
                                 bestOf={data.tournament.groupBestOf}
+                                matchMode={
+                                  data.tournament.groupMatchMode === "fixedLegs"
+                                    ? "fixedLegs"
+                                    : "bestOf"
+                                }
+                                fixedLegCount={data.tournament.groupLegCount}
                                 isAdmin={data.isAdmin}
                                 density="compact"
                                 actionError={
