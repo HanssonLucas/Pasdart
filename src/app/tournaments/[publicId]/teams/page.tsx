@@ -160,20 +160,26 @@ export default function TeamsPage({
     setSaveError("");
 
     try {
+      const adminToken = localStorage.getItem(
+        `pasdart_admin_${tournament.publicId}`,
+      );
+
+      if (!adminToken) {
+        setSaveError("Du saknar behörighet att spara lagen.");
+        return;
+      }
+
       const response = await fetch(
         `/api/tournaments/${tournament.publicId}/teams`,
-
         {
           method: "POST",
-
           headers: {
             "Content-Type": "application/json",
+            "x-admin-token": adminToken,
           },
-
           body: JSON.stringify({
             teams: teams.map((team) => ({
               number: team.number,
-
               playerIds: team.players.map((player) => player.id),
             })),
           }),
@@ -188,6 +194,7 @@ export default function TeamsPage({
 
       localStorage.setItem(
         `pasdart_show_viewer_code_${tournament.publicId}`,
+
         "1",
       );
 
