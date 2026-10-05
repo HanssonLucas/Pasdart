@@ -40,12 +40,14 @@ export async function POST(request: Request) {
 
   const publicId = crypto.randomUUID();
   const adminToken = crypto.randomUUID();
+  const viewerCode = crypto.randomUUID().slice(0, 6).toUpperCase();
 
   const [newTournament] = await db
     .insert(tournaments)
     .values({
       publicId,
       adminToken,
+      viewerCode,
       name: name.trim(),
       gameType: Number(gameType),
       teamMode,
@@ -72,6 +74,7 @@ export async function POST(request: Request) {
       id: newTournament.id,
       publicId: newTournament.publicId,
       adminToken: newTournament.adminToken,
+      viewerCode: newTournament.viewerCode,
     },
     { status: 201 },
   );

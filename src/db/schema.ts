@@ -18,6 +18,7 @@ export const tournaments = pgTable("tournaments", {
   id: serial("id").primaryKey(),
   publicId: text("public_id").notNull().unique(),
   adminToken: text("admin_token").notNull().unique(),
+  viewerCode: text("viewer_code").notNull().unique(),
 
   name: text("name").notNull(),
   status: text("status").notNull().default("setup"),
