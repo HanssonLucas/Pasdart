@@ -39,6 +39,8 @@ export default function Home() {
   const [activeTournament, setActiveTournament] =
     useState<ActiveTournament | null>(null);
 
+  const [isActiveTournamentAdmin, setIsActiveTournamentAdmin] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     let requestInProgress = false;
@@ -64,7 +66,24 @@ export default function Home() {
         };
 
         if (!cancelled) {
-          setActiveTournament(result.activeTournament ?? null);
+          const tournament = result.activeTournament ?? null;
+
+          setActiveTournament(tournament);
+
+          if (!tournament) {
+            setIsActiveTournamentAdmin(false);
+          } else {
+            const adminToken = localStorage.getItem(
+              `pasdart_admin_${tournament.publicId}`,
+            );
+
+            const isViewerMode =
+              sessionStorage.getItem(
+                `pasdart_viewer_${tournament.publicId}`,
+              ) === "1";
+
+            setIsActiveTournamentAdmin(Boolean(adminToken) && !isViewerMode);
+          }
         }
       } catch {
         // Startsidan fungerar fortfarande även om live-status inte kan hämtas.
@@ -85,8 +104,13 @@ export default function Home() {
     };
   }, []);
 
-  function handleFollowActiveTournament() {
+  function handleOpenActiveTournament() {
     if (!activeTournament) {
+      return;
+    }
+
+    if (isActiveTournamentAdmin) {
+      router.push(`/tournaments/${activeTournament.publicId}/schedule`);
       return;
     }
 
@@ -128,6 +152,7 @@ export default function Home() {
       }
 
       sessionStorage.setItem(`pasdart_viewer_${result.publicId}`, "1");
+
       router.push(`/tournaments/${result.publicId}/schedule`);
     } catch {
       setViewerError("Kunde inte hitta cupen.");
@@ -212,7 +237,10 @@ export default function Home() {
 
                     <Typography
                       variant="body2"
-                      sx={{ color: "text.secondary", mt: 0.15 }}
+                      sx={{
+                        color: "text.secondary",
+                        mt: 0.15,
+                      }}
                     >
                       {getTournamentPhase(activeTournament.status)} · Följ
                       matcher och tabell live
@@ -222,16 +250,18 @@ export default function Home() {
 
                 <Button
                   variant="contained"
-                  onClick={handleFollowActiveTournament}
+                  onClick={handleOpenActiveTournament}
                   sx={{
-                    minWidth: { sm: 190 },
+                    minWidth: { sm: 210 },
                     minHeight: 44,
                     borderRadius: 0.75,
                     boxShadow: "none",
                     fontWeight: 800,
                   }}
                 >
-                  Följ cupen live
+                  {isActiveTournamentAdmin
+                    ? "Tillbaka till spelschemat"
+                    : "Följ cupen live"}
                 </Button>
               </Stack>
             </Paper>
@@ -262,6 +292,7 @@ export default function Home() {
                   backgroundColor: "success.dark",
                 }}
               />
+
               <Box
                 sx={{
                   width: 28,
@@ -269,6 +300,7 @@ export default function Home() {
                   backgroundColor: "error.dark",
                 }}
               />
+
               <Box
                 sx={{
                   width: 28,
@@ -303,7 +335,11 @@ export default function Home() {
                     sx={{
                       fontFamily: 'Georgia, "Times New Roman", serif',
                       fontStyle: "italic",
-                      fontSize: { xs: "1.15rem", sm: "1.3rem", md: "1.4rem" },
+                      fontSize: {
+                        xs: "1.15rem",
+                        sm: "1.3rem",
+                        md: "1.4rem",
+                      },
                       color: "rgba(255,255,255,0.82)",
                       lineHeight: 1,
                     }}
@@ -347,6 +383,7 @@ export default function Home() {
                         backgroundColor: "success.dark",
                       }}
                     />
+
                     <Box
                       sx={{
                         width: 24,
@@ -354,6 +391,7 @@ export default function Home() {
                         backgroundColor: "error.dark",
                       }}
                     />
+
                     <Box
                       sx={{
                         width: 24,
@@ -368,7 +406,11 @@ export default function Home() {
                       color: "text.secondary",
                       mt: 1.6,
                       maxWidth: 640,
-                      fontSize: { xs: "0.95rem", sm: "1rem", md: "1.05rem" },
+                      fontSize: {
+                        xs: "0.95rem",
+                        sm: "1rem",
+                        md: "1.05rem",
+                      },
                       lineHeight: 1.55,
                     }}
                   >
@@ -473,7 +515,10 @@ export default function Home() {
               <Stack spacing={1}>
                 <Stack
                   sx={{
-                    flexDirection: { xs: "column", sm: "row" },
+                    flexDirection: {
+                      xs: "column",
+                      sm: "row",
+                    },
                     gap: 1,
                   }}
                 >
@@ -567,19 +612,25 @@ export default function Home() {
                 sx={{
                   py: 2.25,
                   px: { xs: 0.5, sm: 2.5 },
+
                   borderLeft: {
                     xs: "none",
+
                     sm:
                       index % 2 === 0
                         ? "none"
                         : "1px solid rgba(255,255,255,0.08)",
+
                     lg:
                       index === 0 ? "none" : "1px solid rgba(255,255,255,0.08)",
                   },
+
                   borderTop: {
                     xs:
                       index === 0 ? "none" : "1px solid rgba(255,255,255,0.08)",
+
                     sm: index < 2 ? "none" : "1px solid rgba(255,255,255,0.08)",
+
                     lg: "none",
                   },
                 }}
