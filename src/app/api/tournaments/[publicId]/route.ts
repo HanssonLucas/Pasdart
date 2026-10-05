@@ -40,3 +40,42 @@ export async function GET(
     players: tournamentPlayerRows,
   });
 }
+
+export async function DELETE(
+  request: Request,
+  context: {
+    params: Promise<{ publicId: string }>;
+  },
+) {
+  const { publicId } = await context.params;
+
+  const [tournament] = await db
+    .select({
+      id: tournaments.id,
+      adminToken: tournaments.adminToken,
+    })
+    .from(tournaments)
+    .where(eq(tournaments.publicId, publicId));
+
+  if (!tournament) {
+    return NextResponse.json(
+      { error: "Cupen hittades inte." },
+      { status: 404 },
+    );
+  }
+
+  const adminToken = request.headers.get("x-admin-token");
+
+  if (!adminToken || adminToken !== tournament.adminToken) {
+    return NextResponse.json(
+      { error: "Du saknar behörighet att radera cupen." },
+      { status: 403 },
+    );
+  }
+
+  await db.delete(tournaments).where(eq(tournaments.id, tournament.id));
+
+  return NextResponse.json({
+    success: true,
+  });
+}
