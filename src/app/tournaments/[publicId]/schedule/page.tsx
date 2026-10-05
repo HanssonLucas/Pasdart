@@ -148,6 +148,8 @@ export default function SchedulePage({
 
   const [castoffError, setCastoffError] = useState("");
 
+  const [playoffError, setPlayoffError] = useState("");
+
   const [loading, setLoading] = useState(true);
 
   const [castoffOrders, setCastoffOrders] = useState<Record<number, number[]>>(
@@ -450,13 +452,23 @@ export default function SchedulePage({
 
     setStartingPlayoffs(true);
 
-    setError("");
+    setPlayoffError("");
 
     try {
       const { publicId } = await params;
 
+      const adminToken = localStorage.getItem(`pasdart_admin_${publicId}`);
+
+      if (!adminToken) {
+        setPlayoffError("Du saknar behörighet att starta slutspelet.");
+        return;
+      }
+
       const response = await fetch(`/api/tournaments/${publicId}/playoffs`, {
         method: "POST",
+        headers: {
+          "x-admin-token": adminToken,
+        },
       });
 
       if (!response.ok) {
@@ -472,7 +484,7 @@ export default function SchedulePage({
 
       applyTournamentData(updatedData);
     } catch {
-      setError("Kunde inte starta slutspelet.");
+      setPlayoffError("Kunde inte starta slutspelet.");
     } finally {
       setStartingPlayoffs(false);
     }
@@ -1588,24 +1600,32 @@ export default function SchedulePage({
                     </Typography>
                   </Box>
 
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={handleStartPlayoffs}
-                    disabled={startingPlayoffs}
-                    sx={{
-                      width: { xs: "100%", sm: "auto" },
-                      minWidth: { sm: 280 },
-                      minHeight: 52,
-                      borderRadius: 0.75,
-                      boxShadow: "none",
-                      fontWeight: 800,
-                    }}
-                  >
-                    {startingPlayoffs
-                      ? "Startar slutspel..."
-                      : "Starta slutspel"}
-                  </Button>
+                  {data.isAdmin && (
+                    <Stack spacing={1.5}>
+                      {playoffError && (
+                        <PasdartInlineError message={playoffError} />
+                      )}
+
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={handleStartPlayoffs}
+                        disabled={startingPlayoffs}
+                        sx={{
+                          width: { xs: "100%", sm: "auto" },
+                          minWidth: { sm: 280 },
+                          minHeight: 52,
+                          borderRadius: 0.75,
+                          boxShadow: "none",
+                          fontWeight: 800,
+                        }}
+                      >
+                        {startingPlayoffs
+                          ? "Startar slutspel..."
+                          : "Starta slutspel"}
+                      </Button>
+                    </Stack>
+                  )}
                 </Stack>
               )}
             </Paper>
