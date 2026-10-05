@@ -1,7 +1,26 @@
+import { desc, eq, ne } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { db } from "@/db";
-import { tournamentPlayers, tournaments } from "@/db/schema";
+import { matches, tournamentPlayers, tournaments } from "@/db/schema";
+
+export async function GET() {
+  const [activeTournament] = await db
+    .select({
+      publicId: tournaments.publicId,
+      name: tournaments.name,
+      status: tournaments.status,
+    })
+    .from(tournaments)
+    .innerJoin(matches, eq(matches.tournamentId, tournaments.id))
+    .where(ne(tournaments.status, "finished"))
+    .orderBy(desc(tournaments.id))
+    .limit(1);
+
+  return NextResponse.json({
+    activeTournament: activeTournament ?? null,
+  });
+}
 
 export async function POST(request: Request) {
   const body = await request.json();

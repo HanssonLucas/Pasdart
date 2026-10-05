@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -16,6 +16,12 @@ import {
 
 import PasdartInlineError from "@/components/PasdartInlineError";
 
+type ActiveTournament = {
+  publicId: string;
+  name: string;
+  status: string;
+};
+
 export default function Home() {
   const router = useRouter();
 
@@ -24,6 +30,49 @@ export default function Home() {
   const [viewerError, setViewerError] = useState("");
 
   const [joiningViewer, setJoiningViewer] = useState(false);
+
+  const [activeTournament, setActiveTournament] =
+    useState<ActiveTournament | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadActiveTournament() {
+      try {
+        const response = await fetch("/api/tournaments");
+
+        if (!response.ok) {
+          return;
+        }
+
+        const result = (await response.json()) as {
+          activeTournament?: ActiveTournament | null;
+        };
+
+        if (!cancelled) {
+          setActiveTournament(result.activeTournament ?? null);
+        }
+      } catch {
+        // Startsidan fungerar fortfarande även om aktiv cup inte kan hämtas.
+      }
+    }
+
+    void loadActiveTournament();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function handleFollowActiveTournament() {
+    if (!activeTournament) {
+      return;
+    }
+
+    sessionStorage.setItem(`pasdart_viewer_${activeTournament.publicId}`, "1");
+
+    router.push(`/tournaments/${activeTournament.publicId}/schedule`);
+  }
 
   async function handleFollowTournament() {
     const normalizedCode = viewerCode.trim().toUpperCase();
@@ -353,6 +402,67 @@ export default function Home() {
                       cuper med samma gäng.
                     </Typography>
                   </Stack>
+
+                  {activeTournament && (
+                    <>
+                      <Box
+                        sx={{
+                          my: 2.5,
+                          borderTop: "1px solid rgba(255,255,255,0.10)",
+                        }}
+                      />
+
+                      <Typography
+                        variant="overline"
+                        sx={{
+                          color: "success.light",
+                          fontWeight: 800,
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        PÅGÅENDE CUP
+                      </Typography>
+
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          mt: 0.35,
+                          fontWeight: 800,
+                          letterSpacing: "-0.01em",
+                        }}
+                      >
+                        {activeTournament.name}
+                      </Typography>
+
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "text.secondary",
+                          mt: 0.25,
+                          mb: 1.25,
+                        }}
+                      >
+                        {activeTournament.status === "playoffs"
+                          ? "Slutspelet pågår."
+                          : "Cupen är igång."}
+                      </Typography>
+
+                      <Button
+                        variant="contained"
+                        size="large"
+                        fullWidth
+                        onClick={handleFollowActiveTournament}
+                        sx={{
+                          minHeight: 50,
+                          borderRadius: 0.75,
+                          boxShadow: "none",
+                          fontWeight: 800,
+                        }}
+                      >
+                        Följ pågående cup
+                      </Button>
+                    </>
+                  )}
 
                   <Box
                     sx={{
