@@ -39,6 +39,7 @@ export async function POST(
   const [tournament] = await db
     .select({
       id: tournaments.id,
+      adminToken: tournaments.adminToken,
     })
     .from(tournaments)
     .where(eq(tournaments.publicId, publicId));
@@ -47,6 +48,14 @@ export async function POST(
     return NextResponse.json(
       { error: "Cupen hittades inte." },
       { status: 404 },
+    );
+  }
+  const adminToken = request.headers.get("x-admin-token");
+
+  if (!adminToken || adminToken !== tournament.adminToken) {
+    return NextResponse.json(
+      { error: "Du saknar behörighet att ändra castoff." },
+      { status: 403 },
     );
   }
 

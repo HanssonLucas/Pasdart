@@ -22,6 +22,7 @@ import {
 } from "@mui/material";
 
 import PasdartErrorState from "@/components/PasdartErrorState";
+import PasdartInlineError from "@/components/PasdartInlineError";
 import PasdartLoadingState from "@/components/PasdartLoadingState";
 import MatchResultControls from "@/components/tournaments/MatchResultControls";
 
@@ -144,6 +145,8 @@ export default function SchedulePage({
     matchId: number;
     message: string;
   } | null>(null);
+
+  const [castoffError, setCastoffError] = useState("");
 
   const [loading, setLoading] = useState(true);
 
@@ -354,7 +357,7 @@ export default function SchedulePage({
 
     setSavingCastoff(true);
 
-    setError("");
+    setCastoffError("");
 
     try {
       const finalOrder = [...data.standings];
@@ -397,17 +400,24 @@ export default function SchedulePage({
 
       const { publicId } = await params;
 
+      const adminToken = localStorage.getItem(`pasdart_admin_${publicId}`);
+
+      if (!adminToken) {
+        setCastoffError("Du saknar behörighet att spara castoff.");
+        return;
+      }
+
       const response = await fetch(`/api/tournaments/${publicId}/castoff`, {
         method: "POST",
 
         headers: {
           "Content-Type": "application/json",
+          "x-admin-token": adminToken,
         },
 
         body: JSON.stringify({
           order: finalOrder.map((standing, index) => ({
             teamId: standing.teamId,
-
             seed: index + 1,
           })),
         }),
@@ -427,7 +437,7 @@ export default function SchedulePage({
 
       applyTournamentData(updatedData);
     } catch {
-      setError("Kunde inte spara castoff-resultatet.");
+      setCastoffError("Kunde inte spara castoff-resultatet.");
     } finally {
       setSavingCastoff(false);
     }
@@ -1428,62 +1438,64 @@ export default function SchedulePage({
                                     </Typography>
                                   </Box>
 
-                                  <Stack
-                                    sx={{
-                                      flexDirection: "row",
-                                      gap: 0.5,
-                                    }}
-                                  >
-                                    <Button
-                                      variant="outlined"
-                                      size="small"
-                                      aria-label={`Flytta Lag ${standing.teamNumber} upp`}
-                                      disabled={index === 0}
-                                      onClick={() =>
-                                        moveCastoffTeam(
-                                          group.wins,
-                                          teamId,
-                                          "up",
-                                        )
-                                      }
+                                  {data.isAdmin && (
+                                    <Stack
                                       sx={{
-                                        minWidth: 34,
-                                        width: 34,
-                                        height: 34,
-                                        p: 0,
-                                        borderRadius: 0.75,
-                                        borderColor: "rgba(255,255,255,0.16)",
-                                        color: "text.primary",
+                                        flexDirection: "row",
+                                        gap: 0.5,
                                       }}
                                     >
-                                      ↑
-                                    </Button>
+                                      <Button
+                                        variant="outlined"
+                                        size="small"
+                                        aria-label={`Flytta Lag ${standing.teamNumber} upp`}
+                                        disabled={index === 0}
+                                        onClick={() =>
+                                          moveCastoffTeam(
+                                            group.wins,
+                                            teamId,
+                                            "up",
+                                          )
+                                        }
+                                        sx={{
+                                          minWidth: 34,
+                                          width: 34,
+                                          height: 34,
+                                          p: 0,
+                                          borderRadius: 0.75,
+                                          borderColor: "rgba(255,255,255,0.16)",
+                                          color: "text.primary",
+                                        }}
+                                      >
+                                        ↑
+                                      </Button>
 
-                                    <Button
-                                      variant="outlined"
-                                      size="small"
-                                      aria-label={`Flytta Lag ${standing.teamNumber} ner`}
-                                      disabled={index === order.length - 1}
-                                      onClick={() =>
-                                        moveCastoffTeam(
-                                          group.wins,
-                                          teamId,
-                                          "down",
-                                        )
-                                      }
-                                      sx={{
-                                        minWidth: 34,
-                                        width: 34,
-                                        height: 34,
-                                        p: 0,
-                                        borderRadius: 0.75,
-                                        borderColor: "rgba(255,255,255,0.16)",
-                                        color: "text.primary",
-                                      }}
-                                    >
-                                      ↓
-                                    </Button>
-                                  </Stack>
+                                      <Button
+                                        variant="outlined"
+                                        size="small"
+                                        aria-label={`Flytta Lag ${standing.teamNumber} ner`}
+                                        disabled={index === order.length - 1}
+                                        onClick={() =>
+                                          moveCastoffTeam(
+                                            group.wins,
+                                            teamId,
+                                            "down",
+                                          )
+                                        }
+                                        sx={{
+                                          minWidth: 34,
+                                          width: 34,
+                                          height: 34,
+                                          p: 0,
+                                          borderRadius: 0.75,
+                                          borderColor: "rgba(255,255,255,0.16)",
+                                          color: "text.primary",
+                                        }}
+                                      >
+                                        ↓
+                                      </Button>
+                                    </Stack>
+                                  )}
                                 </Box>
                               );
                             })}
@@ -1492,43 +1504,51 @@ export default function SchedulePage({
                       );
                     })}
 
-                    <Box
-                      sx={{
-                        pt: 2,
-                        mt: 0.5,
-                        borderTop: "1px solid rgba(255,255,255,0.10)",
-                      }}
-                    >
-                      <Button
-                        variant="contained"
-                        size="large"
-                        fullWidth
-                        onClick={handleConfirmCastoff}
-                        disabled={savingCastoff}
+                    {data.isAdmin && (
+                      <Box
                         sx={{
-                          minHeight: 52,
-                          borderRadius: 0.75,
-                          boxShadow: "none",
-                          fontWeight: 800,
+                          pt: 2,
+                          mt: 0.5,
+                          borderTop: "1px solid rgba(255,255,255,0.10)",
                         }}
                       >
-                        {savingCastoff
-                          ? "Sparar castoff..."
-                          : "Bekräfta castoff"}
-                      </Button>
+                        {castoffError && (
+                          <Box sx={{ mb: 1.5 }}>
+                            <PasdartInlineError message={castoffError} />
+                          </Box>
+                        )}
 
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          display: "block",
-                          textAlign: "center",
-                          color: "text.secondary",
-                          mt: 1,
-                        }}
-                      >
-                        När castoff är bekräftad kan slutspelet startas.
-                      </Typography>
-                    </Box>
+                        <Button
+                          variant="contained"
+                          size="large"
+                          fullWidth
+                          onClick={handleConfirmCastoff}
+                          disabled={savingCastoff}
+                          sx={{
+                            minHeight: 52,
+                            borderRadius: 0.75,
+                            boxShadow: "none",
+                            fontWeight: 800,
+                          }}
+                        >
+                          {savingCastoff
+                            ? "Sparar castoff..."
+                            : "Bekräfta castoff"}
+                        </Button>
+
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: "block",
+                            textAlign: "center",
+                            color: "text.secondary",
+                            mt: 1,
+                          }}
+                        >
+                          När castoff är bekräftad kan slutspelet startas.
+                        </Typography>
+                      </Box>
+                    )}
                   </Stack>
                 </Stack>
               ) : (
