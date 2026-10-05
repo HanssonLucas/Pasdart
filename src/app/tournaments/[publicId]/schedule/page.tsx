@@ -83,9 +83,20 @@ type Standing = {
 
 type CastoffGroup = {
   wins: number;
-
+  key?: string;
+  label?: string;
   teams: Standing[];
 };
+
+function getCastoffGroupKey(group: CastoffGroup) {
+  return group.key ?? `wins:${group.wins}`;
+}
+
+function getCastoffGroupLabel(group: CastoffGroup) {
+  return (
+    group.label ?? `${group.wins} ${group.wins === 1 ? "vinst" : "vinster"}`
+  );
+}
 
 type TournamentResponse = {
   tournament: {
@@ -174,7 +185,7 @@ export default function SchedulePage({
 
   const [loading, setLoading] = useState(true);
 
-  const [castoffOrders, setCastoffOrders] = useState<Record<number, number[]>>(
+  const [castoffOrders, setCastoffOrders] = useState<Record<string, number[]>>(
     {},
   );
 
@@ -197,10 +208,12 @@ export default function SchedulePage({
   function applyTournamentData(result: TournamentResponse) {
     setData(result);
 
-    const newCastoffOrders: Record<number, number[]> = {};
+    const newCastoffOrders: Record<string, number[]> = {};
 
     result.castoffGroups.forEach((group) => {
-      newCastoffOrders[group.wins] = group.teams.map((team) => team.teamId);
+      newCastoffOrders[getCastoffGroupKey(group)] = group.teams.map(
+        (team) => team.teamId,
+      );
     });
 
     setCastoffOrders(newCastoffOrders);
@@ -400,14 +413,14 @@ export default function SchedulePage({
   }
 
   function moveCastoffTeam(
-    wins: number,
+    groupKey: string,
 
     teamId: number,
 
     direction: "up" | "down",
   ) {
     setCastoffOrders((current) => {
-      const currentOrder = current[wins];
+      const currentOrder = current[groupKey];
 
       if (!currentOrder) {
         return current;
@@ -436,7 +449,7 @@ export default function SchedulePage({
       return {
         ...current,
 
-        [wins]: newOrder,
+        [groupKey]: newOrder,
       };
     });
   }
@@ -454,7 +467,7 @@ export default function SchedulePage({
       const finalOrder = [...data.standings];
 
       for (const group of data.castoffGroups) {
-        const selectedOrder = castoffOrders[group.wins];
+        const selectedOrder = castoffOrders[getCastoffGroupKey(group)];
 
         if (!selectedOrder) {
           continue;
@@ -1044,6 +1057,8 @@ export default function SchedulePage({
                         },
                       }}
                     >
+                      <TableCell sx={{ width: 52 }}>#</TableCell>
+                      <TableCell>Lag</TableCell>
                       <TableCell align="center">M</TableCell>
                       <TableCell align="center">V</TableCell>
 
@@ -1465,10 +1480,11 @@ export default function SchedulePage({
 
                   <Stack spacing={2.25} sx={{ p: { xs: 2, sm: 2.5 } }}>
                     {data.castoffGroups.map((group) => {
-                      const order = castoffOrders[group.wins] ?? [];
+                      const groupKey = getCastoffGroupKey(group);
+                      const order = castoffOrders[groupKey] ?? [];
 
                       return (
-                        <Box key={group.wins}>
+                        <Box key={groupKey}>
                           <Stack
                             sx={{
                               flexDirection: "row",
@@ -1485,8 +1501,7 @@ export default function SchedulePage({
                                   letterSpacing: "-0.01em",
                                 }}
                               >
-                                {group.wins}{" "}
-                                {group.wins === 1 ? "vinst" : "vinster"}
+                                {getCastoffGroupLabel(group)}
                               </Typography>
 
                               <Typography
@@ -1584,7 +1599,7 @@ export default function SchedulePage({
                                         disabled={index === 0}
                                         onClick={() =>
                                           moveCastoffTeam(
-                                            group.wins,
+                                            groupKey,
                                             teamId,
                                             "up",
                                           )
@@ -1609,7 +1624,7 @@ export default function SchedulePage({
                                         disabled={index === order.length - 1}
                                         onClick={() =>
                                           moveCastoffTeam(
-                                            group.wins,
+                                            groupKey,
                                             teamId,
                                             "down",
                                           )
