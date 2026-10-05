@@ -23,7 +23,7 @@ import {
 
 import PasdartErrorState from "@/components/PasdartErrorState";
 import PasdartLoadingState from "@/components/PasdartLoadingState";
-import PasdartInlineError from "@/components/PasdartInlineError";
+import MatchResultControls from "@/components/tournaments/MatchResultControls";
 
 type Player = {
   id: number;
@@ -194,15 +194,7 @@ export default function SchedulePage({
       try {
         const { publicId } = await params;
 
-        const adminToken = localStorage.getItem(`pasdart_admin_${publicId}`);
-
-        const response = await fetch(`/api/tournaments/${publicId}/matches`, {
-          headers: adminToken
-            ? {
-                "x-admin-token": adminToken,
-              }
-            : undefined,
-        });
+        const response = await fetchTournamentSchedule(publicId);
 
         if (!response.ok) {
           throw new Error();
@@ -343,6 +335,18 @@ export default function SchedulePage({
     });
   }
 
+  async function fetchTournamentSchedule(publicId: string) {
+    const adminToken = localStorage.getItem(`pasdart_admin_${publicId}`);
+
+    return fetch(`/api/tournaments/${publicId}/matches`, {
+      headers: adminToken
+        ? {
+            "x-admin-token": adminToken,
+          }
+        : undefined,
+    });
+  }
+
   async function handleConfirmCastoff() {
     if (!data) {
       return;
@@ -413,9 +417,7 @@ export default function SchedulePage({
         throw new Error();
       }
 
-      const updatedResponse = await fetch(
-        `/api/tournaments/${publicId}/matches`,
-      );
+      const updatedResponse = await fetchTournamentSchedule(publicId);
 
       if (!updatedResponse.ok) {
         throw new Error();
@@ -451,10 +453,7 @@ export default function SchedulePage({
         throw new Error();
       }
 
-      const updatedResponse = await fetch(
-        `/api/tournaments/${publicId}/matches`,
-      );
-
+      const updatedResponse = await fetchTournamentSchedule(publicId);
       if (!updatedResponse.ok) {
         throw new Error();
       }
@@ -489,9 +488,7 @@ export default function SchedulePage({
         throw new Error();
       }
 
-      const updatedResponse = await fetch(
-        `/api/tournaments/${publicId}/matches`,
-      );
+      const updatedResponse = await fetchTournamentSchedule(publicId);
 
       if (!updatedResponse.ok) {
         throw new Error();
@@ -505,22 +502,6 @@ export default function SchedulePage({
     } finally {
       setCreatingFinal(false);
     }
-  }
-
-  function getPossibleResults(bestOf: number) {
-    const legsToWin = Math.floor(bestOf / 2) + 1;
-
-    const results: Array<[number, number]> = [];
-
-    for (let loserLegs = 0; loserLegs < legsToWin; loserLegs += 1) {
-      results.push([legsToWin, loserLegs]);
-    }
-
-    for (let loserLegs = legsToWin - 1; loserLegs >= 0; loserLegs -= 1) {
-      results.push([loserLegs, legsToWin]);
-    }
-
-    return results;
   }
 
   async function handleResult(
@@ -561,9 +542,7 @@ export default function SchedulePage({
         throw new Error();
       }
 
-      const updatedResponse = await fetch(
-        `/api/tournaments/${publicId}/matches`,
-      );
+      const updatedResponse = await fetchTournamentSchedule(publicId);
 
       if (!updatedResponse.ok) {
         throw new Error();
@@ -1262,56 +1241,18 @@ export default function SchedulePage({
                             </Stack>
 
                             {match.status !== "finished" && (
-                              <Box>
-                                <Typography
-                                  variant="body2"
-                                  sx={{
-                                    fontWeight: 700,
-                                    mb: 0.75,
-                                  }}
-                                >
-                                  Registrera resultat
-                                </Typography>
-
-                                <Stack
-                                  sx={{
-                                    flexDirection: "row",
-                                    flexWrap: "wrap",
-                                    gap: 0.75,
-                                  }}
-                                >
-                                  {getPossibleResults(
-                                    data.tournament.groupBestOf,
-                                  ).map(([teamALegs, teamBLegs]) => (
-                                    <Button
-                                      key={`${teamALegs}-${teamBLegs}`}
-                                      size="small"
-                                      variant="outlined"
-                                      onClick={() =>
-                                        handleResult(
-                                          match.id,
-                                          teamALegs,
-                                          teamBLegs,
-                                        )
-                                      }
-                                      sx={{
-                                        minWidth: 54,
-                                        borderRadius: 0.75,
-                                      }}
-                                    >
-                                      {teamALegs} - {teamBLegs}
-                                    </Button>
-                                  ))}
-                                </Stack>
-
-                                {actionError?.matchId === match.id && (
-                                  <Box sx={{ mt: 1 }}>
-                                    <PasdartInlineError
-                                      message={actionError.message}
-                                    />
-                                  </Box>
-                                )}
-                              </Box>
+                              <MatchResultControls
+                                matchId={match.id}
+                                bestOf={data.tournament.groupBestOf}
+                                isAdmin={data.isAdmin}
+                                density="compact"
+                                actionError={
+                                  actionError?.matchId === match.id
+                                    ? actionError.message
+                                    : undefined
+                                }
+                                onResult={handleResult}
+                              />
                             )}
                           </Stack>
                         </Paper>
@@ -1911,55 +1852,17 @@ export default function SchedulePage({
                           </Stack>
 
                           {match.status !== "finished" && (
-                            <Box>
-                              <Typography
-                                sx={{
-                                  fontWeight: 600,
-
-                                  mb: 1,
-                                }}
-                              >
-                                Registrera resultat
-                              </Typography>
-
-                              <Stack
-                                sx={{
-                                  flexDirection: "row",
-
-                                  flexWrap: "wrap",
-
-                                  gap: 1,
-                                }}
-                              >
-                                {getPossibleResults(
-                                  data.tournament.playoffBestOf,
-                                ).map(([teamALegs, teamBLegs]) => (
-                                  <Button
-                                    key={`${teamALegs}-${teamBLegs}`}
-                                    variant="outlined"
-                                    onClick={() =>
-                                      handleResult(
-                                        match.id,
-
-                                        teamALegs,
-
-                                        teamBLegs,
-                                      )
-                                    }
-                                  >
-                                    {teamALegs} - {teamBLegs}
-                                  </Button>
-                                ))}
-                              </Stack>
-
-                              {actionError?.matchId === match.id && (
-                                <Box sx={{ mt: 1 }}>
-                                  <PasdartInlineError
-                                    message={actionError.message}
-                                  />
-                                </Box>
-                              )}
-                            </Box>
+                            <MatchResultControls
+                              matchId={match.id}
+                              bestOf={data.tournament.playoffBestOf}
+                              isAdmin={data.isAdmin}
+                              actionError={
+                                actionError?.matchId === match.id
+                                  ? actionError.message
+                                  : undefined
+                              }
+                              onResult={handleResult}
+                            />
                           )}
                         </Stack>
                       </Paper>
@@ -2231,55 +2134,17 @@ export default function SchedulePage({
                           </Stack>
 
                           {match.status !== "finished" && (
-                            <Box>
-                              <Typography
-                                sx={{
-                                  fontWeight: 600,
-
-                                  mb: 1,
-                                }}
-                              >
-                                Registrera resultat
-                              </Typography>
-
-                              <Stack
-                                sx={{
-                                  flexDirection: "row",
-
-                                  flexWrap: "wrap",
-
-                                  gap: 1,
-                                }}
-                              >
-                                {getPossibleResults(
-                                  data.tournament.playoffBestOf,
-                                ).map(([teamALegs, teamBLegs]) => (
-                                  <Button
-                                    key={`${teamALegs}-${teamBLegs}`}
-                                    variant="outlined"
-                                    onClick={() =>
-                                      handleResult(
-                                        match.id,
-
-                                        teamALegs,
-
-                                        teamBLegs,
-                                      )
-                                    }
-                                  >
-                                    {teamALegs} - {teamBLegs}
-                                  </Button>
-                                ))}
-                              </Stack>
-
-                              {actionError?.matchId === match.id && (
-                                <Box sx={{ mt: 1 }}>
-                                  <PasdartInlineError
-                                    message={actionError.message}
-                                  />
-                                </Box>
-                              )}
-                            </Box>
+                            <MatchResultControls
+                              matchId={match.id}
+                              bestOf={data.tournament.playoffBestOf}
+                              isAdmin={data.isAdmin}
+                              actionError={
+                                actionError?.matchId === match.id
+                                  ? actionError.message
+                                  : undefined
+                              }
+                              onResult={handleResult}
+                            />
                           )}
                         </Stack>
                       </Paper>
