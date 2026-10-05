@@ -125,6 +125,8 @@ type TournamentResponse = {
   requiresCastoff: boolean;
 
   castoffGroups: CastoffGroup[];
+
+  isAdmin: boolean;
 };
 
 export default function SchedulePage({
@@ -192,7 +194,15 @@ export default function SchedulePage({
       try {
         const { publicId } = await params;
 
-        const response = await fetch(`/api/tournaments/${publicId}/matches`);
+        const adminToken = localStorage.getItem(`pasdart_admin_${publicId}`);
+
+        const response = await fetch(`/api/tournaments/${publicId}/matches`, {
+          headers: adminToken
+            ? {
+                "x-admin-token": adminToken,
+              }
+            : undefined,
+        });
 
         if (!response.ok) {
           throw new Error();
