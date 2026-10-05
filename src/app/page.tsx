@@ -35,7 +35,6 @@ export default function Home() {
   const [viewerCode, setViewerCode] = useState("");
   const [viewerError, setViewerError] = useState("");
   const [joiningViewer, setJoiningViewer] = useState(false);
-  const [showViewerJoin, setShowViewerJoin] = useState(false);
 
   const [activeTournament, setActiveTournament] =
     useState<ActiveTournament | null>(null);
@@ -129,7 +128,6 @@ export default function Home() {
       }
 
       sessionStorage.setItem(`pasdart_viewer_${result.publicId}`, "1");
-
       router.push(`/tournaments/${result.publicId}/schedule`);
     } catch {
       setViewerError("Kunde inte hitta cupen.");
@@ -214,10 +212,7 @@ export default function Home() {
 
                     <Typography
                       variant="body2"
-                      sx={{
-                        color: "text.secondary",
-                        mt: 0.15,
-                      }}
+                      sx={{ color: "text.secondary", mt: 0.15 }}
                     >
                       {getTournamentPhase(activeTournament.status)} · Följ
                       matcher och tabell live
@@ -267,7 +262,6 @@ export default function Home() {
                   backgroundColor: "success.dark",
                 }}
               />
-
               <Box
                 sx={{
                   width: 28,
@@ -275,7 +269,6 @@ export default function Home() {
                   backgroundColor: "error.dark",
                 }}
               />
-
               <Box
                 sx={{
                   width: 28,
@@ -287,17 +280,21 @@ export default function Home() {
 
             <Box
               sx={{
-                p: { xs: 2.5, sm: 3.25, md: 4 },
+                p: { xs: 2.5, sm: 3.5, md: 5 },
+                minHeight: { md: 390 },
+                display: "flex",
+                alignItems: "center",
               }}
             >
               <Box
                 sx={{
+                  width: "100%",
                   display: "grid",
                   gridTemplateColumns: {
                     xs: "1fr",
-                    md: "minmax(0, 1.45fr) minmax(260px, 0.55fr)",
+                    md: "minmax(0, 1.65fr) minmax(250px, 0.35fr)",
                   },
-                  gap: { xs: 3, md: 4.5 },
+                  gap: { xs: 3.5, md: 5 },
                   alignItems: "center",
                 }}
               >
@@ -306,7 +303,7 @@ export default function Home() {
                     sx={{
                       fontFamily: 'Georgia, "Times New Roman", serif',
                       fontStyle: "italic",
-                      fontSize: { xs: "1.15rem", sm: "1.3rem" },
+                      fontSize: { xs: "1.15rem", sm: "1.3rem", md: "1.4rem" },
                       color: "rgba(255,255,255,0.82)",
                       lineHeight: 1,
                     }}
@@ -317,15 +314,15 @@ export default function Home() {
                   <Typography
                     component="h1"
                     sx={{
-                      mt: 1.35,
+                      mt: 1.45,
                       fontWeight: 800,
-                      letterSpacing: "-0.035em",
+                      letterSpacing: "-0.04em",
                       fontSize: {
                         xs: "2.35rem",
-                        sm: "3rem",
-                        md: "3.35rem",
+                        sm: "3.1rem",
+                        md: "4.15rem",
                       },
-                      lineHeight: 1.03,
+                      lineHeight: 0.98,
                     }}
                   >
                     Sugen på öl?
@@ -340,7 +337,7 @@ export default function Home() {
                       display: "flex",
                       alignItems: "center",
                       gap: 0.5,
-                      mt: 2,
+                      mt: 2.25,
                     }}
                   >
                     <Box
@@ -350,7 +347,6 @@ export default function Home() {
                         backgroundColor: "success.dark",
                       }}
                     />
-
                     <Box
                       sx={{
                         width: 24,
@@ -358,7 +354,6 @@ export default function Home() {
                         backgroundColor: "error.dark",
                       }}
                     />
-
                     <Box
                       sx={{
                         width: 24,
@@ -371,9 +366,9 @@ export default function Home() {
                   <Typography
                     sx={{
                       color: "text.secondary",
-                      mt: 1.5,
-                      maxWidth: 600,
-                      fontSize: { xs: "0.95rem", sm: "1rem" },
+                      mt: 1.6,
+                      maxWidth: 640,
+                      fontSize: { xs: "0.95rem", sm: "1rem", md: "1.05rem" },
                       lineHeight: 1.55,
                     }}
                   >
@@ -402,13 +397,23 @@ export default function Home() {
                     STARTA KVÄLLEN
                   </Typography>
 
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      mt: 0.25,
+                      mb: 1.5,
+                      fontWeight: 800,
+                    }}
+                  >
+                    Redo för en ny cup?
+                  </Typography>
+
                   <Button
                     href="/tournaments/new"
                     variant="contained"
                     size="large"
                     fullWidth
                     sx={{
-                      mt: 1,
                       minHeight: 52,
                       borderRadius: 0.75,
                       boxShadow: "none",
@@ -417,111 +422,107 @@ export default function Home() {
                   >
                     Skapa ny cup
                   </Button>
-
-                  <Button
-                    type="button"
-                    variant="text"
-                    size="small"
-                    onClick={() => {
-                      setShowViewerJoin((current) => !current);
-                      setViewerError("");
-                    }}
-                    sx={{
-                      mt: 1.25,
-                      px: 0,
-                      minWidth: 0,
-                      color: "text.secondary",
-                      justifyContent: "flex-start",
-                      fontWeight: 700,
-                      "&:hover": {
-                        backgroundColor: "transparent",
-                        color: "text.primary",
-                      },
-                    }}
-                  >
-                    Har du en följkod? {showViewerJoin ? "Stäng" : "Ange kod →"}
-                  </Button>
-
-                  {showViewerJoin && (
-                    <Stack
-                      spacing={1}
-                      sx={{
-                        mt: 1.25,
-                      }}
-                    >
-                      <Stack
-                        sx={{
-                          flexDirection: {
-                            xs: "column",
-                            sm: "row",
-                            md: "column",
-                          },
-                          gap: 1,
-                        }}
-                      >
-                        <TextField
-                          value={viewerCode}
-                          onChange={(event) => {
-                            setViewerCode(event.target.value.toUpperCase());
-
-                            if (viewerError) {
-                              setViewerError("");
-                            }
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                              void handleFollowTournament();
-                            }
-                          }}
-                          placeholder="T.ex. 483217"
-                          slotProps={{
-                            htmlInput: {
-                              maxLength: 6,
-                              inputMode: "numeric",
-                              pattern: "[0-9]*",
-                              "aria-label": "Följkod",
-                            },
-                          }}
-                          fullWidth
-                          size="small"
-                        />
-
-                        <Button
-                          variant="outlined"
-                          onClick={() => void handleFollowTournament()}
-                          disabled={joiningViewer}
-                          sx={{
-                            minHeight: 42,
-                            minWidth: { sm: 120, md: 0 },
-                            borderRadius: 0.75,
-                            borderColor: "rgba(255,255,255,0.18)",
-                            color: "text.primary",
-                            fontWeight: 800,
-                          }}
-                        >
-                          {joiningViewer ? "Öppnar..." : "Följ"}
-                        </Button>
-                      </Stack>
-
-                      {viewerError && (
-                        <PasdartInlineError message={viewerError} />
-                      )}
-                    </Stack>
-                  )}
-
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      display: "block",
-                      color: "text.secondary",
-                      mt: 1.6,
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    Spelare och övriga inställningar hittar du i menyn ovan.
-                  </Typography>
                 </Box>
               </Box>
+            </Box>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{
+              px: { xs: 2, sm: 2.5 },
+              py: { xs: 1.75, sm: 2 },
+              border: "1px solid rgba(255,255,255,0.10)",
+              borderRadius: 1,
+              backgroundColor: "rgba(255,255,255,0.012)",
+            }}
+          >
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  md: "minmax(190px, 0.55fr) minmax(0, 1.45fr)",
+                },
+                gap: { xs: 1.5, md: 3 },
+                alignItems: "center",
+              }}
+            >
+              <Box>
+                <Typography
+                  variant="overline"
+                  sx={{
+                    color: "success.light",
+                    fontWeight: 800,
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  FÖLJ EN CUP
+                </Typography>
+
+                <Typography
+                  sx={{
+                    mt: 0.15,
+                    fontWeight: 800,
+                  }}
+                >
+                  Har du fått en följkod?
+                </Typography>
+              </Box>
+
+              <Stack spacing={1}>
+                <Stack
+                  sx={{
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: 1,
+                  }}
+                >
+                  <TextField
+                    value={viewerCode}
+                    onChange={(event) => {
+                      setViewerCode(event.target.value.toUpperCase());
+
+                      if (viewerError) {
+                        setViewerError("");
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        void handleFollowTournament();
+                      }
+                    }}
+                    placeholder="T.ex. 483217"
+                    slotProps={{
+                      htmlInput: {
+                        maxLength: 6,
+                        inputMode: "numeric",
+                        pattern: "[0-9]*",
+                        "aria-label": "Följkod",
+                      },
+                    }}
+                    fullWidth
+                    size="small"
+                  />
+
+                  <Button
+                    variant="outlined"
+                    onClick={() => void handleFollowTournament()}
+                    disabled={joiningViewer}
+                    sx={{
+                      minHeight: 42,
+                      minWidth: { sm: 120 },
+                      borderRadius: 0.75,
+                      borderColor: "rgba(255,255,255,0.18)",
+                      color: "text.primary",
+                      fontWeight: 800,
+                    }}
+                  >
+                    {joiningViewer ? "Öppnar..." : "Följ"}
+                  </Button>
+                </Stack>
+
+                {viewerError && <PasdartInlineError message={viewerError} />}
+              </Stack>
             </Box>
           </Paper>
 
@@ -566,25 +567,19 @@ export default function Home() {
                 sx={{
                   py: 2.25,
                   px: { xs: 0.5, sm: 2.5 },
-
                   borderLeft: {
                     xs: "none",
-
                     sm:
                       index % 2 === 0
                         ? "none"
                         : "1px solid rgba(255,255,255,0.08)",
-
                     lg:
                       index === 0 ? "none" : "1px solid rgba(255,255,255,0.08)",
                   },
-
                   borderTop: {
                     xs:
                       index === 0 ? "none" : "1px solid rgba(255,255,255,0.08)",
-
                     sm: index < 2 ? "none" : "1px solid rgba(255,255,255,0.08)",
-
                     lg: "none",
                   },
                 }}
