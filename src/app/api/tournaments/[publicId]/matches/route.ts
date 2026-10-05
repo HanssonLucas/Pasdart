@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { matches, players, teamPlayers, teams, tournaments } from "@/db/schema";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: {
     params: Promise<{ publicId: string }>;
   },
@@ -24,6 +24,7 @@ export async function GET(
       playoffMaxDarts: tournaments.playoffMaxDarts,
       tiebreakMethod: tournaments.tiebreakMethod,
       playoffQualifiers: tournaments.playoffQualifiers,
+      adminToken: tournaments.adminToken,
     })
     .from(tournaments)
     .where(eq(tournaments.publicId, publicId));
@@ -34,6 +35,24 @@ export async function GET(
       { status: 404 },
     );
   }
+
+  const requestAdminToken = request.headers.get("x-admin-token");
+
+  const isAdmin =
+    requestAdminToken !== null && requestAdminToken === tournament.adminToken;
+
+  const publicTournament = {
+    id: tournament.id,
+    name: tournament.name,
+    status: tournament.status,
+    gameType: tournament.gameType,
+    groupBestOf: tournament.groupBestOf,
+    playoffBestOf: tournament.playoffBestOf,
+    groupMaxDarts: tournament.groupMaxDarts,
+    playoffMaxDarts: tournament.playoffMaxDarts,
+    tiebreakMethod: tournament.tiebreakMethod,
+    playoffQualifiers: tournament.playoffQualifiers,
+  };
 
   const tournamentTeams = await db
     .select({
@@ -175,12 +194,13 @@ export async function GET(
   const requiresCastoff = castoffGroups.length > 0;
 
   return NextResponse.json({
-    tournament,
+    tournament: publicTournament,
     teams: teamsWithPlayers,
     matches: tournamentMatches,
     standings,
     groupStageComplete,
     requiresCastoff,
     castoffGroups,
+    isAdmin,
   });
 }
