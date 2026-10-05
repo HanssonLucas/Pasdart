@@ -29,6 +29,8 @@ export async function POST(request: Request) {
     gameType,
     teamMode,
     roundRobinType,
+    groupMatchMode,
+    groupLegCount,
     groupBestOf,
     playoffBestOf,
     groupMaxDarts,
@@ -43,6 +45,8 @@ export async function POST(request: Request) {
     !gameType ||
     !teamMode ||
     !roundRobinType ||
+    !groupMatchMode ||
+    !groupLegCount ||
     !groupBestOf ||
     !playoffBestOf ||
     !boardCount ||
@@ -72,6 +76,8 @@ export async function POST(request: Request) {
       gameType: Number(gameType),
       teamMode,
       roundRobinType,
+      groupMatchMode,
+      groupLegCount: Number(groupLegCount),
       groupBestOf: Number(groupBestOf),
       playoffBestOf: Number(playoffBestOf),
       groupMaxDarts: groupMaxDarts ? Number(groupMaxDarts) : null,

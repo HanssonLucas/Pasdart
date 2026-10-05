@@ -53,6 +53,10 @@ export default function NewTournamentPage() {
 
   const [gameType, setGameType] = useState("501");
 
+  const [groupMatchMode] = useState("bestOf");
+
+  const [groupLegCount] = useState("3");
+
   const [groupBestOf, setGroupBestOf] = useState("3");
 
   const [playoffBestOf, setPlayoffBestOf] = useState("5");
@@ -133,6 +137,10 @@ export default function NewTournamentPage() {
           teamMode,
 
           roundRobinType,
+
+          groupMatchMode,
+
+          groupLegCount,
 
           groupBestOf,
 
