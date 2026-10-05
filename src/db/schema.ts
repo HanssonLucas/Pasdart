@@ -28,6 +28,10 @@ export const tournaments = pgTable("tournaments", {
   teamMode: text("team_mode").notNull(),
   roundRobinType: text("round_robin_type").notNull(),
 
+  groupMatchMode: text("group_match_mode").notNull().default("bestOf"),
+
+  groupLegCount: integer("group_leg_count").notNull().default(3),
+
   groupBestOf: integer("group_best_of").notNull(),
   playoffBestOf: integer("playoff_best_of").notNull(),
 
