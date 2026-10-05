@@ -124,6 +124,7 @@ export async function GET(
       );
 
       let wins = 0;
+      let draws = 0;
       let losses = 0;
       let legsWon = 0;
       let legsLost = 0;
@@ -132,7 +133,6 @@ export async function GET(
         const isTeamA = match.teamAId === team.id;
 
         const teamLegs = isTeamA ? match.teamALegs : match.teamBLegs;
-
         const opponentLegs = isTeamA ? match.teamBLegs : match.teamALegs;
 
         legsWon += teamLegs;
@@ -140,6 +140,8 @@ export async function GET(
 
         if (match.winnerTeamId === team.id) {
           wins += 1;
+        } else if (match.winnerTeamId === null) {
+          draws += 1;
         } else {
           losses += 1;
         }
@@ -151,6 +153,7 @@ export async function GET(
         players: team.players,
         played: teamMatches.length,
         wins,
+        draws,
         losses,
         legsWon,
         legsLost,
@@ -158,6 +161,14 @@ export async function GET(
       };
     })
     .sort((a, b) => {
+      if (tournament.groupMatchMode === "fixedLegs") {
+        if (b.legDifference !== a.legDifference) {
+          return b.legDifference - a.legDifference;
+        }
+
+        return b.legsWon - a.legsWon;
+      }
+
       if (b.wins !== a.wins) {
         return b.wins - a.wins;
       }
