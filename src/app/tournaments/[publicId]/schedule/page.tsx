@@ -205,6 +205,12 @@ export default function SchedulePage({
 
   const [viewerCode, setViewerCode] = useState("");
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const [deletingTournament, setDeletingTournament] = useState(false);
+
+  const [deleteError, setDeleteError] = useState("");
+
   function applyTournamentData(result: TournamentResponse) {
     setData(result);
 
@@ -636,6 +642,50 @@ export default function SchedulePage({
     }
   }
 
+  async function handleDeleteTournament() {
+    setDeletingTournament(true);
+    setDeleteError("");
+
+    try {
+      const { publicId } = await params;
+
+      const adminToken = getTournamentAdminToken(publicId);
+
+      if (!adminToken) {
+        setDeleteError("Du saknar behörighet att radera cupen.");
+        return;
+      }
+
+      const response = await fetch(`/api/tournaments/${publicId}`, {
+        method: "DELETE",
+        headers: {
+          "x-admin-token": adminToken,
+        },
+      });
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => null);
+
+        setDeleteError(result?.error ?? "Kunde inte radera cupen.");
+        return;
+      }
+
+      localStorage.removeItem(`pasdart_admin_${publicId}`);
+      localStorage.removeItem(`pasdart_viewer_code_${publicId}`);
+      localStorage.removeItem(`pasdart_show_viewer_code_${publicId}`);
+      sessionStorage.removeItem(`pasdart_viewer_${publicId}`);
+
+      setDeleteDialogOpen(false);
+
+      router.push("/");
+      router.refresh();
+    } catch {
+      setDeleteError("Kunde inte radera cupen.");
+    } finally {
+      setDeletingTournament(false);
+    }
+  }
+
   async function handleResult(
     matchId: number,
     teamALegs: number,
@@ -852,50 +902,81 @@ export default function SchedulePage({
                 >
                   <Stack
                     sx={{
-                      flexDirection: "row",
-
-                      flexWrap: "wrap",
-
-                      alignItems: "center",
-
-                      gap: 1,
+                      flexDirection: { xs: "column", sm: "row" },
+                      justifyContent: "space-between",
+                      alignItems: { xs: "flex-start", sm: "center" },
+                      gap: 1.25,
                     }}
                   >
-                    <Typography
-                      variant="caption"
+                    <Stack
                       sx={{
-                        color: "error.light",
-                        fontWeight: 800,
-                        letterSpacing: "0.08em",
+                        flexDirection: "row",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        gap: 1,
                       }}
                     >
-                      {isPlayoffView ? "SLUTSPEL" : "GRUPPSPEL"}
-                    </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "error.light",
+                          fontWeight: 800,
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        {isPlayoffView ? "SLUTSPEL" : "GRUPPSPEL"}
+                      </Typography>
 
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.secondary" }}
-                    >
-                      {isPlayoffView ? (
-                        <>
-                          {data.tournament.gameType} · Bäst av{" "}
-                          {data.tournament.playoffBestOf}
-                          {data.tournament.playoffMaxDarts
-                            ? ` · Max ${data.tournament.playoffMaxDarts} darts`
-                            : ""}
-                        </>
-                      ) : (
-                        <>
-                          {data.tournament.gameType} · Gruppspel ·{" "}
-                          {data.tournament.groupMatchMode === "fixedLegs"
-                            ? `${data.tournament.groupLegCount} legs - alla spelas`
-                            : `Bäst av ${data.tournament.groupBestOf}`}
-                          {data.tournament.groupMaxDarts
-                            ? ` · Max ${data.tournament.groupMaxDarts} darts`
-                            : ""}
-                        </>
-                      )}
-                    </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "text.secondary" }}
+                      >
+                        {isPlayoffView ? (
+                          <>
+                            {data.tournament.gameType} · Bäst av{" "}
+                            {data.tournament.playoffBestOf}
+                            {data.tournament.playoffMaxDarts
+                              ? ` · Max ${data.tournament.playoffMaxDarts} darts`
+                              : ""}
+                          </>
+                        ) : (
+                          <>
+                            {data.tournament.gameType} · Gruppspel ·{" "}
+                            {data.tournament.groupMatchMode === "fixedLegs"
+                              ? `${data.tournament.groupLegCount} legs - alla spelas`
+                              : `Bäst av ${data.tournament.groupBestOf}`}
+                            {data.tournament.groupMaxDarts
+                              ? ` · Max ${data.tournament.groupMaxDarts} darts`
+                              : ""}
+                          </>
+                        )}
+                      </Typography>
+                    </Stack>
+
+                    {data.isAdmin && data.tournament.status !== "finished" && (
+                      <Button
+                        type="button"
+                        variant="text"
+                        size="small"
+                        onClick={() => {
+                          setDeleteError("");
+                          setDeleteDialogOpen(true);
+                        }}
+                        sx={{
+                          px: 0,
+                          minWidth: 0,
+                          flexShrink: 0,
+                          color: "error.light",
+                          fontWeight: 700,
+                          "&:hover": {
+                            backgroundColor: "transparent",
+                            color: "error.main",
+                          },
+                        }}
+                      >
+                        Avsluta turnering
+                      </Button>
+                    )}
                   </Stack>
                 </Box>
               </Stack>
@@ -2618,6 +2699,129 @@ export default function SchedulePage({
         viewerCode={viewerCodeDialog}
         onClose={() => setViewerCodeDialog("")}
       />
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          if (!deletingTournament) {
+            setDeleteDialogOpen(false);
+            setDeleteError("");
+          }
+        }}
+        fullWidth
+        maxWidth="sm"
+        slotProps={{
+          paper: {
+            sx: {
+              border: "1px solid rgba(198,40,40,0.45)",
+              borderRadius: 1,
+              backgroundImage: "none",
+              backgroundColor: "#191919",
+            },
+          },
+        }}
+      >
+        <Box
+          sx={{
+            height: 3,
+            backgroundColor: "error.dark",
+          }}
+        />
+
+        <DialogContent
+          sx={{
+            px: { xs: 2.5, sm: 3.5 },
+            pt: 3,
+            pb: 2,
+          }}
+        >
+          <Typography
+            variant="overline"
+            sx={{
+              color: "error.light",
+              fontWeight: 800,
+              letterSpacing: "0.1em",
+            }}
+          >
+            VARNING
+          </Typography>
+
+          <Typography
+            variant="h5"
+            sx={{
+              mt: 0.4,
+              fontWeight: 800,
+            }}
+          >
+            Radera turneringen?
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 1,
+              color: "text.secondary",
+              lineHeight: 1.7,
+            }}
+          >
+            Hela cupen tas bort permanent, inklusive lag, matcher och resultat.
+            Spelarna i spelarregistret påverkas inte.
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 1,
+              color: "error.light",
+              fontWeight: 700,
+            }}
+          >
+            Detta går inte att ångra.
+          </Typography>
+
+          {deleteError && (
+            <Box sx={{ mt: 2 }}>
+              <PasdartInlineError message={deleteError} />
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions
+          sx={{
+            px: { xs: 2.5, sm: 3.5 },
+            pb: 3,
+            pt: 1,
+            gap: 1,
+          }}
+        >
+          <Button
+            type="button"
+            variant="text"
+            disabled={deletingTournament}
+            onClick={() => {
+              setDeleteDialogOpen(false);
+              setDeleteError("");
+            }}
+          >
+            Avbryt
+          </Button>
+
+          <Button
+            type="button"
+            variant="contained"
+            disabled={deletingTournament}
+            onClick={handleDeleteTournament}
+            sx={{
+              backgroundColor: "error.dark",
+              "&:hover": {
+                backgroundColor: "error.main",
+              },
+            }}
+          >
+            {deletingTournament ? "Raderar..." : "Radera turnering"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {winnerTeam && finishedFinal && (
         <Dialog
