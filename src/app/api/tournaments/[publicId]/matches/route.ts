@@ -18,7 +18,11 @@ export async function GET(
       name: tournaments.name,
       status: tournaments.status,
       gameType: tournaments.gameType,
+
+      groupMatchMode: tournaments.groupMatchMode,
+      groupLegCount: tournaments.groupLegCount,
       groupBestOf: tournaments.groupBestOf,
+
       playoffBestOf: tournaments.playoffBestOf,
       groupMaxDarts: tournaments.groupMaxDarts,
       playoffMaxDarts: tournaments.playoffMaxDarts,

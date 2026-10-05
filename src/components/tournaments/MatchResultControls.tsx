@@ -7,6 +7,8 @@ import PasdartInlineError from "@/components/PasdartInlineError";
 type MatchResultControlsProps = {
   matchId: number;
   bestOf: number;
+  matchMode?: "bestOf" | "fixedLegs";
+  fixedLegCount?: number;
   isAdmin: boolean;
   density?: "default" | "compact";
   actionError?: string;
@@ -29,9 +31,21 @@ function getPossibleResults(bestOf: number) {
   return results;
 }
 
+function getPossibleFixedLegResults(legCount: number) {
+  const results: Array<[number, number]> = [];
+
+  for (let teamALegs = legCount; teamALegs >= 0; teamALegs -= 1) {
+    results.push([teamALegs, legCount - teamALegs]);
+  }
+
+  return results;
+}
+
 export default function MatchResultControls({
   matchId,
   bestOf,
+  matchMode = "bestOf",
+  fixedLegCount,
   isAdmin,
   density = "default",
   actionError,
@@ -42,6 +56,11 @@ export default function MatchResultControls({
   }
 
   const compact = density === "compact";
+
+  const possibleResults =
+    matchMode === "fixedLegs" && fixedLegCount
+      ? getPossibleFixedLegResults(fixedLegCount)
+      : getPossibleResults(bestOf);
 
   return (
     <Box>
@@ -62,7 +81,7 @@ export default function MatchResultControls({
           gap: compact ? 0.75 : 1,
         }}
       >
-        {getPossibleResults(bestOf).map(([teamALegs, teamBLegs]) => (
+        {possibleResults.map(([teamALegs, teamBLegs]) => (
           <Button
             key={`${teamALegs}-${teamBLegs}`}
             size={compact ? "small" : "medium"}

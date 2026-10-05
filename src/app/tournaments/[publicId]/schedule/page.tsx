@@ -104,6 +104,10 @@ type TournamentResponse = {
 
     gameType: number;
 
+    groupMatchMode: string;
+
+    groupLegCount: number;
+
     groupBestOf: number;
 
     playoffBestOf: number;

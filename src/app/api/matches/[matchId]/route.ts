@@ -51,6 +51,8 @@ export async function PATCH(
   const [tournament] = await db
     .select({
       adminToken: tournaments.adminToken,
+      groupMatchMode: tournaments.groupMatchMode,
+      groupLegCount: tournaments.groupLegCount,
       groupBestOf: tournaments.groupBestOf,
       playoffBestOf: tournaments.playoffBestOf,
     })
@@ -66,25 +68,50 @@ export async function PATCH(
     );
   }
 
-  const bestOf =
-    match.stage === "group" ? tournament.groupBestOf : tournament.playoffBestOf;
+  let winnerTeamId: number | null = null;
 
-  const legsNeededToWin = Math.floor(bestOf / 2) + 1;
+  if (match.stage === "group" && tournament.groupMatchMode === "fixedLegs") {
+    const legCount = tournament.groupLegCount;
 
-  const teamAWon = teamALegs === legsNeededToWin && teamBLegs < legsNeededToWin;
+    if (teamALegs + teamBLegs !== legCount) {
+      return NextResponse.json(
+        {
+          error: `Gruppmatchen ska innehålla exakt ${legCount} spelade legs.`,
+        },
+        { status: 400 },
+      );
+    }
 
-  const teamBWon = teamBLegs === legsNeededToWin && teamALegs < legsNeededToWin;
+    if (teamALegs > teamBLegs) {
+      winnerTeamId = match.teamAId;
+    } else if (teamBLegs > teamALegs) {
+      winnerTeamId = match.teamBId;
+    }
+  } else {
+    const bestOf =
+      match.stage === "group"
+        ? tournament.groupBestOf
+        : tournament.playoffBestOf;
 
-  if (!teamAWon && !teamBWon) {
-    return NextResponse.json(
-      {
-        error: `En match bäst av ${bestOf} kräver ${legsNeededToWin} vunna legs.`,
-      },
-      { status: 400 },
-    );
+    const legsNeededToWin = Math.floor(bestOf / 2) + 1;
+
+    const teamAWon =
+      teamALegs === legsNeededToWin && teamBLegs < legsNeededToWin;
+
+    const teamBWon =
+      teamBLegs === legsNeededToWin && teamALegs < legsNeededToWin;
+
+    if (!teamAWon && !teamBWon) {
+      return NextResponse.json(
+        {
+          error: `En match bäst av ${bestOf} kräver ${legsNeededToWin} vunna legs.`,
+        },
+        { status: 400 },
+      );
+    }
+
+    winnerTeamId = teamAWon ? match.teamAId : match.teamBId;
   }
-
-  const winnerTeamId = teamAWon ? match.teamAId : match.teamBId;
 
   const [updatedMatch] = await db
     .update(matches)
