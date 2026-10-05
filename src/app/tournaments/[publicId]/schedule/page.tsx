@@ -1439,10 +1439,9 @@ export default function SchedulePage({
                         lineHeight: 1.6,
                       }}
                     >
-                      Gruppspelet är klart, men lag med samma antal vinster
-                      måste skiljas åt innan slutspelet kan starta. Gör castoff
-                      och flytta sedan lagen här så att ordningen stämmer med
-                      resultatet.
+                      Gruppspelet är klart. Gör castoff mellan lagen som står
+                      lika. Använd sedan pilarna för att lägga vinnaren högst
+                      upp och resten i resultatordning.
                     </Typography>
                   </Box>
 
@@ -1476,7 +1475,8 @@ export default function SchedulePage({
                                 variant="caption"
                                 sx={{ color: "text.secondary" }}
                               >
-                                Flytta lagen till rätt castoff-ordning.
+                                Vinnaren ska ligga högst upp. Ordna resten efter
+                                castoff-resultatet.
                               </Typography>
                             </Box>
 
@@ -1647,7 +1647,7 @@ export default function SchedulePage({
                         >
                           {savingCastoff
                             ? "Sparar castoff..."
-                            : "Bekräfta castoff"}
+                            : "Bekräfta castoff-ordning"}
                         </Button>
 
                         <Typography
@@ -1659,7 +1659,8 @@ export default function SchedulePage({
                             mt: 1,
                           }}
                         >
-                          När castoff är bekräftad kan slutspelet startas.
+                          Kontrollera ordningen och bekräfta när vinnaren ligger
+                          högst upp.
                         </Typography>
                       </Box>
                     )}
