@@ -183,7 +183,7 @@ export async function GET(
     teams: typeof standings;
   }> = [];
 
-  if (groupStageComplete && tournament.tiebreakMethod === "castoff") {
+  if (groupStageComplete) {
     const relevantStandings = standings.filter(
       (_, index) => index < tournament.playoffQualifiers,
     );
@@ -218,7 +218,7 @@ export async function GET(
           });
         }
       }
-    } else {
+    } else if (tournament.tiebreakMethod === "castoff") {
       const winsInPlayoffs = new Set(
         relevantStandings.map((standing) => standing.wins),
       );
@@ -241,6 +241,44 @@ export async function GET(
             wins,
             key: `wins:${wins}`,
             label: `${wins} ${wins === 1 ? "vinst" : "vinster"}`,
+            teams: tiedTeams,
+          });
+        }
+      }
+    } else {
+      const rankingKeysInPlayoffs = new Set(
+        relevantStandings.map(
+          (standing) => `${standing.wins}:${standing.legDifference}`,
+        ),
+      );
+
+      for (const rankingKey of rankingKeysInPlayoffs) {
+        const [winsValue, legDifferenceValue] = rankingKey.split(":");
+
+        const wins = Number(winsValue);
+        const legDifference = Number(legDifferenceValue);
+
+        const tiedTeams = standings.filter(
+          (standing) =>
+            standing.wins === wins && standing.legDifference === legDifference,
+        );
+
+        const castoffAlreadyCompleted = tiedTeams.every((standing) => {
+          const team = tournamentTeams.find(
+            (tournamentTeam) => tournamentTeam.id === standing.teamId,
+          );
+
+          return team?.seed !== null && team?.seed !== undefined;
+        });
+
+        if (tiedTeams.length > 1 && !castoffAlreadyCompleted) {
+          const formattedLegDifference =
+            legDifference > 0 ? `+${legDifference}` : String(legDifference);
+
+          castoffGroups.push({
+            wins,
+            key: `wins:${wins}:legDifference:${legDifference}`,
+            label: `${wins} ${wins === 1 ? "vinst" : "vinster"} · ${formattedLegDifference} i legdiff`,
             teams: tiedTeams,
           });
         }
