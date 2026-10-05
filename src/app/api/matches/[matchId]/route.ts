@@ -50,16 +50,19 @@ export async function PATCH(
 
   const [tournament] = await db
     .select({
+      adminToken: tournaments.adminToken,
       groupBestOf: tournaments.groupBestOf,
       playoffBestOf: tournaments.playoffBestOf,
     })
     .from(tournaments)
     .where(eq(tournaments.id, match.tournamentId));
 
-  if (!tournament) {
+  const adminToken = request.headers.get("x-admin-token");
+
+  if (!adminToken || adminToken !== tournament.adminToken) {
     return NextResponse.json(
-      { error: "Cupen hittades inte." },
-      { status: 404 },
+      { error: "Du saknar behörighet att ändra resultat." },
+      { status: 403 },
     );
   }
 

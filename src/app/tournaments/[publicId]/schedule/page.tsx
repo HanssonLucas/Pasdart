@@ -23,6 +23,7 @@ import {
 
 import PasdartErrorState from "@/components/PasdartErrorState";
 import PasdartLoadingState from "@/components/PasdartLoadingState";
+import PasdartInlineError from "@/components/PasdartInlineError";
 
 type Player = {
   id: number;
@@ -136,6 +137,11 @@ export default function SchedulePage({
   const [data, setData] = useState<TournamentResponse | null>(null);
 
   const [error, setError] = useState("");
+
+  const [actionError, setActionError] = useState<{
+    matchId: number;
+    message: string;
+  } | null>(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -509,22 +515,34 @@ export default function SchedulePage({
 
   async function handleResult(
     matchId: number,
-
     teamALegs: number,
-
     teamBLegs: number,
   ) {
     try {
+      const { publicId } = await params;
+
+      setActionError(null);
+
+      const adminToken = localStorage.getItem(`pasdart_admin_${publicId}`);
+
+      if (!adminToken) {
+        setActionError({
+          matchId,
+          message: "Du saknar behörighet att registrera resultat.",
+        });
+        return;
+      }
+
       const response = await fetch(`/api/matches/${matchId}`, {
         method: "PATCH",
 
         headers: {
           "Content-Type": "application/json",
+          "x-admin-token": adminToken,
         },
 
         body: JSON.stringify({
           teamALegs,
-
           teamBLegs,
         }),
       });
@@ -532,8 +550,6 @@ export default function SchedulePage({
       if (!response.ok) {
         throw new Error();
       }
-
-      const { publicId } = await params;
 
       const updatedResponse = await fetch(
         `/api/tournaments/${publicId}/matches`,
@@ -547,7 +563,10 @@ export default function SchedulePage({
 
       applyTournamentData(updatedData);
     } catch {
-      setError("Kunde inte spara matchresultatet.");
+      setActionError({
+        matchId,
+        message: "Kunde inte spara matchresultatet.",
+      });
     }
   }
 
@@ -1274,6 +1293,14 @@ export default function SchedulePage({
                                     </Button>
                                   ))}
                                 </Stack>
+
+                                {actionError?.matchId === match.id && (
+                                  <Box sx={{ mt: 1 }}>
+                                    <PasdartInlineError
+                                      message={actionError.message}
+                                    />
+                                  </Box>
+                                )}
                               </Box>
                             )}
                           </Stack>
@@ -1914,6 +1941,14 @@ export default function SchedulePage({
                                   </Button>
                                 ))}
                               </Stack>
+
+                              {actionError?.matchId === match.id && (
+                                <Box sx={{ mt: 1 }}>
+                                  <PasdartInlineError
+                                    message={actionError.message}
+                                  />
+                                </Box>
+                              )}
                             </Box>
                           )}
                         </Stack>
@@ -2226,6 +2261,14 @@ export default function SchedulePage({
                                   </Button>
                                 ))}
                               </Stack>
+
+                              {actionError?.matchId === match.id && (
+                                <Box sx={{ mt: 1 }}>
+                                  <PasdartInlineError
+                                    message={actionError.message}
+                                  />
+                                </Box>
+                              )}
                             </Box>
                           )}
                         </Stack>
