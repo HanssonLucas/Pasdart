@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { db } from "@/db";
@@ -16,6 +16,7 @@ export async function PATCH(
   const parsedMatchId = Number(matchId);
   const teamALegs = Number(body.teamALegs);
   const teamBLegs = Number(body.teamBLegs);
+  const resetFinal = body.resetFinal === true;
 
   if (
     !Number.isInteger(parsedMatchId) ||
@@ -37,6 +38,7 @@ export async function PATCH(
       stage: matches.stage,
       teamAId: matches.teamAId,
       teamBId: matches.teamBId,
+      winnerTeamId: matches.winnerTeamId,
     })
     .from(matches)
     .where(eq(matches.id, parsedMatchId));
@@ -59,6 +61,13 @@ export async function PATCH(
     })
     .from(tournaments)
     .where(eq(tournaments.id, match.tournamentId));
+
+  if (!tournament) {
+    return NextResponse.json(
+      { error: "Cupen hittades inte." },
+      { status: 404 },
+    );
+  }
 
   const adminToken = request.headers.get("x-admin-token");
 
@@ -125,6 +134,69 @@ export async function PATCH(
     }
 
     winnerTeamId = teamAWon ? match.teamAId : match.teamBId;
+  }
+
+  if (match.stage === "semifinal" && match.winnerTeamId !== winnerTeamId) {
+    const [existingFinal] = await db
+      .select({
+        id: matches.id,
+      })
+      .from(matches)
+      .where(
+        and(
+          eq(matches.tournamentId, match.tournamentId),
+          eq(matches.stage, "final"),
+        ),
+      );
+
+    if (existingFinal && !resetFinal) {
+      return NextResponse.json(
+        {
+          code: "FINAL_RESET_REQUIRED",
+          error: "Finalen måste tas bort eftersom semifinalens vinnare ändras.",
+        },
+        { status: 409 },
+      );
+    }
+
+    if (existingFinal && resetFinal) {
+      const updatedMatch = await db.transaction(async (tx) => {
+        await tx
+          .delete(matches)
+          .where(
+            and(
+              eq(matches.tournamentId, match.tournamentId),
+              eq(matches.stage, "final"),
+            ),
+          );
+
+        const [updatedSemifinal] = await tx
+          .update(matches)
+          .set({
+            teamALegs,
+            teamBLegs,
+            winnerTeamId,
+            status: "finished",
+            updatedAt: new Date(),
+          })
+          .where(eq(matches.id, match.id))
+          .returning();
+
+        await tx
+          .update(tournaments)
+          .set({
+            status: "playoffs",
+            isLive: true,
+            finishedAt: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(tournaments.id, match.tournamentId));
+
+        return updatedSemifinal;
+      });
+
+      return NextResponse.json(updatedMatch);
+    }
   }
 
   const [updatedMatch] = await db
