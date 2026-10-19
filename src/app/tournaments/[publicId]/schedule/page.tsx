@@ -2151,18 +2151,20 @@ export default function SchedulePage({
                             </Box>
                           </Stack>
 
-                          {match.status !== "finished" && (
-                            <MatchResultControls
-                              matchId={match.id}
-                              bestOf={data.tournament.playoffBestOf}
-                              isAdmin={data.isAdmin}
-                              actionError={
-                                actionError?.matchId === match.id
-                                  ? actionError.message
-                                  : undefined
-                              }
-                              onResult={handleResult}
-                            />
+                          {editingMatchId === match.id && (
+                            <Button
+                              type="button"
+                              variant="text"
+                              size="small"
+                              onClick={() => setEditingMatchId(null)}
+                              sx={{
+                                alignSelf: "flex-start",
+                                px: 0,
+                                minWidth: 0,
+                              }}
+                            >
+                              Avbryt
+                            </Button>
                           )}
                         </Stack>
                       </Paper>
