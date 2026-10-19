@@ -2527,11 +2527,36 @@ export default function SchedulePage({
                             </Box>
                           </Stack>
 
-                          {match.status !== "finished" && (
+                          {match.status === "finished" &&
+                            data.isAdmin &&
+                            editingMatchId !== match.id && (
+                              <Button
+                                type="button"
+                                variant="text"
+                                size="small"
+                                onClick={() => setEditingMatchId(match.id)}
+                                sx={{
+                                  alignSelf: "flex-start",
+                                  px: 0,
+                                  minWidth: 0,
+                                  fontWeight: 700,
+                                }}
+                              >
+                                Ändra resultat
+                              </Button>
+                            )}
+
+                          {(match.status !== "finished" ||
+                            editingMatchId === match.id) && (
                             <MatchResultControls
                               matchId={match.id}
                               bestOf={data.tournament.playoffBestOf}
                               isAdmin={data.isAdmin}
+                              title={
+                                editingMatchId === match.id
+                                  ? "Ändra resultat"
+                                  : "Registrera resultat"
+                              }
                               actionError={
                                 actionError?.matchId === match.id
                                   ? actionError.message
@@ -2539,6 +2564,22 @@ export default function SchedulePage({
                               }
                               onResult={handleResult}
                             />
+                          )}
+
+                          {editingMatchId === match.id && (
+                            <Button
+                              type="button"
+                              variant="text"
+                              size="small"
+                              onClick={() => setEditingMatchId(null)}
+                              sx={{
+                                alignSelf: "flex-start",
+                                px: 0,
+                                minWidth: 0,
+                              }}
+                            >
+                              Avbryt
+                            </Button>
                           )}
                         </Stack>
                       </Paper>

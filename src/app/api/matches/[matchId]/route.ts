@@ -219,7 +219,7 @@ export async function PATCH(
       .set({
         status: "finished",
         isLive: false,
-        finishedAt: new Date(),
+        ...(tournament.status !== "finished" ? { finishedAt: new Date() } : {}),
         updatedAt: new Date(),
       })
       .where(eq(tournaments.id, match.tournamentId));
