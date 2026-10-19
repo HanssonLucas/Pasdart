@@ -213,6 +213,14 @@ export default function SchedulePage({
 
   const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
 
+  const [pendingSemifinalResult, setPendingSemifinalResult] = useState<{
+    matchId: number;
+    teamALegs: number;
+    teamBLegs: number;
+  } | null>(null);
+
+  const [resettingFinal, setResettingFinal] = useState(false);
+
   function applyTournamentData(result: TournamentResponse) {
     setData(result);
 
@@ -692,6 +700,7 @@ export default function SchedulePage({
     matchId: number,
     teamALegs: number,
     teamBLegs: number,
+    resetFinal = false,
   ) {
     try {
       const { publicId } = await params;
@@ -705,7 +714,8 @@ export default function SchedulePage({
           matchId,
           message: "Du saknar behörighet att registrera resultat.",
         });
-        return;
+
+        return false;
       }
 
       const response = await fetch(`/api/matches/${matchId}`, {
@@ -719,10 +729,26 @@ export default function SchedulePage({
         body: JSON.stringify({
           teamALegs,
           teamBLegs,
+          ...(resetFinal ? { resetFinal: true } : {}),
         }),
       });
 
       if (!response.ok) {
+        const result = await response.json().catch(() => null);
+
+        if (
+          response.status === 409 &&
+          result?.code === "FINAL_RESET_REQUIRED"
+        ) {
+          setPendingSemifinalResult({
+            matchId,
+            teamALegs,
+            teamBLegs,
+          });
+
+          return false;
+        }
+
         throw new Error();
       }
 
@@ -736,12 +762,37 @@ export default function SchedulePage({
 
       applyTournamentData(updatedData);
       setEditingMatchId(null);
+
+      return true;
     } catch {
       setActionError({
         matchId,
         message: "Kunde inte spara matchresultatet.",
       });
+
+      return false;
     }
+  }
+
+  async function handleConfirmSemifinalResultReset() {
+    if (!pendingSemifinalResult) {
+      return;
+    }
+
+    setResettingFinal(true);
+
+    const saved = await handleResult(
+      pendingSemifinalResult.matchId,
+      pendingSemifinalResult.teamALegs,
+      pendingSemifinalResult.teamBLegs,
+      true,
+    );
+
+    if (saved) {
+      setPendingSemifinalResult(null);
+    }
+
+    setResettingFinal(false);
   }
 
   return (
@@ -1494,6 +1545,7 @@ export default function SchedulePage({
                                   Ändra resultat
                                 </Button>
                               )}
+
                             {(match.status !== "finished" ||
                               editingMatchId === match.id) && (
                               <MatchResultControls
@@ -1520,6 +1572,7 @@ export default function SchedulePage({
                                 onResult={handleResult}
                               />
                             )}
+
                             {editingMatchId === match.id && (
                               <Button
                                 type="button"
@@ -2150,6 +2203,45 @@ export default function SchedulePage({
                               )}
                             </Box>
                           </Stack>
+
+                          {match.status === "finished" &&
+                            data.isAdmin &&
+                            editingMatchId !== match.id && (
+                              <Button
+                                type="button"
+                                variant="text"
+                                size="small"
+                                onClick={() => setEditingMatchId(match.id)}
+                                sx={{
+                                  alignSelf: "flex-start",
+                                  px: 0,
+                                  minWidth: 0,
+                                  fontWeight: 700,
+                                }}
+                              >
+                                Ändra resultat
+                              </Button>
+                            )}
+
+                          {(match.status !== "finished" ||
+                            editingMatchId === match.id) && (
+                            <MatchResultControls
+                              matchId={match.id}
+                              bestOf={data.tournament.playoffBestOf}
+                              isAdmin={data.isAdmin}
+                              title={
+                                editingMatchId === match.id
+                                  ? "Ändra resultat"
+                                  : "Registrera resultat"
+                              }
+                              actionError={
+                                actionError?.matchId === match.id
+                                  ? actionError.message
+                                  : undefined
+                              }
+                              onResult={handleResult}
+                            />
+                          )}
 
                           {editingMatchId === match.id && (
                             <Button
@@ -2864,6 +2956,131 @@ export default function SchedulePage({
             }}
           >
             {deletingTournament ? "Raderar..." : "Radera turnering"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={pendingSemifinalResult !== null}
+        onClose={() => {
+          if (!resettingFinal) {
+            setPendingSemifinalResult(null);
+          }
+        }}
+        fullWidth
+        maxWidth="sm"
+        slotProps={{
+          paper: {
+            sx: {
+              overflow: "hidden",
+              border: "1px solid rgba(255,255,255,0.16)",
+              borderRadius: 1,
+              backgroundImage: "none",
+              backgroundColor: "#191919",
+            },
+          },
+        }}
+      >
+        <Box
+          sx={{
+            height: 3,
+            backgroundColor: "error.dark",
+          }}
+        />
+
+        <DialogContent
+          sx={{
+            px: { xs: 2.5, sm: 3.5 },
+            pt: 3,
+            pb: 2,
+          }}
+        >
+          <Typography
+            variant="overline"
+            sx={{
+              color: "error.light",
+              fontWeight: 800,
+              letterSpacing: "0.1em",
+            }}
+          >
+            VARNING
+          </Typography>
+
+          <Typography
+            variant="h5"
+            sx={{
+              mt: 0.4,
+              fontWeight: 800,
+            }}
+          >
+            Ändra semifinalresultat?
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 1,
+              color: "text.secondary",
+              lineHeight: 1.7,
+            }}
+          >
+            Det nya resultatet ändrar vilken lag som vann semifinalen. Den
+            nuvarande finalen och eventuellt finalresultat tas därför bort.
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 1,
+              color: "text.secondary",
+              lineHeight: 1.7,
+            }}
+          >
+            Efter ändringen kan en ny final skapas med rätt finalister.
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 1,
+              color: "error.light",
+              fontWeight: 700,
+            }}
+          >
+            Detta går inte att ångra.
+          </Typography>
+        </DialogContent>
+
+        <DialogActions
+          sx={{
+            px: { xs: 2.5, sm: 3.5 },
+            pb: 3,
+            pt: 1,
+            gap: 1,
+          }}
+        >
+          <Button
+            type="button"
+            variant="text"
+            disabled={resettingFinal}
+            onClick={() => setPendingSemifinalResult(null)}
+          >
+            Avbryt
+          </Button>
+
+          <Button
+            type="button"
+            variant="contained"
+            disabled={resettingFinal}
+            onClick={handleConfirmSemifinalResultReset}
+            sx={{
+              backgroundColor: "error.dark",
+              "&:hover": {
+                backgroundColor: "error.main",
+              },
+            }}
+          >
+            {resettingFinal ? "Ändrar..." : "Ändra och ta bort final"}
           </Button>
         </DialogActions>
       </Dialog>

@@ -160,17 +160,17 @@ export async function PATCH(
     }
 
     if (existingFinal && resetFinal) {
-      const updatedMatch = await db.transaction(async (tx) => {
-        await tx
+      await db.batch([
+        db
           .delete(matches)
           .where(
             and(
               eq(matches.tournamentId, match.tournamentId),
               eq(matches.stage, "final"),
             ),
-          );
+          ),
 
-        const [updatedSemifinal] = await tx
+        db
           .update(matches)
           .set({
             teamALegs,
@@ -179,10 +179,9 @@ export async function PATCH(
             status: "finished",
             updatedAt: new Date(),
           })
-          .where(eq(matches.id, match.id))
-          .returning();
+          .where(eq(matches.id, match.id)),
 
-        await tx
+        db
           .update(tournaments)
           .set({
             status: "playoffs",
@@ -190,10 +189,13 @@ export async function PATCH(
             finishedAt: null,
             updatedAt: new Date(),
           })
-          .where(eq(tournaments.id, match.tournamentId));
+          .where(eq(tournaments.id, match.tournamentId)),
+      ]);
 
-        return updatedSemifinal;
-      });
+      const [updatedMatch] = await db
+        .select()
+        .from(matches)
+        .where(eq(matches.id, match.id));
 
       return NextResponse.json(updatedMatch);
     }
