@@ -51,6 +51,7 @@ export async function PATCH(
   const [tournament] = await db
     .select({
       adminToken: tournaments.adminToken,
+      status: tournaments.status,
       groupMatchMode: tournaments.groupMatchMode,
       groupLegCount: tournaments.groupLegCount,
       groupBestOf: tournaments.groupBestOf,
@@ -65,6 +66,19 @@ export async function PATCH(
     return NextResponse.json(
       { error: "Du saknar behörighet att ändra resultat." },
       { status: 403 },
+    );
+  }
+
+  if (
+    match.stage === "group" &&
+    (tournament.status === "playoffs" || tournament.status === "finished")
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Gruppresultat kan inte ändras efter att slutspelet har startat.",
+      },
+      { status: 409 },
     );
   }
 
