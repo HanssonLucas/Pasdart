@@ -735,6 +735,7 @@ export default function SchedulePage({
       const updatedData: TournamentResponse = await updatedResponse.json();
 
       applyTournamentData(updatedData);
+      setEditingMatchId(null);
     } catch {
       setActionError({
         matchId,
