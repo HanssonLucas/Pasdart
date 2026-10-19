@@ -1507,6 +1507,11 @@ export default function SchedulePage({
                                 fixedLegCount={data.tournament.groupLegCount}
                                 isAdmin={data.isAdmin}
                                 density="compact"
+                                title={
+                                  editingMatchId === match.id
+                                    ? "Ändra resultat"
+                                    : "Registrera resultat"
+                                }
                                 actionError={
                                   actionError?.matchId === match.id
                                     ? actionError.message

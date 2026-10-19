@@ -11,6 +11,7 @@ type MatchResultControlsProps = {
   fixedLegCount?: number;
   isAdmin: boolean;
   density?: "default" | "compact";
+  title?: string;
   actionError?: string;
   onResult: (matchId: number, teamALegs: number, teamBLegs: number) => void;
 };
@@ -48,6 +49,7 @@ export default function MatchResultControls({
   fixedLegCount,
   isAdmin,
   density = "default",
+  title = "Registrera resultat",
   actionError,
   onResult,
 }: MatchResultControlsProps) {
@@ -71,7 +73,7 @@ export default function MatchResultControls({
           mb: compact ? 0.75 : 1,
         }}
       >
-        Registrera resultat
+        {title}
       </Typography>
 
       <Stack
