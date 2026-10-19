@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, lte } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, lte } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { db } from "@/db";
@@ -17,6 +17,7 @@ export async function POST(
       id: tournaments.id,
       adminToken: tournaments.adminToken,
       playoffQualifiers: tournaments.playoffQualifiers,
+      groupMatchMode: tournaments.groupMatchMode,
     })
     .from(tournaments)
     .where(eq(tournaments.publicId, publicId));
@@ -128,11 +129,20 @@ export async function POST(
       return {
         teamId: team.id,
         wins,
+        legsWon,
         legDifference: legsWon - legsLost,
       };
     });
 
     standings.sort((a, b) => {
+      if (tournament.groupMatchMode === "fixedLegs") {
+        if (b.legDifference !== a.legDifference) {
+          return b.legDifference - a.legDifference;
+        }
+
+        return b.legsWon - a.legsWon;
+      }
+
       if (b.wins !== a.wins) {
         return b.wins - a.wins;
       }
@@ -330,4 +340,86 @@ export async function POST(
     },
     { status: 201 },
   );
+}
+
+export async function DELETE(
+  request: Request,
+  context: {
+    params: Promise<{ publicId: string }>;
+  },
+) {
+  const { publicId } = await context.params;
+
+  const [tournament] = await db
+    .select({
+      id: tournaments.id,
+      adminToken: tournaments.adminToken,
+      status: tournaments.status,
+    })
+    .from(tournaments)
+    .where(eq(tournaments.publicId, publicId));
+
+  if (!tournament) {
+    return NextResponse.json(
+      { error: "Cupen hittades inte." },
+      { status: 404 },
+    );
+  }
+
+  const adminToken = request.headers.get("x-admin-token");
+
+  if (!adminToken || adminToken !== tournament.adminToken) {
+    return NextResponse.json(
+      { error: "Du saknar behörighet att avbryta slutspelet." },
+      { status: 403 },
+    );
+  }
+
+  if (tournament.status === "finished") {
+    return NextResponse.json(
+      {
+        error: "En avslutad turnering kan inte återställas till gruppspel.",
+      },
+      { status: 409 },
+    );
+  }
+
+  if (tournament.status !== "playoffs") {
+    return NextResponse.json(
+      { error: "Slutspelet har inte startat." },
+      { status: 409 },
+    );
+  }
+
+  await db.batch([
+    db
+      .delete(matches)
+      .where(
+        and(
+          eq(matches.tournamentId, tournament.id),
+          inArray(matches.stage, ["semifinal", "final"]),
+        ),
+      ),
+
+    db
+      .update(teams)
+      .set({
+        seed: null,
+      })
+      .where(eq(teams.tournamentId, tournament.id)),
+
+    db
+      .update(tournaments)
+      .set({
+        status: "setup",
+        isLive: true,
+        finishedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(tournaments.id, tournament.id)),
+  ]);
+
+  return NextResponse.json({
+    success: true,
+  });
 }
