@@ -97,11 +97,19 @@ export default function MatchResultControls({
               inline
                 ? {
                     minWidth: 46,
-                    px: 0.75,
-                    py: 0.35,
-                    borderRadius: 0.75,
+                    px: 0.85,
+                    py: 0.4,
+                    borderRadius: 0.5,
+                    borderColor: "rgba(255,255,255,0.18)",
+                    color: "text.primary",
                     fontSize: "0.78rem",
-                    fontWeight: 700,
+                    fontWeight: 800,
+                    backgroundColor: "rgba(255,255,255,0.018)",
+                    boxShadow: "none",
+                    "&:hover": {
+                      borderColor: "rgba(198,40,40,0.70)",
+                      backgroundColor: "rgba(198,40,40,0.08)",
+                    },
                   }
                 : compact
                   ? {

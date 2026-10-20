@@ -1681,7 +1681,10 @@ export default function SchedulePage({
                   <Box
                     sx={{
                       display: "grid",
-                      gridTemplateColumns: "1fr",
+                      gridTemplateColumns: {
+                        xs: "1fr",
+                        lg: "repeat(2, minmax(0, 1fr))",
+                      },
                       gap: 1.5,
                     }}
                   >
@@ -1701,9 +1704,13 @@ export default function SchedulePage({
                           elevation={0}
                           sx={{
                             p: 2,
+                            overflow: "hidden",
                             border: "1px solid rgba(255,255,255,0.12)",
+                            borderTop: "2px solid rgba(198,40,40,0.72)",
                             borderRadius: 0.75,
                             backgroundColor: "rgba(255,255,255,0.012)",
+                            backgroundImage:
+                              "linear-gradient(to bottom, rgba(198,40,40,0.045), transparent 42%)",
                           }}
                         >
                           <Stack spacing={1.5}>
@@ -1713,12 +1720,15 @@ export default function SchedulePage({
                                 justifyContent: "space-between",
                                 alignItems: "center",
                                 gap: 2,
+                                pb: 1,
+                                borderBottom:
+                                  "1px solid rgba(255,255,255,0.08)",
                               }}
                             >
                               <Typography
                                 variant="caption"
                                 sx={{
-                                  color: "text.secondary",
+                                  color: "error.light",
                                   fontWeight: 700,
                                   letterSpacing: "0.04em",
                                 }}
@@ -1740,17 +1750,22 @@ export default function SchedulePage({
                                 gridTemplateColumns: {
                                   xs: "repeat(2, minmax(0, 1fr))",
                                   md: "minmax(0, 1fr) auto minmax(0, 1fr)",
+                                  lg: "repeat(2, minmax(0, 1fr))",
                                 },
                                 gridTemplateAreas: {
                                   xs: `
-                                   "teamA teamB"
-                                   "result result"
-                                                 `,
+                                  "teamA teamB"
+                                  "result result"
+                                `,
                                   md: `"teamA result teamB"`,
+                                  lg: `
+                                  "teamA teamB"
+                                  "result result"
+                                `,
                                 },
                                 alignItems: "center",
-                                columnGap: { xs: 1.5, md: 3 },
-                                rowGap: { xs: 1.25, md: 0 },
+                                columnGap: { xs: 1.5, md: 3, lg: 1.5 },
+                                rowGap: { xs: 1.25, md: 0, lg: 1.25 },
                               }}
                             >
                               <Box
