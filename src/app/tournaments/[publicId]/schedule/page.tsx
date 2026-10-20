@@ -2489,31 +2489,30 @@ export default function SchedulePage({
                               display: "grid",
                               gridTemplateColumns: showInlineFinishedResult
                                 ? {
-                                    xs: "1fr",
+                                    xs: "repeat(2, minmax(0, 1fr))",
                                     sm: "minmax(0, 1fr) auto minmax(0, 1fr)",
                                   }
                                 : {
-                                    xs: "1fr",
+                                    xs: "repeat(2, minmax(0, 1fr))",
                                     sm: "repeat(2, minmax(0, 1fr))",
                                   },
                               gridTemplateAreas: showInlineFinishedResult
                                 ? {
                                     xs: `
-            "teamA"
-            "result"
-            "teamB"
+            "teamA teamB"
+            "result result"
           `,
                                     sm: `"teamA result teamB"`,
                                   }
                                 : {
-                                    xs: `
-            "teamA"
-            "teamB"
-          `,
+                                    xs: `"teamA teamB"`,
                                     sm: `"teamA teamB"`,
                                   },
                               alignItems: "center",
-                              gap: 1,
+                              columnGap: { xs: 1, sm: 1.5 },
+                              rowGap: showInlineFinishedResult
+                                ? { xs: 1.25, sm: 0 }
+                                : 0,
                             }}
                           >
                             <Box
@@ -2552,6 +2551,44 @@ export default function SchedulePage({
                               </Box>
                             </Box>
 
+                            <Box
+                              sx={{
+                                gridArea: "teamB",
+                                display: "flex",
+                                flexDirection: "row-reverse",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 2,
+                                py: 1,
+                                px: 1.25,
+                                textAlign: "right",
+                                borderRight: teamBWon
+                                  ? "3px solid rgba(76,175,80,0.80)"
+                                  : "3px solid transparent",
+                                opacity:
+                                  match.status === "finished" && !teamBWon
+                                    ? 0.58
+                                    : 1,
+                              }}
+                            >
+                              <Box sx={{ minWidth: 0 }}>
+                                <Typography sx={{ fontWeight: 700 }}>
+                                  {teamB?.seed ? `#${teamB.seed} · ` : ""}
+                                  Lag {teamB?.teamNumber}
+                                  {teamBWon ? " ✓" : ""}
+                                </Typography>
+
+                                <Typography
+                                  variant="body2"
+                                  sx={{ color: "text.secondary" }}
+                                >
+                                  {teamB?.players
+                                    .map((player) => player.name)
+                                    .join(" + ")}
+                                </Typography>
+                              </Box>
+                            </Box>
+
                             {showInlineFinishedResult && (
                               <Box
                                 sx={{
@@ -2581,53 +2618,6 @@ export default function SchedulePage({
                                 </Typography>
                               </Box>
                             )}
-
-                            <Box
-                              sx={{
-                                gridArea: "teamB",
-                                display: "flex",
-                                flexDirection: { sm: "row-reverse" },
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                gap: 2,
-                                py: 1,
-                                px: 1.25,
-                                textAlign: { sm: "right" },
-                                borderRight: {
-                                  xs: "none",
-                                  sm: teamBWon
-                                    ? "3px solid rgba(76,175,80,0.80)"
-                                    : "3px solid transparent",
-                                },
-                                borderLeft: {
-                                  xs: teamBWon
-                                    ? "3px solid rgba(76,175,80,0.80)"
-                                    : "3px solid transparent",
-                                  sm: "none",
-                                },
-                                opacity:
-                                  match.status === "finished" && !teamBWon
-                                    ? 0.58
-                                    : 1,
-                              }}
-                            >
-                              <Box sx={{ minWidth: 0 }}>
-                                <Typography sx={{ fontWeight: 700 }}>
-                                  {teamB?.seed ? `#${teamB.seed} · ` : ""}
-                                  Lag {teamB?.teamNumber}
-                                  {teamBWon ? " ✓" : ""}
-                                </Typography>
-
-                                <Typography
-                                  variant="body2"
-                                  sx={{ color: "text.secondary" }}
-                                >
-                                  {teamB?.players
-                                    .map((player) => player.name)
-                                    .join(" + ")}
-                                </Typography>
-                              </Box>
-                            </Box>
                           </Box>
 
                           {match.status === "finished" &&
@@ -2795,41 +2785,42 @@ export default function SchedulePage({
                       match.status === "finished" &&
                       match.winnerTeamId === match.teamBId;
 
+                    const showInlineFinishedResult =
+                      match.status === "finished" &&
+                      editingMatchId !== match.id;
+
                     return (
                       <Paper
                         key={match.id}
                         elevation={0}
                         sx={{
                           p: 2,
-
+                          overflow: "hidden",
                           border: "1px solid rgba(255,255,255,0.12)",
-
-                          borderTop: "2px solid rgba(198,40,40,0.72)",
-
+                          borderTop: "2px solid rgba(76,175,80,0.72)",
                           borderRadius: 0.75,
-
                           backgroundColor: "rgba(255,255,255,0.012)",
-
-                          boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+                          backgroundImage:
+                            "linear-gradient(to bottom, rgba(46,125,50,0.045), transparent 42%)",
+                          boxShadow: "none",
                         }}
                       >
                         <Stack spacing={2}>
                           <Stack
                             sx={{
                               flexDirection: "row",
-
                               justifyContent: "space-between",
-
                               alignItems: "center",
+                              gap: 2,
+                              pb: 1,
+                              borderBottom: "1px solid rgba(255,255,255,0.08)",
                             }}
                           >
                             <Typography
                               variant="caption"
                               sx={{
-                                color: "text.secondary",
-
+                                color: "success.light",
                                 fontWeight: 700,
-
                                 letterSpacing: "0.04em",
                               }}
                             >
@@ -2844,32 +2835,53 @@ export default function SchedulePage({
                             </Typography>
                           </Stack>
 
-                          <Stack spacing={1}>
+                          <Box
+                            sx={{
+                              display: "grid",
+                              gridTemplateColumns: showInlineFinishedResult
+                                ? {
+                                    xs: "1fr",
+                                    sm: "minmax(0, 1fr) auto minmax(0, 1fr)",
+                                  }
+                                : {
+                                    xs: "1fr",
+                                    sm: "repeat(2, minmax(0, 1fr))",
+                                  },
+                              gridTemplateAreas: showInlineFinishedResult
+                                ? {
+                                    xs: `
+                                    "teamA"
+                                    "result"
+                                    "teamB"
+                                  `,
+                                    sm: `"teamA result teamB"`,
+                                  }
+                                : {
+                                    xs: `
+                                    "teamA"
+                                    "teamB"
+                                  `,
+                                    sm: `"teamA teamB"`,
+                                  },
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
                             <Box
                               sx={{
+                                gridArea: "teamA",
                                 display: "flex",
                                 justifyContent: "space-between",
                                 alignItems: "center",
                                 gap: 2,
-                                p: 1.5,
-                                border: "1px solid",
-                                borderColor: teamAWon
-                                  ? "text.primary"
-                                  : "divider",
-
-                                borderRadius: 1,
-
-                                backgroundColor: teamAWon
-                                  ? "rgba(46,125,50,0.07)"
-                                  : "rgba(255,255,255,0.012)",
-
+                                py: 1,
+                                px: 1.25,
                                 borderLeft: teamAWon
                                   ? "3px solid rgba(76,175,80,0.80)"
                                   : "3px solid transparent",
-
                                 opacity:
                                   match.status === "finished" && !teamAWon
-                                    ? 0.55
+                                    ? 0.58
                                     : 1,
                               }}
                             >
@@ -2885,45 +2897,38 @@ export default function SchedulePage({
                                   sx={{ color: "text.secondary" }}
                                 >
                                   {teamA?.players
-
                                     .map((player) => player.name)
-
                                     .join(" + ")}
                                 </Typography>
                               </Box>
-
-                              {match.status === "finished" && (
-                                <Typography
-                                  variant="h5"
-                                  sx={{ fontWeight: 700 }}
-                                >
-                                  {match.teamALegs}
-                                </Typography>
-                              )}
                             </Box>
 
                             <Box
                               sx={{
                                 gridArea: "teamB",
                                 display: "flex",
+                                flexDirection: { sm: "row-reverse" },
                                 justifyContent: "space-between",
                                 alignItems: "center",
                                 gap: 2,
-                                p: 1.5,
-                                border: "1px solid",
-                                borderColor: teamBWon
-                                  ? "text.primary"
-                                  : "divider",
-                                borderRadius: 1,
-                                backgroundColor: teamBWon
-                                  ? "rgba(46,125,50,0.07)"
-                                  : "rgba(255,255,255,0.012)",
-                                borderLeft: teamBWon
-                                  ? "3px solid rgba(76,175,80,0.80)"
-                                  : "3px solid transparent",
+                                py: 1,
+                                px: 1.25,
+                                textAlign: { sm: "right" },
+                                borderRight: {
+                                  xs: "none",
+                                  sm: teamBWon
+                                    ? "3px solid rgba(76,175,80,0.80)"
+                                    : "3px solid transparent",
+                                },
+                                borderLeft: {
+                                  xs: teamBWon
+                                    ? "3px solid rgba(76,175,80,0.80)"
+                                    : "3px solid transparent",
+                                  sm: "none",
+                                },
                                 opacity:
                                   match.status === "finished" && !teamBWon
-                                    ? 0.55
+                                    ? 0.58
                                     : 1,
                               }}
                             >
@@ -2939,14 +2944,12 @@ export default function SchedulePage({
                                   sx={{ color: "text.secondary" }}
                                 >
                                   {teamB?.players
-
                                     .map((player) => player.name)
-
                                     .join(" + ")}
                                 </Typography>
                               </Box>
                             </Box>
-                          </Stack>
+                          </Box>
 
                           {match.status === "finished" &&
                             data.isAdmin &&
