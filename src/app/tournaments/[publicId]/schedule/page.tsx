@@ -798,7 +798,11 @@ export default function SchedulePage({
 
       const currentMatch = data?.matches.find((match) => match.id === matchId);
 
-      if (currentMatch?.stage === "group" && data) {
+      if (
+        currentMatch &&
+        (currentMatch.stage === "group" || currentMatch.stage === "final") &&
+        data
+      ) {
         previousData = data;
         previousEditingMatchId = editingMatchId;
 
@@ -816,6 +820,15 @@ export default function SchedulePage({
 
           return {
             ...current,
+
+            tournament:
+              currentMatch.stage === "final"
+                ? {
+                    ...current.tournament,
+                    status: "finished",
+                  }
+                : current.tournament,
+
             matches: current.matches.map((match) =>
               match.id === matchId
                 ? {
