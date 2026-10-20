@@ -10,7 +10,7 @@ type MatchResultControlsProps = {
   matchMode?: "bestOf" | "fixedLegs";
   fixedLegCount?: number;
   isAdmin: boolean;
-  density?: "default" | "compact";
+  density?: "default" | "compact" | "inline";
   title?: string;
   actionError?: string;
   onResult: (matchId: number, teamALegs: number, teamBLegs: number) => void;
@@ -58,6 +58,7 @@ export default function MatchResultControls({
   }
 
   const compact = density === "compact";
+  const inline = density === "inline";
 
   const possibleResults =
     matchMode === "fixedLegs" && fixedLegCount
@@ -66,36 +67,48 @@ export default function MatchResultControls({
 
   return (
     <Box>
-      <Typography
-        variant={compact ? "body2" : "body1"}
-        sx={{
-          fontWeight: compact ? 700 : 600,
-          mb: compact ? 0.75 : 1,
-        }}
-      >
-        {title}
-      </Typography>
+      {!inline && (
+        <Typography
+          variant={compact ? "body2" : "body1"}
+          sx={{
+            fontWeight: compact ? 700 : 600,
+            mb: compact ? 0.75 : 1,
+          }}
+        >
+          {title}
+        </Typography>
+      )}
 
       <Stack
         sx={{
           flexDirection: "row",
           flexWrap: "wrap",
-          gap: compact ? 0.75 : 1,
+          justifyContent: inline ? "center" : "flex-start",
+          gap: inline ? 0.5 : compact ? 0.75 : 1,
         }}
       >
         {possibleResults.map(([teamALegs, teamBLegs]) => (
           <Button
             key={`${teamALegs}-${teamBLegs}`}
-            size={compact ? "small" : "medium"}
+            size={compact || inline ? "small" : "medium"}
             variant="outlined"
             onClick={() => onResult(matchId, teamALegs, teamBLegs)}
             sx={
-              compact
+              inline
                 ? {
-                    minWidth: 54,
+                    minWidth: 46,
+                    px: 0.75,
+                    py: 0.35,
                     borderRadius: 0.75,
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
                   }
-                : undefined
+                : compact
+                  ? {
+                      minWidth: 54,
+                      borderRadius: 0.75,
+                    }
+                  : undefined
             }
           >
             {teamALegs} - {teamBLegs}
