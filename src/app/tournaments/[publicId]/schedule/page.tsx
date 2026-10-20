@@ -1681,10 +1681,7 @@ export default function SchedulePage({
                   <Box
                     sx={{
                       display: "grid",
-                      gridTemplateColumns: {
-                        xs: "1fr",
-                        md: "repeat(2, minmax(0, 1fr))",
-                      },
+                      gridTemplateColumns: "1fr",
                       gap: 1.5,
                     }}
                   >
@@ -1737,9 +1734,28 @@ export default function SchedulePage({
                               </Typography>
                             </Stack>
 
-                            <Stack spacing={0.75}>
+                            <Box
+                              sx={{
+                                display: "grid",
+                                gridTemplateColumns: {
+                                  xs: "repeat(2, minmax(0, 1fr))",
+                                  md: "minmax(0, 1fr) auto minmax(0, 1fr)",
+                                },
+                                gridTemplateAreas: {
+                                  xs: `
+                                   "teamA teamB"
+                                   "result result"
+                                                 `,
+                                  md: `"teamA result teamB"`,
+                                },
+                                alignItems: "center",
+                                columnGap: { xs: 1.5, md: 3 },
+                                rowGap: { xs: 1.25, md: 0 },
+                              }}
+                            >
                               <Box
                                 sx={{
+                                  gridArea: "teamA",
                                   display: "flex",
                                   justifyContent: "space-between",
                                   alignItems: "center",
@@ -1749,8 +1765,7 @@ export default function SchedulePage({
                                   borderLeft: teamAWon
                                     ? "3px solid rgba(76,175,80,0.80)"
                                     : "3px solid transparent",
-                                  borderBottom:
-                                    "1px solid rgba(255,255,255,0.08)",
+
                                   opacity:
                                     match.status === "finished" && !teamAWon
                                       ? 0.58
@@ -1772,26 +1787,107 @@ export default function SchedulePage({
                                       .join(" + ")}
                                   </Typography>
                                 </Box>
+                              </Box>
 
-                                {match.status === "finished" && (
+                              <Box
+                                sx={{
+                                  gridArea: "result",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                  minWidth: 0,
+                                }}
+                              >
+                                {match.status === "finished" &&
+                                editingMatchId !== match.id ? (
                                   <Typography
-                                    variant="h6"
-                                    sx={{ fontWeight: 800 }}
+                                    sx={{
+                                      fontSize: { xs: "1.25rem", sm: "1.5rem" },
+                                      fontWeight: 900,
+                                      letterSpacing: "-0.02em",
+                                      lineHeight: 1,
+                                    }}
                                   >
-                                    {match.teamALegs}
+                                    {match.teamALegs} – {match.teamBLegs}
                                   </Typography>
+                                ) : (
+                                  <MatchResultControls
+                                    matchId={match.id}
+                                    bestOf={data.tournament.groupBestOf}
+                                    matchMode={
+                                      data.tournament.groupMatchMode ===
+                                      "fixedLegs"
+                                        ? "fixedLegs"
+                                        : "bestOf"
+                                    }
+                                    fixedLegCount={
+                                      data.tournament.groupLegCount
+                                    }
+                                    isAdmin={data.isAdmin}
+                                    density="inline"
+                                    actionError={
+                                      actionError?.matchId === match.id
+                                        ? actionError.message
+                                        : undefined
+                                    }
+                                    onResult={handleResult}
+                                  />
+                                )}
+                                {match.status === "finished" &&
+                                  data.isAdmin &&
+                                  !playoffsStarted &&
+                                  editingMatchId !== match.id && (
+                                    <Button
+                                      type="button"
+                                      variant="text"
+                                      size="small"
+                                      onClick={() =>
+                                        setEditingMatchId(match.id)
+                                      }
+                                      sx={{
+                                        mt: 0.6,
+                                        minWidth: 0,
+                                        px: 0,
+                                        color: "text.secondary",
+                                        fontSize: "0.75rem",
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      Ändra resultat
+                                    </Button>
+                                  )}
+                                {editingMatchId === match.id && (
+                                  <Button
+                                    type="button"
+                                    variant="text"
+                                    size="small"
+                                    onClick={() => setEditingMatchId(null)}
+                                    sx={{
+                                      mt: 0.6,
+                                      minWidth: 0,
+                                      px: 0,
+                                      color: "text.secondary",
+                                      fontSize: "0.75rem",
+                                    }}
+                                  >
+                                    Avbryt
+                                  </Button>
                                 )}
                               </Box>
 
                               <Box
                                 sx={{
+                                  gridArea: "teamB",
                                   display: "flex",
                                   justifyContent: "space-between",
                                   alignItems: "center",
                                   gap: 2,
                                   py: 1,
                                   px: 1.25,
-                                  borderLeft: teamBWon
+                                  flexDirection: "row-reverse",
+                                  textAlign: "right",
+                                  borderRight: teamBWon
                                     ? "3px solid rgba(76,175,80,0.80)"
                                     : "3px solid transparent",
                                   opacity:
@@ -1815,80 +1911,8 @@ export default function SchedulePage({
                                       .join(" + ")}
                                   </Typography>
                                 </Box>
-
-                                {match.status === "finished" && (
-                                  <Typography
-                                    variant="h6"
-                                    sx={{ fontWeight: 800 }}
-                                  >
-                                    {match.teamBLegs}
-                                  </Typography>
-                                )}
                               </Box>
-                            </Stack>
-
-                            {match.status === "finished" &&
-                              data.isAdmin &&
-                              !playoffsStarted &&
-                              editingMatchId !== match.id && (
-                                <Button
-                                  type="button"
-                                  variant="text"
-                                  size="small"
-                                  onClick={() => setEditingMatchId(match.id)}
-                                  sx={{
-                                    alignSelf: "flex-start",
-                                    px: 0,
-                                    minWidth: 0,
-                                    fontWeight: 700,
-                                  }}
-                                >
-                                  Ändra resultat
-                                </Button>
-                              )}
-
-                            {(match.status !== "finished" ||
-                              editingMatchId === match.id) && (
-                              <MatchResultControls
-                                matchId={match.id}
-                                bestOf={data.tournament.groupBestOf}
-                                matchMode={
-                                  data.tournament.groupMatchMode === "fixedLegs"
-                                    ? "fixedLegs"
-                                    : "bestOf"
-                                }
-                                fixedLegCount={data.tournament.groupLegCount}
-                                isAdmin={data.isAdmin}
-                                density="compact"
-                                title={
-                                  editingMatchId === match.id
-                                    ? "Ändra resultat"
-                                    : "Registrera resultat"
-                                }
-                                actionError={
-                                  actionError?.matchId === match.id
-                                    ? actionError.message
-                                    : undefined
-                                }
-                                onResult={handleResult}
-                              />
-                            )}
-
-                            {editingMatchId === match.id && (
-                              <Button
-                                type="button"
-                                variant="text"
-                                size="small"
-                                onClick={() => setEditingMatchId(null)}
-                                sx={{
-                                  alignSelf: "flex-start",
-                                  px: 0,
-                                  minWidth: 0,
-                                }}
-                              >
-                                Avbryt
-                              </Button>
-                            )}
+                            </Box>
                           </Stack>
                         </Paper>
                       );
