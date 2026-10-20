@@ -197,6 +197,8 @@ export default function SchedulePage({
 
   const [showGroupHistory, setShowGroupHistory] = useState(false);
 
+  const [showCompletedRounds, setShowCompletedRounds] = useState(false);
+
   const [winnerDialogOpen, setWinnerDialogOpen] = useState(false);
 
   const winnerDialogShownRef = useRef(false);
@@ -1544,10 +1546,83 @@ export default function SchedulePage({
                   </TableBody>
                 </Table>
               </TableContainer>
+              {data.groupStageComplete && (
+                <Button
+                  type="button"
+                  fullWidth
+                  variant="text"
+                  onClick={() => setShowCompletedRounds((current) => !current)}
+                  sx={{
+                    minHeight: 50,
+                    px: { xs: 2, sm: 2.5 },
+                    borderTop: "1px solid rgba(255,255,255,0.10)",
+                    borderRadius: 0,
+                    color: "text.primary",
+                    textTransform: "none",
+                    justifyContent: "stretch",
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.025)",
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 2,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 700,
+                      }}
+                    >
+                      Spelade omgångar
+                    </Typography>
+
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        color: "text.secondary",
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontWeight: 700,
+                        }}
+                      >
+                        {showCompletedRounds ? "Dölj" : "Visa"}
+                      </Typography>
+
+                      <Box
+                        component="span"
+                        sx={{
+                          width: 7,
+                          height: 7,
+                          borderRight: "1.5px solid currentColor",
+                          borderBottom: "1.5px solid currentColor",
+                          transform: showCompletedRounds
+                            ? "rotate(225deg)"
+                            : "rotate(45deg)",
+                          transition: "transform 160ms ease",
+                          mt: showCompletedRounds ? 0.5 : -0.5,
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </Button>
+              )}
             </Paper>
           )}
 
           {(!playoffsStarted || showGroupHistory) &&
+            (!data.groupStageComplete || showCompletedRounds) &&
             roundNumbers.map((roundNumber) => {
               const roundMatches = groupMatches.filter(
                 (match) => match.roundNumber === roundNumber,
