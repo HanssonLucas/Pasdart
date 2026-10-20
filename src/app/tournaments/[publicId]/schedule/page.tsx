@@ -213,6 +213,12 @@ export default function SchedulePage({
 
   const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
 
+  const [rollbackDialogOpen, setRollbackDialogOpen] = useState(false);
+
+  const [rollingBackPlayoffs, setRollingBackPlayoffs] = useState(false);
+
+  const [rollbackError, setRollbackError] = useState("");
+
   const [pendingSemifinalResult, setPendingSemifinalResult] = useState<{
     matchId: number;
     teamALegs: number;
@@ -652,6 +658,55 @@ export default function SchedulePage({
     }
   }
 
+  async function handleRollbackPlayoffs() {
+    setRollingBackPlayoffs(true);
+    setRollbackError("");
+
+    try {
+      const { publicId } = await params;
+
+      const adminToken = getTournamentAdminToken(publicId);
+
+      if (!adminToken) {
+        setRollbackError("Du saknar behörighet att återgå till gruppspel.");
+        return;
+      }
+
+      const response = await fetch(`/api/tournaments/${publicId}/playoffs`, {
+        method: "DELETE",
+        headers: {
+          "x-admin-token": adminToken,
+        },
+      });
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => null);
+
+        setRollbackError(result?.error ?? "Kunde inte återgå till gruppspel.");
+
+        return;
+      }
+
+      const updatedResponse = await fetchTournamentSchedule(publicId);
+
+      if (!updatedResponse.ok) {
+        throw new Error();
+      }
+
+      const updatedData: TournamentResponse = await updatedResponse.json();
+
+      applyTournamentData(updatedData);
+
+      setShowGroupHistory(false);
+      setEditingMatchId(null);
+      setRollbackDialogOpen(false);
+    } catch {
+      setRollbackError("Kunde inte återgå till gruppspel.");
+    } finally {
+      setRollingBackPlayoffs(false);
+    }
+  }
+
   async function handleDeleteTournament() {
     setDeletingTournament(true);
     setDeleteError("");
@@ -1008,28 +1063,60 @@ export default function SchedulePage({
                     </Stack>
 
                     {data.isAdmin && data.tournament.status !== "finished" && (
-                      <Button
-                        type="button"
-                        variant="text"
-                        size="small"
-                        onClick={() => {
-                          setDeleteError("");
-                          setDeleteDialogOpen(true);
-                        }}
+                      <Stack
                         sx={{
-                          px: 0,
-                          minWidth: 0,
+                          flexDirection: { xs: "column", sm: "row" },
+                          alignItems: { xs: "flex-start", sm: "center" },
+                          gap: { xs: 0.5, sm: 1.5 },
                           flexShrink: 0,
-                          color: "error.light",
-                          fontWeight: 700,
-                          "&:hover": {
-                            backgroundColor: "transparent",
-                            color: "error.main",
-                          },
                         }}
                       >
-                        Avsluta turnering
-                      </Button>
+                        {data.tournament.status === "playoffs" && (
+                          <Button
+                            type="button"
+                            variant="text"
+                            size="small"
+                            onClick={() => {
+                              setRollbackError("");
+                              setRollbackDialogOpen(true);
+                            }}
+                            sx={{
+                              px: 0,
+                              minWidth: 0,
+                              color: "text.secondary",
+                              fontWeight: 700,
+                              "&:hover": {
+                                backgroundColor: "transparent",
+                                color: "text.primary",
+                              },
+                            }}
+                          >
+                            Gå tillbaka till gruppspel
+                          </Button>
+                        )}
+
+                        <Button
+                          type="button"
+                          variant="text"
+                          size="small"
+                          onClick={() => {
+                            setDeleteError("");
+                            setDeleteDialogOpen(true);
+                          }}
+                          sx={{
+                            px: 0,
+                            minWidth: 0,
+                            color: "error.light",
+                            fontWeight: 700,
+                            "&:hover": {
+                              backgroundColor: "transparent",
+                              color: "error.main",
+                            },
+                          }}
+                        >
+                          Avsluta turnering
+                        </Button>
+                      </Stack>
                     )}
                   </Stack>
                 </Box>
@@ -2877,6 +2964,139 @@ export default function SchedulePage({
         viewerCode={viewerCodeDialog}
         onClose={() => setViewerCodeDialog("")}
       />
+
+      <Dialog
+        open={rollbackDialogOpen}
+        onClose={() => {
+          if (!rollingBackPlayoffs) {
+            setRollbackDialogOpen(false);
+          }
+        }}
+        fullWidth
+        maxWidth="sm"
+        slotProps={{
+          paper: {
+            sx: {
+              overflow: "hidden",
+              border: "1px solid rgba(255,255,255,0.16)",
+              borderRadius: 1,
+              backgroundImage: "none",
+              backgroundColor: "#191919",
+            },
+          },
+        }}
+      >
+        <Box
+          sx={{
+            height: 3,
+            backgroundColor: "error.dark",
+          }}
+        />
+
+        <DialogContent
+          sx={{
+            px: { xs: 2.5, sm: 3.5 },
+            pt: 3,
+            pb: 2,
+          }}
+        >
+          <Typography
+            variant="overline"
+            sx={{
+              color: "error.light",
+              fontWeight: 800,
+              letterSpacing: "0.1em",
+            }}
+          >
+            VARNING
+          </Typography>
+
+          <Typography
+            variant="h5"
+            sx={{
+              mt: 0.4,
+              fontWeight: 800,
+            }}
+          >
+            Gå tillbaka till gruppspel?
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 1,
+              color: "text.secondary",
+              lineHeight: 1.7,
+            }}
+          >
+            Alla semifinaler, finaler och registrerade slutspelsresultat tas
+            bort. Gruppmatcherna och deras resultat behålls.
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 1,
+              color: "text.secondary",
+              lineHeight: 1.7,
+            }}
+          >
+            Seedningen återställs och räknas om nästa gång slutspelet startas.
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              mt: 1,
+              color: "error.light",
+              fontWeight: 700,
+            }}
+          >
+            Borttagna slutspelsresultat går inte att ångra.
+          </Typography>
+
+          {rollbackError && (
+            <Box sx={{ mt: 2 }}>
+              <PasdartInlineError message={rollbackError} />
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions
+          sx={{
+            px: { xs: 2.5, sm: 3.5 },
+            pb: 3,
+            pt: 1,
+            gap: 1,
+          }}
+        >
+          <Button
+            type="button"
+            variant="text"
+            disabled={rollingBackPlayoffs}
+            onClick={() => setRollbackDialogOpen(false)}
+          >
+            Avbryt
+          </Button>
+
+          <Button
+            type="button"
+            variant="contained"
+            disabled={rollingBackPlayoffs}
+            onClick={handleRollbackPlayoffs}
+            sx={{
+              backgroundColor: "error.dark",
+              "&:hover": {
+                backgroundColor: "error.main",
+              },
+            }}
+          >
+            {rollingBackPlayoffs
+              ? "Återställer..."
+              : "Gå tillbaka till gruppspel"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={deleteDialogOpen}
