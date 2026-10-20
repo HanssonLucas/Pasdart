@@ -72,6 +72,11 @@ export async function POST(
     .from(teams)
     .where(eq(teams.tournamentId, tournament.id));
 
+  const effectivePlayoffQualifiers =
+    tournamentTeams.length <= 3
+      ? Math.min(2, tournamentTeams.length)
+      : Math.min(tournament.playoffQualifiers, tournamentTeams.length);
+
   const hasAnySeeds = tournamentTeams.some((team) => team.seed !== null);
 
   if (!hasAnySeeds) {
@@ -170,7 +175,7 @@ export async function POST(
       and(
         eq(teams.tournamentId, tournament.id),
         isNotNull(teams.seed),
-        lte(teams.seed, 4),
+        lte(teams.seed, effectivePlayoffQualifiers),
       ),
     );
 

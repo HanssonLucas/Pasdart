@@ -45,6 +45,20 @@ export async function GET(
   const isAdmin =
     requestAdminToken !== null && requestAdminToken === tournament.adminToken;
 
+  const tournamentTeams = await db
+    .select({
+      id: teams.id,
+      teamNumber: teams.teamNumber,
+      seed: teams.seed,
+    })
+    .from(teams)
+    .where(eq(teams.tournamentId, tournament.id));
+
+  const effectivePlayoffQualifiers =
+    tournamentTeams.length <= 3
+      ? Math.min(2, tournamentTeams.length)
+      : Math.min(tournament.playoffQualifiers, tournamentTeams.length);
+
   const publicTournament = {
     id: tournament.id,
     name: tournament.name,
@@ -59,17 +73,8 @@ export async function GET(
     groupMaxDarts: tournament.groupMaxDarts,
     playoffMaxDarts: tournament.playoffMaxDarts,
     tiebreakMethod: tournament.tiebreakMethod,
-    playoffQualifiers: tournament.playoffQualifiers,
+    playoffQualifiers: effectivePlayoffQualifiers,
   };
-
-  const tournamentTeams = await db
-    .select({
-      id: teams.id,
-      teamNumber: teams.teamNumber,
-      seed: teams.seed,
-    })
-    .from(teams)
-    .where(eq(teams.tournamentId, tournament.id));
 
   const teamMembers = await db
     .select({
@@ -185,7 +190,7 @@ export async function GET(
 
   if (groupStageComplete) {
     const relevantStandings = standings.filter(
-      (_, index) => index < tournament.playoffQualifiers,
+      (_, index) => index < effectivePlayoffQualifiers,
     );
 
     if (tournament.groupMatchMode === "fixedLegs") {
