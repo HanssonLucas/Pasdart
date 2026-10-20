@@ -2774,7 +2774,6 @@ export default function SchedulePage({
                 {finalCreated ? (
                   finalMatches.map((match) => {
                     const teamA = getTeam(match.teamAId);
-
                     const teamB = getTeam(match.teamBId);
 
                     const teamAWon =
@@ -2805,7 +2804,7 @@ export default function SchedulePage({
                           boxShadow: "none",
                         }}
                       >
-                        <Stack spacing={2}>
+                        <Stack spacing={1.5}>
                           <Stack
                             sx={{
                               flexDirection: "row",
@@ -2840,31 +2839,30 @@ export default function SchedulePage({
                               display: "grid",
                               gridTemplateColumns: showInlineFinishedResult
                                 ? {
-                                    xs: "1fr",
+                                    xs: "repeat(2, minmax(0, 1fr))",
                                     sm: "minmax(0, 1fr) auto minmax(0, 1fr)",
                                   }
                                 : {
-                                    xs: "1fr",
+                                    xs: "repeat(2, minmax(0, 1fr))",
                                     sm: "repeat(2, minmax(0, 1fr))",
                                   },
                               gridTemplateAreas: showInlineFinishedResult
                                 ? {
                                     xs: `
-                                    "teamA"
-                                    "result"
-                                    "teamB"
-                                  `,
+                    "teamA teamB"
+                    "result result"
+                  `,
                                     sm: `"teamA result teamB"`,
                                   }
                                 : {
-                                    xs: `
-                                    "teamA"
-                                    "teamB"
-                                  `,
+                                    xs: `"teamA teamB"`,
                                     sm: `"teamA teamB"`,
                                   },
                               alignItems: "center",
-                              gap: 1,
+                              columnGap: { xs: 1, sm: 1.5 },
+                              rowGap: showInlineFinishedResult
+                                ? { xs: 1.25, sm: 0 }
+                                : 0,
                             }}
                           >
                             <Box
@@ -2907,25 +2905,16 @@ export default function SchedulePage({
                               sx={{
                                 gridArea: "teamB",
                                 display: "flex",
-                                flexDirection: { sm: "row-reverse" },
+                                flexDirection: "row-reverse",
                                 justifyContent: "space-between",
                                 alignItems: "center",
                                 gap: 2,
                                 py: 1,
                                 px: 1.25,
-                                textAlign: { sm: "right" },
-                                borderRight: {
-                                  xs: "none",
-                                  sm: teamBWon
-                                    ? "3px solid rgba(76,175,80,0.80)"
-                                    : "3px solid transparent",
-                                },
-                                borderLeft: {
-                                  xs: teamBWon
-                                    ? "3px solid rgba(76,175,80,0.80)"
-                                    : "3px solid transparent",
-                                  sm: "none",
-                                },
+                                textAlign: "right",
+                                borderRight: teamBWon
+                                  ? "3px solid rgba(76,175,80,0.80)"
+                                  : "3px solid transparent",
                                 opacity:
                                   match.status === "finished" && !teamBWon
                                     ? 0.58
@@ -2949,26 +2938,39 @@ export default function SchedulePage({
                                 </Typography>
                               </Box>
                             </Box>
-                          </Box>
 
-                          {match.status === "finished" &&
-                            data.isAdmin &&
-                            editingMatchId !== match.id && (
-                              <Button
-                                type="button"
-                                variant="text"
-                                size="small"
-                                onClick={() => setEditingMatchId(match.id)}
+                            {showInlineFinishedResult && (
+                              <Box
                                 sx={{
-                                  alignSelf: "flex-start",
-                                  px: 0,
-                                  minWidth: 0,
-                                  fontWeight: 700,
+                                  gridArea: "result",
+                                  display: "flex",
+                                  justifyContent: "center",
+                                  alignItems: "center",
+                                  px: 1,
                                 }}
                               >
-                                Ändra resultat
-                              </Button>
+                                <Typography
+                                  sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    gap: 0.65,
+                                    fontSize: { xs: "1.4rem", sm: "1.6rem" },
+                                    fontWeight: 900,
+                                    letterSpacing: "-0.025em",
+                                    lineHeight: 1,
+                                    fontVariantNumeric: "tabular-nums",
+                                  }}
+                                >
+                                  <Box component="span">{match.teamALegs}</Box>
+
+                                  <Box component="span">–</Box>
+
+                                  <Box component="span">{match.teamBLegs}</Box>
+                                </Typography>
+                              </Box>
                             )}
+                          </Box>
 
                           {(match.status !== "finished" ||
                             editingMatchId === match.id) && (
@@ -2976,11 +2978,7 @@ export default function SchedulePage({
                               matchId={match.id}
                               bestOf={data.tournament.playoffBestOf}
                               isAdmin={data.isAdmin}
-                              title={
-                                editingMatchId === match.id
-                                  ? "Ändra resultat"
-                                  : "Registrera resultat"
-                              }
+                              density="inline"
                               actionError={
                                 actionError?.matchId === match.id
                                   ? actionError.message
@@ -2990,16 +2988,56 @@ export default function SchedulePage({
                             />
                           )}
 
+                          {showInlineFinishedResult && data.isAdmin && (
+                            <Button
+                              type="button"
+                              variant="outlined"
+                              size="small"
+                              onClick={() => setEditingMatchId(match.id)}
+                              sx={{
+                                alignSelf: "center",
+                                minWidth: 0,
+                                px: 1.25,
+                                py: 0.25,
+                                borderRadius: 0.5,
+                                borderColor: "rgba(255,255,255,0.16)",
+                                color: "text.secondary",
+                                fontSize: "0.72rem",
+                                fontWeight: 700,
+                                textTransform: "none",
+                                "&:hover": {
+                                  borderColor: "rgba(76,175,80,0.65)",
+                                  backgroundColor: "rgba(46,125,50,0.05)",
+                                  color: "text.primary",
+                                },
+                              }}
+                            >
+                              Ändra resultat
+                            </Button>
+                          )}
+
                           {editingMatchId === match.id && (
                             <Button
                               type="button"
-                              variant="text"
+                              variant="outlined"
                               size="small"
                               onClick={() => setEditingMatchId(null)}
                               sx={{
-                                alignSelf: "flex-start",
-                                px: 0,
+                                alignSelf: "center",
                                 minWidth: 0,
+                                px: 1.25,
+                                py: 0.25,
+                                borderRadius: 0.5,
+                                borderColor: "rgba(255,255,255,0.16)",
+                                color: "text.secondary",
+                                fontSize: "0.72rem",
+                                fontWeight: 700,
+                                textTransform: "none",
+                                "&:hover": {
+                                  borderColor: "rgba(76,175,80,0.65)",
+                                  backgroundColor: "rgba(46,125,50,0.05)",
+                                  color: "text.primary",
+                                },
                               }}
                             >
                               Avbryt
