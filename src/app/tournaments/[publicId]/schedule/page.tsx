@@ -1818,13 +1818,24 @@ export default function SchedulePage({
                                 editingMatchId !== match.id ? (
                                   <Typography
                                     sx={{
-                                      fontSize: { xs: "1.25rem", sm: "1.5rem" },
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      gap: 1,
+                                      fontSize: { xs: "1.4rem", sm: "1.6rem" },
                                       fontWeight: 900,
-                                      letterSpacing: "-0.02em",
+                                      letterSpacing: "-0.025em",
                                       lineHeight: 1,
+                                      fontVariantNumeric: "tabular-nums",
                                     }}
                                   >
-                                    {match.teamALegs} – {match.teamBLegs}
+                                    <Box component="span">
+                                      {match.teamALegs}
+                                    </Box>
+                                    <Box component="span">–</Box>
+                                    <Box component="span">
+                                      {match.teamBLegs}
+                                    </Box>
                                   </Typography>
                                 ) : (
                                   <MatchResultControls
@@ -1855,18 +1866,28 @@ export default function SchedulePage({
                                   editingMatchId !== match.id && (
                                     <Button
                                       type="button"
-                                      variant="text"
+                                      variant="outlined"
                                       size="small"
                                       onClick={() =>
                                         setEditingMatchId(match.id)
                                       }
                                       sx={{
-                                        mt: 0.6,
+                                        mt: 1.2,
                                         minWidth: 0,
-                                        px: 0,
+                                        px: 1.25,
+                                        py: 0.25,
+                                        borderRadius: 0.5,
+                                        borderColor: "rgba(255,255,255,0.16)",
                                         color: "text.secondary",
-                                        fontSize: "0.75rem",
+                                        fontSize: "0.72rem",
                                         fontWeight: 700,
+                                        textTransform: "none",
+                                        "&:hover": {
+                                          borderColor: "rgba(198,40,40,0.65)",
+                                          backgroundColor:
+                                            "rgba(198,40,40,0.05)",
+                                          color: "text.primary",
+                                        },
                                       }}
                                     >
                                       Ändra resultat
@@ -1875,15 +1896,25 @@ export default function SchedulePage({
                                 {editingMatchId === match.id && (
                                   <Button
                                     type="button"
-                                    variant="text"
+                                    variant="outlined"
                                     size="small"
                                     onClick={() => setEditingMatchId(null)}
                                     sx={{
-                                      mt: 0.6,
+                                      mt: 1.2,
                                       minWidth: 0,
-                                      px: 0,
+                                      px: 1.25,
+                                      py: 0.25,
+                                      borderRadius: 0.5,
+                                      borderColor: "rgba(255,255,255,0.16)",
                                       color: "text.secondary",
-                                      fontSize: "0.75rem",
+                                      fontSize: "0.72rem",
+                                      fontWeight: 700,
+                                      textTransform: "none",
+                                      "&:hover": {
+                                        borderColor: "rgba(198,40,40,0.65)",
+                                        backgroundColor: "rgba(198,40,40,0.05)",
+                                        color: "text.primary",
+                                      },
                                     }}
                                   >
                                     Avbryt
