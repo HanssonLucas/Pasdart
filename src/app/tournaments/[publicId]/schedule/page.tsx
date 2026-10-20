@@ -1698,6 +1698,10 @@ export default function SchedulePage({
                         match.status === "finished" &&
                         match.winnerTeamId === match.teamBId;
 
+                      const showInlineFinishedResult =
+                        match.status === "finished" &&
+                        editingMatchId !== match.id;
+
                       return (
                         <Paper
                           key={match.id}
@@ -1747,25 +1751,46 @@ export default function SchedulePage({
                             <Box
                               sx={{
                                 display: "grid",
-                                gridTemplateColumns: {
-                                  xs: "repeat(2, minmax(0, 1fr))",
-                                  md: "minmax(0, 1fr) auto minmax(0, 1fr)",
-                                  lg: "repeat(2, minmax(0, 1fr))",
-                                },
-                                gridTemplateAreas: {
-                                  xs: `
-                                  "teamA teamB"
-                                  "result result"
-                                `,
-                                  md: `"teamA result teamB"`,
-                                  lg: `
-                                  "teamA teamB"
-                                  "result result"
-                                `,
-                                },
+                                gridTemplateColumns: showInlineFinishedResult
+                                  ? {
+                                      xs: "repeat(2, minmax(0, 1fr))",
+                                      sm: "minmax(0, 1fr) auto minmax(0, 1fr)",
+                                    }
+                                  : {
+                                      xs: "repeat(2, minmax(0, 1fr))",
+                                      md: "minmax(0, 1fr) auto minmax(0, 1fr)",
+                                      lg: "repeat(2, minmax(0, 1fr))",
+                                    },
+                                gridTemplateAreas: showInlineFinishedResult
+                                  ? {
+                                      xs: `
+                                      "teamA teamB"
+                                      "result result"
+                                      "action action"
+                                    `,
+                                      sm: `
+                                      "teamA result teamB"
+                                      ". action ."
+                                    `,
+                                    }
+                                  : {
+                                      xs: `
+                                      "teamA teamB"
+                                      "result result"
+                                    `,
+                                      md: `"teamA result teamB"`,
+                                      lg: `
+                                      "teamA teamB"
+                                      "result result"
+                                    `,
+                                    },
                                 alignItems: "center",
-                                columnGap: { xs: 1.5, md: 3, lg: 1.5 },
-                                rowGap: { xs: 1.25, md: 0, lg: 1.25 },
+                                columnGap: showInlineFinishedResult
+                                  ? { xs: 1.5, sm: 1.5, md: 2 }
+                                  : { xs: 1.5, md: 3, lg: 1.5 },
+                                rowGap: showInlineFinishedResult
+                                  ? { xs: 1.25, sm: 0 }
+                                  : { xs: 1.25, md: 0, lg: 1.25 },
                               }}
                             >
                               <Box
@@ -1860,39 +1885,7 @@ export default function SchedulePage({
                                     onResult={handleResult}
                                   />
                                 )}
-                                {match.status === "finished" &&
-                                  data.isAdmin &&
-                                  !playoffsStarted &&
-                                  editingMatchId !== match.id && (
-                                    <Button
-                                      type="button"
-                                      variant="outlined"
-                                      size="small"
-                                      onClick={() =>
-                                        setEditingMatchId(match.id)
-                                      }
-                                      sx={{
-                                        mt: 1.2,
-                                        minWidth: 0,
-                                        px: 1.25,
-                                        py: 0.25,
-                                        borderRadius: 0.5,
-                                        borderColor: "rgba(255,255,255,0.16)",
-                                        color: "text.secondary",
-                                        fontSize: "0.72rem",
-                                        fontWeight: 700,
-                                        textTransform: "none",
-                                        "&:hover": {
-                                          borderColor: "rgba(198,40,40,0.65)",
-                                          backgroundColor:
-                                            "rgba(198,40,40,0.05)",
-                                          color: "text.primary",
-                                        },
-                                      }}
-                                    >
-                                      Ändra resultat
-                                    </Button>
-                                  )}
+
                                 {editingMatchId === match.id && (
                                   <Button
                                     type="button"
@@ -1921,6 +1914,47 @@ export default function SchedulePage({
                                   </Button>
                                 )}
                               </Box>
+
+                              {showInlineFinishedResult &&
+                                data.isAdmin &&
+                                !playoffsStarted && (
+                                  <Box
+                                    sx={{
+                                      gridArea: "action",
+                                      display: "flex",
+                                      justifyContent: "center",
+                                      mt: 0.25,
+                                    }}
+                                  >
+                                    <Button
+                                      type="button"
+                                      variant="outlined"
+                                      size="small"
+                                      onClick={() =>
+                                        setEditingMatchId(match.id)
+                                      }
+                                      sx={{
+                                        minWidth: 0,
+                                        px: 1.25,
+                                        py: 0.25,
+                                        borderRadius: 0.5,
+                                        borderColor: "rgba(255,255,255,0.16)",
+                                        color: "text.secondary",
+                                        fontSize: "0.72rem",
+                                        fontWeight: 700,
+                                        textTransform: "none",
+                                        "&:hover": {
+                                          borderColor: "rgba(198,40,40,0.65)",
+                                          backgroundColor:
+                                            "rgba(198,40,40,0.05)",
+                                          color: "text.primary",
+                                        },
+                                      }}
+                                    >
+                                      Ändra resultat
+                                    </Button>
+                                  </Box>
+                                )}
 
                               <Box
                                 sx={{
