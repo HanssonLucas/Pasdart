@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { db } from "@/db";
-import { matches, tournaments } from "@/db/schema";
+import { matches, teams, tournaments } from "@/db/schema";
 
 export async function PATCH(
   request: Request,
@@ -38,6 +38,9 @@ export async function PATCH(
       stage: matches.stage,
       teamAId: matches.teamAId,
       teamBId: matches.teamBId,
+      teamALegs: matches.teamALegs,
+      teamBLegs: matches.teamBLegs,
+      status: matches.status,
       winnerTeamId: matches.winnerTeamId,
     })
     .from(matches)
@@ -199,6 +202,42 @@ export async function PATCH(
 
       return NextResponse.json(updatedMatch);
     }
+  }
+
+  const shouldResetSeeding =
+    match.stage === "group" &&
+    match.status === "finished" &&
+    (match.teamALegs !== teamALegs ||
+      match.teamBLegs !== teamBLegs ||
+      match.winnerTeamId !== winnerTeamId);
+
+  if (shouldResetSeeding) {
+    await db.batch([
+      db
+        .update(matches)
+        .set({
+          teamALegs,
+          teamBLegs,
+          winnerTeamId,
+          status: "finished",
+          updatedAt: new Date(),
+        })
+        .where(eq(matches.id, match.id)),
+
+      db
+        .update(teams)
+        .set({
+          seed: null,
+        })
+        .where(eq(teams.tournamentId, match.tournamentId)),
+    ]);
+
+    const [updatedMatch] = await db
+      .select()
+      .from(matches)
+      .where(eq(matches.id, match.id));
+
+    return NextResponse.json(updatedMatch);
   }
 
   const [updatedMatch] = await db
