@@ -227,6 +227,10 @@ export default function SchedulePage({
 
   const [resettingFinal, setResettingFinal] = useState(false);
 
+  const [savingMatchIds, setSavingMatchIds] = useState<Set<number>>(
+    () => new Set(),
+  );
+
   function applyTournamentData(result: TournamentResponse) {
     setData(result);
 
@@ -239,6 +243,11 @@ export default function SchedulePage({
     });
 
     setCastoffOrders(newCastoffOrders);
+
+    if (result.tournament.status !== "finished") {
+      winnerDialogShownRef.current = false;
+      setWinnerDialogOpen(false);
+    }
 
     const finishedFinal = result.matches.find(
       (match) =>
@@ -427,6 +436,10 @@ export default function SchedulePage({
     semifinalMatches.every(
       (match) => match.status === "finished" && match.winnerTeamId !== null,
     );
+
+  const semifinalResultSaving = semifinalMatches.some((match) =>
+    savingMatchIds.has(match.id),
+  );
 
   const playoffsStarted =
     data.tournament.status === "playoffs" ||
@@ -798,20 +811,38 @@ export default function SchedulePage({
 
       const currentMatch = data?.matches.find((match) => match.id === matchId);
 
+      const winnerTeamId = currentMatch
+        ? teamALegs === teamBLegs
+          ? null
+          : teamALegs > teamBLegs
+            ? currentMatch.teamAId
+            : currentMatch.teamBId
+        : null;
+
+      const semifinalWinnerWouldChange =
+        currentMatch?.stage === "semifinal" &&
+        currentMatch.status === "finished" &&
+        currentMatch.winnerTeamId !== winnerTeamId;
+
+      const semifinalNeedsConfirmation =
+        currentMatch?.stage === "semifinal" &&
+        finalCreated &&
+        semifinalWinnerWouldChange &&
+        !resetFinal;
+
       if (
         currentMatch &&
-        (currentMatch.stage === "group" || currentMatch.stage === "final") &&
-        data
+        data &&
+        !semifinalNeedsConfirmation &&
+        (currentMatch.stage === "group" ||
+          currentMatch.stage === "semifinal" ||
+          currentMatch.stage === "final")
       ) {
         previousData = data;
         previousEditingMatchId = editingMatchId;
 
-        const winnerTeamId =
-          teamALegs === teamBLegs
-            ? null
-            : teamALegs > teamBLegs
-              ? currentMatch.teamAId
-              : currentMatch.teamBId;
+        const shouldRemoveFinal =
+          currentMatch.stage === "semifinal" && resetFinal;
 
         setData((current) => {
           if (!current) {
@@ -827,25 +858,40 @@ export default function SchedulePage({
                     ...current.tournament,
                     status: "finished",
                   }
-                : current.tournament,
+                : shouldRemoveFinal
+                  ? {
+                      ...current.tournament,
+                      status: "playoffs",
+                    }
+                  : current.tournament,
 
-            matches: current.matches.map((match) =>
-              match.id === matchId
-                ? {
-                    ...match,
-                    teamALegs,
-                    teamBLegs,
-                    winnerTeamId,
-                    status: "finished",
-                  }
-                : match,
-            ),
+            matches: current.matches
+              .filter(
+                (match) => !(shouldRemoveFinal && match.stage === "final"),
+              )
+              .map((match) =>
+                match.id === matchId
+                  ? {
+                      ...match,
+                      teamALegs,
+                      teamBLegs,
+                      winnerTeamId,
+                      status: "finished",
+                    }
+                  : match,
+              ),
           };
         });
 
         setEditingMatchId(null);
         optimisticUpdateApplied = true;
       }
+
+      setSavingMatchIds((current) => {
+        const next = new Set(current);
+        next.add(matchId);
+        return next;
+      });
 
       const response = await fetch(`/api/matches/${matchId}`, {
         method: "PATCH",
@@ -913,6 +959,12 @@ export default function SchedulePage({
       });
 
       return false;
+    } finally {
+      setSavingMatchIds((current) => {
+        const next = new Set(current);
+        next.delete(matchId);
+        return next;
+      });
     }
   }
 
@@ -2807,9 +2859,13 @@ export default function SchedulePage({
                           size="large"
                           fullWidth
                           onClick={handleCreateFinal}
-                          disabled={creatingFinal}
+                          disabled={creatingFinal || semifinalResultSaving}
                         >
-                          {creatingFinal ? "Skapar final..." : "Skapa final"}
+                          {semifinalResultSaving
+                            ? "Sparar semifinal..."
+                            : creatingFinal
+                              ? "Skapar final..."
+                              : "Skapa final"}
                         </Button>
                       )}
                     </Stack>
