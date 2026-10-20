@@ -386,13 +386,31 @@ export default function SchedulePage({
     );
   }
 
-  const groupMatches = data.matches.filter((match) => match.stage === "group");
+  const groupMatches = data.matches
+    .filter((match) => match.stage === "group")
+    .sort((a, b) => {
+      const roundDifference = (a.roundNumber ?? 0) - (b.roundNumber ?? 0);
 
-  const semifinalMatches = data.matches.filter(
-    (match) => match.stage === "semifinal",
-  );
+      if (roundDifference !== 0) {
+        return roundDifference;
+      }
 
-  const finalMatches = data.matches.filter((match) => match.stage === "final");
+      const boardDifference = (a.boardNumber ?? 0) - (b.boardNumber ?? 0);
+
+      if (boardDifference !== 0) {
+        return boardDifference;
+      }
+
+      return (a.matchNumber ?? 0) - (b.matchNumber ?? 0);
+    });
+
+  const semifinalMatches = data.matches
+    .filter((match) => match.stage === "semifinal")
+    .sort((a, b) => (a.matchNumber ?? 0) - (b.matchNumber ?? 0));
+
+  const finalMatches = data.matches
+    .filter((match) => match.stage === "final")
+    .sort((a, b) => (a.matchNumber ?? 0) - (b.matchNumber ?? 0));
 
   const finalCreated = finalMatches.length > 0;
 
