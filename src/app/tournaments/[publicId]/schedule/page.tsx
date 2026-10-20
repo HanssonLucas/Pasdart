@@ -775,6 +775,11 @@ export default function SchedulePage({
     teamBLegs: number,
     resetFinal = false,
   ) {
+    let previousData: TournamentResponse | null = null;
+    let previousEditingMatchId: number | null = null;
+    let optimisticUpdateApplied = false;
+    let resultSavedOnServer = false;
+
     try {
       const { publicId } = await params;
 
@@ -789,6 +794,44 @@ export default function SchedulePage({
         });
 
         return false;
+      }
+
+      const currentMatch = data?.matches.find((match) => match.id === matchId);
+
+      if (currentMatch?.stage === "group" && data) {
+        previousData = data;
+        previousEditingMatchId = editingMatchId;
+
+        const winnerTeamId =
+          teamALegs === teamBLegs
+            ? null
+            : teamALegs > teamBLegs
+              ? currentMatch.teamAId
+              : currentMatch.teamBId;
+
+        setData((current) => {
+          if (!current) {
+            return current;
+          }
+
+          return {
+            ...current,
+            matches: current.matches.map((match) =>
+              match.id === matchId
+                ? {
+                    ...match,
+                    teamALegs,
+                    teamBLegs,
+                    winnerTeamId,
+                    status: "finished",
+                  }
+                : match,
+            ),
+          };
+        });
+
+        setEditingMatchId(null);
+        optimisticUpdateApplied = true;
       }
 
       const response = await fetch(`/api/matches/${matchId}`, {
@@ -825,10 +868,13 @@ export default function SchedulePage({
         throw new Error();
       }
 
+      resultSavedOnServer = true;
+
       const updatedResponse = await fetchTournamentSchedule(publicId);
 
       if (!updatedResponse.ok) {
-        throw new Error();
+        window.location.reload();
+        return true;
       }
 
       const updatedData: TournamentResponse = await updatedResponse.json();
@@ -838,6 +884,16 @@ export default function SchedulePage({
 
       return true;
     } catch {
+      if (optimisticUpdateApplied && !resultSavedOnServer && previousData) {
+        setData(previousData);
+        setEditingMatchId(previousEditingMatchId);
+      }
+
+      if (resultSavedOnServer) {
+        window.location.reload();
+        return true;
+      }
+
       setActionError({
         matchId,
         message: "Kunde inte spara matchresultatet.",
