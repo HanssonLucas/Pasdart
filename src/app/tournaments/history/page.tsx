@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { useRouter } from "next/navigation";
 
 import {
@@ -16,11 +17,17 @@ import {
 
 type FinishedTournament = {
   publicId: string;
+
   name: string;
+
   finishedAt: string | null;
+
   winnerTeamNumber: number | null;
+
   winnerTeamName: string | null;
+
   teamMode: string;
+
   participantCount: number;
 };
 
@@ -37,8 +44,11 @@ function TargetIcon() {
         strokeLinejoin="round"
       >
         <circle cx="12" cy="12" r="9" />
+
         <circle cx="12" cy="12" r="5.5" />
+
         <circle cx="12" cy="12" r="2" />
+
         <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
       </g>
     </SvgIcon>
@@ -47,7 +57,7 @@ function TargetIcon() {
 
 function ArchiveIcon() {
   return (
-    <SvgIcon viewBox="0 0 24 24" sx={{ fontSize: 22 }}>
+    <SvgIcon viewBox="0 0 24 24" sx={{ fontSize: 28 }}>
       <g
         fill="none"
         stroke="currentColor"
@@ -56,6 +66,7 @@ function ArchiveIcon() {
         strokeLinejoin="round"
       >
         <rect x="3" y="4" width="18" height="4" rx="1" />
+
         <path d="M5 8v12h14V8M10 12h4" />
       </g>
     </SvgIcon>
@@ -73,7 +84,9 @@ function TrophyIcon({ size = 20 }: { size?: number }) {
         strokeLinejoin="round"
       >
         <path d="M7 4h10v6a5 5 0 0 1-10 0V4Z" />
+
         <path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4" />
+
         <path d="M12 15v4M8 21h8M10 19h4" />
       </g>
     </SvgIcon>
@@ -108,6 +121,7 @@ function getWinnerName(tournament: FinishedTournament) {
 
 function getTeamModeLabel(teamMode: string) {
   if (teamMode === "singles") return "Singel";
+
   if (teamMode === "doubles") return "Dubbel";
 
   return "Okänt format";
@@ -117,41 +131,53 @@ function getTournamentDate(finishedAt: string | null) {
   if (!finishedAt) return null;
 
   const date = new Date(finishedAt);
+
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
 const dateFormatter = new Intl.DateTimeFormat("sv-SE", {
   timeZone: "Europe/Stockholm",
+
   day: "numeric",
 });
 
 const monthFormatter = new Intl.DateTimeFormat("sv-SE", {
   timeZone: "Europe/Stockholm",
+
   month: "short",
 });
 
 const fullDateFormatter = new Intl.DateTimeFormat("sv-SE", {
   timeZone: "Europe/Stockholm",
+
   day: "numeric",
+
   month: "long",
+
   year: "numeric",
 });
 
 const shortDateFormatter = new Intl.DateTimeFormat("sv-SE", {
   timeZone: "Europe/Stockholm",
+
   day: "numeric",
+
   month: "short",
+
   year: "numeric",
 });
 
 const yearFormatter = new Intl.DateTimeFormat("sv-SE", {
   timeZone: "Europe/Stockholm",
+
   year: "numeric",
 });
 
 const cardBaseSx = {
   border: "1px solid rgba(255,255,255,0.12)",
+
   borderRadius: 1,
+
   backgroundColor: "rgba(255,255,255,0.018)",
 };
 
@@ -159,8 +185,11 @@ export default function TournamentHistoryPage() {
   const router = useRouter();
 
   const [tournaments, setTournaments] = useState<FinishedTournament[]>([]);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState("");
+
   const [filter, setFilter] = useState<HistoryFilter>("all");
 
   useEffect(() => {
@@ -218,12 +247,14 @@ export default function TournamentHistoryPage() {
       const date = getTournamentDate(tournament.finishedAt);
 
       if (!date) return oldest;
+
       if (!oldest) return tournament;
 
       const oldestDate = getTournamentDate(oldest.finishedAt);
 
       return !oldestDate || date < oldestDate ? tournament : oldest;
     },
+
     null,
   );
 
@@ -243,6 +274,7 @@ export default function TournamentHistoryPage() {
     Record<string, FinishedTournament[]>
   >((groups, tournament) => {
     const date = getTournamentDate(tournament.finishedAt);
+
     const year = date ? yearFormatter.format(date) : "Okänt år";
 
     if (!groups[year]) {
@@ -256,7 +288,9 @@ export default function TournamentHistoryPage() {
 
   const filters: { value: HistoryFilter; label: string }[] = [
     { value: "all", label: "Alla cuper" },
+
     { value: "singles", label: "Singel" },
+
     { value: "doubles", label: "Dubbel" },
   ];
 
@@ -264,12 +298,16 @@ export default function TournamentHistoryPage() {
     <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4.5 } }}>
       <Stack spacing={3}>
         {/* HERO */}
+
         <Paper elevation={0} sx={{ ...cardBaseSx, overflow: "hidden" }}>
           <Box
             sx={{
               height: 3,
+
               display: "flex",
+
               justifyContent: "center",
+
               gap: 0.5,
             }}
           >
@@ -279,7 +317,9 @@ export default function TournamentHistoryPage() {
                   key={index}
                   sx={{
                     width: 28,
+
                     height: 3,
+
                     backgroundColor: color,
                   }}
                 />
@@ -290,9 +330,13 @@ export default function TournamentHistoryPage() {
           <Box
             sx={{
               p: { xs: 2.75, sm: 3.5, md: 4.5 },
+
               display: "flex",
+
               alignItems: "center",
+
               justifyContent: "space-between",
+
               gap: 3,
             }}
           >
@@ -300,8 +344,11 @@ export default function TournamentHistoryPage() {
               <Typography
                 sx={{
                   fontFamily: 'Georgia, "Times New Roman", serif',
+
                   fontStyle: "italic",
+
                   fontSize: { xs: "1.1rem", md: "1.35rem" },
+
                   color: "rgba(255,255,255,0.82)",
                 }}
               >
@@ -312,9 +359,13 @@ export default function TournamentHistoryPage() {
                 component="h1"
                 sx={{
                   mt: 0.75,
+
                   fontSize: { xs: "2rem", sm: "2.65rem", md: "3.2rem" },
+
                   fontWeight: 900,
+
                   letterSpacing: "-0.04em",
+
                   lineHeight: 1.05,
                 }}
               >
@@ -324,9 +375,13 @@ export default function TournamentHistoryPage() {
               <Typography
                 sx={{
                   mt: 1.5,
+
                   color: "text.secondary",
+
                   fontSize: { xs: "0.9rem", sm: "1rem" },
+
                   maxWidth: 540,
+
                   lineHeight: 1.55,
                 }}
               >
@@ -338,21 +393,32 @@ export default function TournamentHistoryPage() {
             <Box
               sx={{
                 display: { xs: "none", sm: "flex" },
+
                 flexDirection: "column",
+
                 alignItems: "center",
+
                 justifyContent: "center",
+
                 gap: 1.25,
+
                 minWidth: { sm: 110, md: 150 },
+
                 minHeight: 110,
+
                 pl: { sm: 3, md: 4 },
+
                 borderLeft: "1px solid rgba(255,255,255,0.1)",
               }}
             >
               <Typography
                 sx={{
                   color: "error.light",
+
                   fontSize: "0.7rem",
+
                   fontWeight: 900,
+
                   letterSpacing: "0.11em",
                 }}
               >
@@ -377,6 +443,7 @@ export default function TournamentHistoryPage() {
             <Typography sx={{ fontWeight: 800 }}>
               Inga tidigare cuper ännu
             </Typography>
+
             <Typography sx={{ mt: 1, color: "text.secondary" }}>
               När den första cupen är avslutad kommer den att visas här.
             </Typography>
@@ -384,27 +451,39 @@ export default function TournamentHistoryPage() {
         ) : (
           <>
             {/* SAMMANFATTNING */}
+
             <Box
               sx={{
                 display: "grid",
+
                 gridTemplateColumns: {
                   xs: "1fr",
+
                   sm: "minmax(0, 0.7fr) minmax(0, 1.3fr)",
                 },
+
                 gap: 1.5,
               }}
             >
               {/* ARKIVSTATISTIK */}
+
               <Paper
                 elevation={0}
                 sx={{
                   ...cardBaseSx,
+
                   p: { xs: 2, sm: 2.5 },
+
                   borderTop: "2px solid rgba(198,40,40,0.6)",
+
                   backgroundColor: "rgba(198,40,40,0.028)",
+
                   display: "flex",
+
                   flexDirection: "column",
+
                   justifyContent: "space-between",
+
                   gap: 2,
                 }}
               >
@@ -416,8 +495,11 @@ export default function TournamentHistoryPage() {
                   <Typography
                     sx={{
                       color: "error.light",
-                      fontSize: "0.7rem",
+
+                      fontSize: { xs: "0.82rem", sm: "0.9rem" },
+
                       fontWeight: 900,
+
                       letterSpacing: "0.09em",
                     }}
                   >
@@ -429,8 +511,11 @@ export default function TournamentHistoryPage() {
                   <Typography
                     sx={{
                       fontSize: "2.6rem",
+
                       fontWeight: 900,
+
                       letterSpacing: "-0.04em",
+
                       lineHeight: 1,
                     }}
                   >
@@ -440,7 +525,9 @@ export default function TournamentHistoryPage() {
                   <Typography
                     sx={{
                       mt: 0.5,
+
                       color: "text.secondary",
+
                       fontSize: "0.85rem",
                     }}
                   >
@@ -451,8 +538,11 @@ export default function TournamentHistoryPage() {
                 <Typography
                   sx={{
                     borderTop: "1px solid rgba(255,255,255,0.09)",
+
                     pt: 1.5,
+
                     fontSize: "0.8rem",
+
                     color: "text.secondary",
                   }}
                 >
@@ -466,51 +556,48 @@ export default function TournamentHistoryPage() {
               </Paper>
 
               {/* SENASTE VINNAREN */}
+
               {latestTournament && (
                 <Paper
-                  component="button"
-                  type="button"
-                  onClick={() =>
-                    handleOpenTournament(latestTournament.publicId)
-                  }
                   elevation={0}
                   sx={{
                     ...cardBaseSx,
+
                     width: "100%",
+
                     p: { xs: 2, sm: 2.5 },
+
                     borderTop: "2px solid rgba(76,175,80,0.6)",
+
                     backgroundColor: "rgba(46,125,50,0.03)",
+
                     display: "flex",
+
                     flexDirection: "column",
+
                     justifyContent: "space-between",
+
                     gap: 2,
+
                     textAlign: "left",
-                    font: "inherit",
+
                     color: "text.primary",
-                    cursor: "pointer",
-                    transition: "border-color 0.2s, background-color 0.2s",
-                    "&:hover": {
-                      borderColor: "rgba(76,175,80,0.42)",
-                      backgroundColor: "rgba(46,125,50,0.065)",
-                    },
-                    "&:focus-visible": {
-                      outline: "2px solid",
-                      outlineColor: "success.main",
-                      outlineOffset: 3,
-                    },
                   }}
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                     <Box sx={{ color: "success.light", display: "flex" }}>
-                      <TrophyIcon size={24} />
+                      <TrophyIcon size={30} />
                     </Box>
 
                     <Box sx={{ minWidth: 0 }}>
                       <Typography
                         sx={{
                           color: "success.light",
-                          fontSize: "0.7rem",
+
+                          fontSize: { xs: "0.82rem", sm: "0.9rem" },
+
                           fontWeight: 900,
+
                           letterSpacing: "0.09em",
                         }}
                       >
@@ -520,7 +607,8 @@ export default function TournamentHistoryPage() {
                       <Typography
                         sx={{
                           color: "text.secondary",
-                          fontSize: "0.8rem",
+
+                          fontSize: { xs: "0.9rem", sm: "1rem" },
                         }}
                       >
                         {latestTournament.name}
@@ -531,9 +619,13 @@ export default function TournamentHistoryPage() {
                   <Typography
                     sx={{
                       fontSize: { xs: "1.4rem", sm: "1.7rem" },
+
                       fontWeight: 900,
+
                       color: "success.light",
+
                       letterSpacing: "-0.025em",
+
                       overflowWrap: "anywhere",
                     }}
                   >
@@ -543,10 +635,15 @@ export default function TournamentHistoryPage() {
                   <Box
                     sx={{
                       display: "flex",
+
                       alignItems: "center",
+
                       justifyContent: "space-between",
+
                       gap: 2,
+
                       borderTop: "1px solid rgba(255,255,255,0.09)",
+
                       pt: 1.5,
                     }}
                   >
@@ -556,37 +653,50 @@ export default function TournamentHistoryPage() {
                       {latestDate
                         ? shortDateFormatter.format(latestDate)
                         : "Okänt datum"}
+
                       {" · "}
+
                       {getTeamModeLabel(latestTournament.teamMode)}
                     </Typography>
 
-                    <Box
+                    <Button
+                      variant="text"
+                      size="small"
+                      onClick={() =>
+                        handleOpenTournament(latestTournament.publicId)
+                      }
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                        color: "success.light",
+                        minHeight: 40,
+                        px: 1.5,
                         flexShrink: 0,
+                        color: "text.primary",
+                        textTransform: "none",
+                        fontWeight: 800,
+                        "&:hover": {
+                          backgroundColor: "rgba(255,255,255,0.07)",
+                        },
                       }}
                     >
-                      <Typography sx={{ fontSize: "0.8rem", fontWeight: 800 }}>
-                        Visa cupen
-                      </Typography>
-                      <ArrowIcon />
-                    </Box>
+                      Visa cupen
+                    </Button>
                   </Box>
                 </Paper>
               )}
             </Box>
 
             {/* ARKIVSEKTION */}
+
             <Stack spacing={2}>
               <Box
                 sx={{
                   display: "flex",
+
                   alignItems: { xs: "flex-start", sm: "flex-end" },
+
                   justifyContent: "space-between",
+
                   gap: 2,
+
                   flexWrap: "wrap",
                 }}
               >
@@ -594,8 +704,11 @@ export default function TournamentHistoryPage() {
                   <Typography
                     sx={{
                       color: "error.light",
+
                       fontWeight: 900,
+
                       fontSize: "0.7rem",
+
                       letterSpacing: "0.1em",
                     }}
                   >
@@ -605,8 +718,11 @@ export default function TournamentHistoryPage() {
                   <Typography
                     sx={{
                       mt: 0.25,
+
                       fontSize: "1.5rem",
+
                       fontWeight: 900,
+
                       letterSpacing: "-0.03em",
                     }}
                   >
@@ -622,12 +738,15 @@ export default function TournamentHistoryPage() {
               </Box>
 
               {/* FILTER */}
+
               <Box
                 role="group"
                 aria-label="Filtrera cuper efter spelformat"
                 sx={{
                   display: "flex",
+
                   flexWrap: "wrap",
+
                   gap: 1,
                 }}
               >
@@ -642,20 +761,30 @@ export default function TournamentHistoryPage() {
                       aria-pressed={selected}
                       sx={{
                         px: 2,
+
                         minHeight: 36,
+
                         borderRadius: 0.75,
+
                         textTransform: "none",
+
                         fontWeight: selected ? 800 : 600,
+
                         fontSize: "0.82rem",
+
                         color: selected ? "error.light" : "text.secondary",
+
                         borderColor: selected
                           ? "rgba(198,40,40,0.55)"
                           : "rgba(255,255,255,0.14)",
+
                         backgroundColor: selected
                           ? "rgba(198,40,40,0.1)"
                           : "transparent",
+
                         "&:hover": {
                           borderColor: "error.main",
+
                           backgroundColor: "rgba(198,40,40,0.07)",
                         },
                       }}
@@ -667,6 +796,7 @@ export default function TournamentHistoryPage() {
               </Box>
 
               {/* FILTRERAD CUPLISTA */}
+
               {filteredTournaments.length === 0 ? (
                 <Paper elevation={0} sx={{ ...cardBaseSx, p: 3 }}>
                   <Typography sx={{ fontWeight: 800 }}>
@@ -680,29 +810,40 @@ export default function TournamentHistoryPage() {
               ) : (
                 <Stack spacing={3}>
                   {Object.entries(groupedTournaments)
+
                     .sort(([yearA], [yearB]) => {
                       if (yearA === "Okänt år") return 1;
+
                       if (yearB === "Okänt år") return -1;
 
                       return Number(yearB) - Number(yearA);
                     })
+
                     .map(([year, yearTournaments]) => (
                       <Box key={year}>
                         {/* ÅRSRUBRIK */}
+
                         <Box
                           sx={{
                             display: "flex",
+
                             alignItems: "center",
+
                             justifyContent: "space-between",
+
                             mb: 1.5,
+
                             pb: 1.25,
+
                             borderBottom: "1px solid rgba(255,255,255,0.12)",
                           }}
                         >
                           <Typography
                             sx={{
                               fontSize: "1.3rem",
+
                               fontWeight: 900,
+
                               letterSpacing: "-0.02em",
                             }}
                           >
@@ -712,6 +853,7 @@ export default function TournamentHistoryPage() {
                           <Typography
                             sx={{
                               color: "text.secondary",
+
                               fontSize: "0.85rem",
                             }}
                           >
@@ -721,6 +863,7 @@ export default function TournamentHistoryPage() {
                         </Box>
 
                         {/* CUPRADER */}
+
                         <Stack spacing={1}>
                           {yearTournaments.map((tournament) => {
                             const date = getTournamentDate(
@@ -744,22 +887,35 @@ export default function TournamentHistoryPage() {
                                 elevation={0}
                                 sx={{
                                   ...cardBaseSx,
+
                                   width: "100%",
+
                                   p: 0,
+
                                   overflow: "hidden",
+
                                   textAlign: "left",
+
                                   font: "inherit",
+
                                   color: "text.primary",
+
                                   cursor: "pointer",
+
                                   transition:
                                     "border-color 0.2s, background-color 0.2s",
+
                                   "&:hover": {
                                     borderColor: "rgba(198,40,40,0.38)",
+
                                     backgroundColor: "rgba(198,40,40,0.025)",
                                   },
+
                                   "&:focus-visible": {
                                     outline: "2px solid",
+
                                     outlineColor: "error.main",
+
                                     outlineOffset: 3,
                                   },
                                 }}
@@ -767,17 +923,22 @@ export default function TournamentHistoryPage() {
                                 <Box
                                   sx={{
                                     display: "flex",
+
                                     alignItems: "stretch",
                                   }}
                                 >
                                   {/* RÖD VÄNSTERACCENT */}
+
                                   <Box
                                     sx={{
                                       width: 3,
+
                                       flexShrink: 0,
+
                                       backgroundColor: isLatest
                                         ? "error.main"
                                         : "transparent",
+
                                       "button:hover &": {
                                         backgroundColor: "error.main",
                                       },
@@ -787,21 +948,31 @@ export default function TournamentHistoryPage() {
                                   <Box
                                     sx={{
                                       display: "flex",
+
                                       alignItems: "center",
+
                                       gap: { xs: 1.5, sm: 2.5 },
+
                                       width: "100%",
+
                                       minWidth: 0,
+
                                       p: { xs: 1.75, sm: 2.25 },
                                     }}
                                   >
                                     {/* DATUM */}
+
                                     <Box
                                       sx={{
                                         width: { xs: 48, sm: 58 },
+
                                         flexShrink: 0,
+
                                         textAlign: "center",
+
                                         borderRight:
                                           "1px solid rgba(255,255,255,0.1)",
+
                                         pr: { xs: 1.5, sm: 2 },
                                       }}
                                     >
@@ -809,9 +980,12 @@ export default function TournamentHistoryPage() {
                                         sx={{
                                           fontSize: {
                                             xs: "1.45rem",
+
                                             sm: "1.7rem",
                                           },
+
                                           fontWeight: 900,
+
                                           lineHeight: 1,
                                         }}
                                       >
@@ -823,9 +997,13 @@ export default function TournamentHistoryPage() {
                                       <Typography
                                         sx={{
                                           mt: 0.5,
+
                                           fontSize: "0.7rem",
+
                                           fontWeight: 800,
+
                                           color: "text.secondary",
+
                                           textTransform: "uppercase",
                                         }}
                                       >
@@ -836,12 +1014,16 @@ export default function TournamentHistoryPage() {
                                     </Box>
 
                                     {/* CUPNAMN + INFORMATION */}
+
                                     <Box sx={{ flex: 1, minWidth: 0 }}>
                                       <Box
                                         sx={{
                                           display: "flex",
+
                                           alignItems: "center",
+
                                           gap: 1,
+
                                           flexWrap: "wrap",
                                         }}
                                       >
@@ -849,9 +1031,12 @@ export default function TournamentHistoryPage() {
                                           sx={{
                                             fontSize: {
                                               xs: "0.95rem",
+
                                               sm: "1.05rem",
                                             },
+
                                             fontWeight: 800,
+
                                             overflowWrap: "anywhere",
                                           }}
                                         >
@@ -863,8 +1048,11 @@ export default function TournamentHistoryPage() {
                                             component="span"
                                             sx={{
                                               color: "error.light",
+
                                               fontSize: "0.6rem",
+
                                               fontWeight: 900,
+
                                               letterSpacing: "0.07em",
                                             }}
                                           >
@@ -876,7 +1064,9 @@ export default function TournamentHistoryPage() {
                                       <Typography
                                         sx={{
                                           mt: 0.5,
+
                                           fontSize: "0.82rem",
+
                                           color: "text.secondary",
                                         }}
                                       >
@@ -886,12 +1076,17 @@ export default function TournamentHistoryPage() {
                                       </Typography>
 
                                       {/* VINNARE PÅ MOBIL */}
+
                                       <Box
                                         sx={{
                                           display: { xs: "flex", md: "none" },
+
                                           alignItems: "center",
+
                                           gap: 0.75,
+
                                           mt: 0.75,
+
                                           color: winnerName
                                             ? "success.light"
                                             : "text.secondary",
@@ -910,22 +1105,32 @@ export default function TournamentHistoryPage() {
                                     </Box>
 
                                     {/* VINNARKOLUMN DESKTOP */}
+
                                     <Box
                                       sx={{
                                         display: { xs: "none", md: "flex" },
+
                                         flexDirection: "column",
+
                                         alignItems: "flex-start",
+
                                         justifyContent: "center",
+
                                         width: 190,
+
                                         flexShrink: 0,
+
                                         gap: 0.5,
                                       }}
                                     >
                                       <Typography
                                         sx={{
                                           color: "text.secondary",
+
                                           fontSize: "0.65rem",
+
                                           fontWeight: 900,
+
                                           letterSpacing: "0.09em",
                                         }}
                                       >
@@ -935,9 +1140,13 @@ export default function TournamentHistoryPage() {
                                       <Box
                                         sx={{
                                           display: "flex",
+
                                           alignItems: "center",
+
                                           gap: 0.75,
+
                                           minWidth: 0,
+
                                           color: winnerName
                                             ? "success.light"
                                             : "text.secondary",
@@ -948,7 +1157,9 @@ export default function TournamentHistoryPage() {
                                         <Typography
                                           sx={{
                                             fontSize: "0.95rem",
+
                                             fontWeight: 800,
+
                                             overflowWrap: "anywhere",
                                           }}
                                         >
@@ -958,17 +1169,25 @@ export default function TournamentHistoryPage() {
                                     </Box>
 
                                     {/* PIL */}
+
                                     <Box
                                       sx={{
                                         display: "flex",
+
                                         alignItems: "center",
+
                                         justifyContent: "center",
+
                                         color: "text.secondary",
+
                                         flexShrink: 0,
+
                                         transition:
                                           "color 0.2s, transform 0.2s",
+
                                         "button:hover &": {
                                           color: "error.light",
+
                                           transform: "translate(2px, -2px)",
                                         },
                                       }}
