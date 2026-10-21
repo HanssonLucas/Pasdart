@@ -2704,19 +2704,16 @@ export default function SchedulePage({
                 <Box
                   sx={{
                     display: { xs: "none", md: "flex" },
-
                     alignItems: "center",
-
                     justifyContent: "center",
+                    transform: "translateY(52px)",
                   }}
                 >
                   <Typography
                     aria-hidden="true"
                     sx={{
-                      color: "rgba(255,255,255,0.58)",
-
-                      fontSize: 34,
-
+                      color: "rgba(255,255,255,0.55)",
+                      fontSize: 30,
                       lineHeight: 1,
                     }}
                   >
@@ -3052,21 +3049,13 @@ export default function SchedulePage({
                     elevation={0}
                     sx={{
                       p: 2.5,
-
                       border: "1px dashed",
-
                       borderColor: "rgba(255,255,255,0.18)",
-
                       borderRadius: 1.5,
-
                       minHeight: 190,
-
                       display: "flex",
-
                       alignItems: "center",
-
                       justifyContent: "center",
-
                       backgroundColor: "rgba(255,255,255,0.018)",
                     }}
                   >
