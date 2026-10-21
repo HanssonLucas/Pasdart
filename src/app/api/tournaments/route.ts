@@ -2,7 +2,15 @@ import { and, desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { db } from "@/db";
-import { matches, teams, tournamentPlayers, tournaments } from "@/db/schema";
+import {
+  matches,
+  players,
+  teamPlayers,
+  teams,
+  tournamentPlayers,
+  tournaments,
+} from "@/db/schema";
+import { getTeamDisplayName } from "@/lib/tournaments/getTeamDisplayName";
 
 export async function GET() {
   const [activeTournament] = await db
@@ -29,6 +37,7 @@ export async function GET() {
     .limit(1);
 
   let winnerTeamNumber: number | null = null;
+  let winnerTeamName: string | null = null;
 
   if (latestTournament) {
     const [finalMatch] = await db
@@ -55,6 +64,21 @@ export async function GET() {
         .limit(1);
 
       winnerTeamNumber = winnerTeam?.teamNumber ?? null;
+
+      const winnerPlayers = await db
+        .select({
+          name: players.name,
+        })
+        .from(teamPlayers)
+        .innerJoin(players, eq(teamPlayers.playerId, players.id))
+        .where(eq(teamPlayers.teamId, finalMatch.winnerTeamId))
+        .orderBy(teamPlayers.id);
+
+      if (winnerPlayers.length > 0) {
+        winnerTeamName = getTeamDisplayName(
+          winnerPlayers.map((player) => player.name),
+        );
+      }
     }
   }
 
@@ -66,6 +90,7 @@ export async function GET() {
           name: latestTournament.name,
           status: latestTournament.status,
           winnerTeamNumber,
+          winnerTeamName,
         }
       : null,
   });
