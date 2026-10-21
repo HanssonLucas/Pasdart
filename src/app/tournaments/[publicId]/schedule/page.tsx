@@ -1145,7 +1145,7 @@ export default function SchedulePage({
 
                 <Box
                   sx={{
-                    pt: 1.5,
+                    pt: { xs: 2.25, sm: 3 },
 
                     borderTop: "1px solid rgba(255,255,255,0.10)",
                   }}
@@ -1206,9 +1206,11 @@ export default function SchedulePage({
                     {data.isAdmin && data.tournament.status !== "finished" && (
                       <Stack
                         sx={{
-                          flexDirection: { xs: "column", sm: "row" },
-                          alignItems: { xs: "flex-start", sm: "center" },
-                          gap: { xs: 0.5, sm: 1.5 },
+                          width: { xs: "100%", sm: "auto" },
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: { xs: "flex-start", sm: "flex-end" },
+                          gap: 0,
                           flexShrink: 0,
                         }}
                       >
@@ -1222,18 +1224,37 @@ export default function SchedulePage({
                               setRollbackDialogOpen(true);
                             }}
                             sx={{
-                              px: 0,
                               minWidth: 0,
-                              color: "text.secondary",
+                              px: { xs: 0.5, sm: 0.9 },
+                              py: 0.6,
+                              borderRadius: 0.5,
+                              color: "text.primary",
+                              fontSize: { xs: "0.72rem", sm: "0.8125rem" },
                               fontWeight: 700,
+                              lineHeight: 1.2,
+                              textTransform: "none",
+                              whiteSpace: "nowrap",
                               "&:hover": {
-                                backgroundColor: "transparent",
-                                color: "text.primary",
+                                backgroundColor: "rgba(255,255,255,0.05)",
+                                color: "#fff",
                               },
                             }}
                           >
                             Gå tillbaka till gruppspel
                           </Button>
+                        )}
+
+                        {data.tournament.status === "playoffs" && (
+                          <Box
+                            aria-hidden="true"
+                            sx={{
+                              width: "1px",
+                              height: 16,
+                              mx: { xs: 0.5, sm: 0.65 },
+                              flexShrink: 0,
+                              backgroundColor: "rgba(255,255,255,0.18)",
+                            }}
+                          />
                         )}
 
                         <Button
@@ -1245,12 +1266,18 @@ export default function SchedulePage({
                             setDeleteDialogOpen(true);
                           }}
                           sx={{
-                            px: 0,
                             minWidth: 0,
+                            px: { xs: 0.5, sm: 0.9 },
+                            py: 0.6,
+                            borderRadius: 0.5,
                             color: "error.light",
+                            fontSize: { xs: "0.72rem", sm: "0.8125rem" },
                             fontWeight: 700,
+                            lineHeight: 1.2,
+                            textTransform: "none",
+                            whiteSpace: "nowrap",
                             "&:hover": {
-                              backgroundColor: "transparent",
+                              backgroundColor: "rgba(198,40,40,0.08)",
                               color: "error.main",
                             },
                           }}
