@@ -1,8 +1,8 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { db } from "@/db";
-import { tournamentPlayers, tournaments } from "@/db/schema";
+import { matches, teams, tournamentPlayers, tournaments } from "@/db/schema";
 
 export async function GET() {
   const [activeTournament] = await db
@@ -18,6 +18,7 @@ export async function GET() {
 
   const [latestTournament] = await db
     .select({
+      id: tournaments.id,
       publicId: tournaments.publicId,
       name: tournaments.name,
       status: tournaments.status,
@@ -27,9 +28,46 @@ export async function GET() {
     .orderBy(desc(tournaments.id))
     .limit(1);
 
+  let winnerTeamNumber: number | null = null;
+
+  if (latestTournament) {
+    const [finalMatch] = await db
+      .select({
+        winnerTeamId: matches.winnerTeamId,
+      })
+      .from(matches)
+      .where(
+        and(
+          eq(matches.tournamentId, latestTournament.id),
+          eq(matches.stage, "final"),
+        ),
+      )
+      .orderBy(desc(matches.id))
+      .limit(1);
+
+    if (finalMatch?.winnerTeamId) {
+      const [winnerTeam] = await db
+        .select({
+          teamNumber: teams.teamNumber,
+        })
+        .from(teams)
+        .where(eq(teams.id, finalMatch.winnerTeamId))
+        .limit(1);
+
+      winnerTeamNumber = winnerTeam?.teamNumber ?? null;
+    }
+  }
+
   return NextResponse.json({
     activeTournament: activeTournament ?? null,
-    latestTournament: latestTournament ?? null,
+    latestTournament: latestTournament
+      ? {
+          publicId: latestTournament.publicId,
+          name: latestTournament.name,
+          status: latestTournament.status,
+          winnerTeamNumber,
+        }
+      : null,
   });
 }
 
