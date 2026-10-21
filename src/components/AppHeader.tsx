@@ -14,6 +14,10 @@ const links = [
     href: "/players",
   },
   {
+    label: "Tidigare cuper",
+    href: "/tournaments/history",
+  },
+  {
     label: "Skapa cup",
     href: "/tournaments/new",
   },
