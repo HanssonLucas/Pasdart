@@ -16,8 +16,20 @@ export async function GET() {
     .orderBy(desc(tournaments.id))
     .limit(1);
 
+  const [latestTournament] = await db
+    .select({
+      publicId: tournaments.publicId,
+      name: tournaments.name,
+      status: tournaments.status,
+    })
+    .from(tournaments)
+    .where(eq(tournaments.status, "finished"))
+    .orderBy(desc(tournaments.id))
+    .limit(1);
+
   return NextResponse.json({
     activeTournament: activeTournament ?? null,
+    latestTournament: latestTournament ?? null,
   });
 }
 
