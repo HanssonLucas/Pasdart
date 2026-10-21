@@ -1194,7 +1194,9 @@ export default function SchedulePage({
                             {data.tournament.gameType} · Gruppspel ·{" "}
                             {data.tournament.groupMatchMode === "fixedLegs"
                               ? `${data.tournament.groupLegCount} legs - alla spelas`
-                              : `Bäst av ${data.tournament.groupBestOf}`}
+                              : data.tournament.groupMatchMode === "firstTo"
+                                ? `Först till ${data.tournament.groupBestOf}`
+                                : `Bäst av ${data.tournament.groupBestOf}`}
                             {data.tournament.groupMaxDarts
                               ? ` · Max ${data.tournament.groupMaxDarts} darts`
                               : ""}
@@ -1895,9 +1897,12 @@ export default function SchedulePage({
                                     bestOf={data.tournament.groupBestOf}
                                     matchMode={
                                       data.tournament.groupMatchMode ===
-                                      "fixedLegs"
-                                        ? "fixedLegs"
-                                        : "bestOf"
+                                      "firstTo"
+                                        ? "firstTo"
+                                        : data.tournament.groupMatchMode ===
+                                            "fixedLegs"
+                                          ? "fixedLegs"
+                                          : "bestOf"
                                     }
                                     fixedLegCount={
                                       data.tournament.groupLegCount
