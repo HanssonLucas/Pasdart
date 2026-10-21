@@ -20,6 +20,7 @@ type TournamentSummary = {
   name: string;
   status: string;
   winnerTeamNumber?: number | null;
+  winnerTeamName?: string | null;
 };
 
 function getTournamentPhase(status: string) {
@@ -242,9 +243,11 @@ export default function Home() {
                   >
                     {activeTournament
                       ? `${getTournamentPhase(displayedTournament.status)} · Följ matcher och tabell live`
-                      : displayedTournament.winnerTeamNumber != null
-                        ? `Avslutad · Lag ${displayedTournament.winnerTeamNumber} vann`
-                        : "Avslutad · Se resultat, tabell och slutspel"}
+                      : displayedTournament.winnerTeamName
+                        ? `Avslutad · ${displayedTournament.winnerTeamName} vann`
+                        : displayedTournament.winnerTeamNumber != null
+                          ? `Avslutad · Lag ${displayedTournament.winnerTeamNumber} vann`
+                          : "Avslutad · Se resultat, tabell och slutspel"}
                   </Typography>
                 </Box>
 
