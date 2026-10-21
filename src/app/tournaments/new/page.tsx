@@ -514,7 +514,18 @@ export default function NewTournamentPage() {
 
                       setGroupMatchMode(mode);
 
-                      if (mode !== "fixedLegs") {
+                      if (mode === "bestOf") {
+                        // Bäst av måste använda ett udda antal legs.
+                        const validBestOf =
+                          Number(groupBestOf) % 2 === 0
+                            ? String(Number(groupBestOf) + 1)
+                            : groupBestOf;
+
+                        setGroupBestOf(validBestOf);
+                        setGroupLegCount(validBestOf);
+                      }
+
+                      if (mode === "firstTo") {
                         setGroupLegCount(groupBestOf);
                       }
                     }}
@@ -567,11 +578,14 @@ export default function NewTournamentPage() {
                     }}
                     fullWidth
                   >
-                    <MenuItem value="1">1 leg</MenuItem>
-                    <MenuItem value="3">3 legs</MenuItem>
-                    <MenuItem value="5">5 legs</MenuItem>
-                    <MenuItem value="7">7 legs</MenuItem>
-                    <MenuItem value="9">9 legs</MenuItem>
+                    {(groupMatchMode === "firstTo"
+                      ? [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                      : [1, 3, 5, 7, 9]
+                    ).map((count) => (
+                      <MenuItem key={count} value={String(count)}>
+                        {count} {count === 1 ? "leg" : "legs"}
+                      </MenuItem>
+                    ))}
                   </TextField>
                 ) : (
                   <TextField
