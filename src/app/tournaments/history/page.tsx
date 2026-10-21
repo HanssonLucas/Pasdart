@@ -729,12 +729,6 @@ export default function TournamentHistoryPage() {
                     Tidigare turneringar
                   </Typography>
                 </Box>
-
-                <Typography
-                  sx={{ color: "text.secondary", fontSize: "0.85rem" }}
-                >
-                  {filteredTournaments.length} av {tournaments.length} cuper
-                </Typography>
               </Box>
 
               {/* FILTER */}
@@ -819,390 +813,449 @@ export default function TournamentHistoryPage() {
                       return Number(yearB) - Number(yearA);
                     })
 
-                    .map(([year, yearTournaments]) => (
-                      <Box key={year}>
-                        {/* ÅRSRUBRIK */}
+                    .map(([year, yearTournaments]) => {
+                      const monthGroups = yearTournaments.reduce<
+                        Record<string, FinishedTournament[]>
+                      >((groups, tournament) => {
+                        const date = getTournamentDate(tournament.finishedAt);
 
-                        <Box
-                          sx={{
-                            display: "flex",
+                        const month = date
+                          ? new Intl.DateTimeFormat("sv-SE", {
+                              timeZone: "Europe/Stockholm",
 
-                            alignItems: "center",
+                              month: "long",
+                            }).format(date)
+                          : "Okänd månad";
 
-                            justifyContent: "space-between",
+                        if (!groups[month]) groups[month] = [];
 
-                            mb: 1.5,
+                        groups[month].push(tournament);
 
-                            pb: 1.25,
+                        return groups;
+                      }, {});
 
-                            borderBottom: "1px solid rgba(255,255,255,0.12)",
-                          }}
-                        >
-                          <Typography
+                      return (
+                        <Box key={year}>
+                          {/* ÅRSRUBRIK */}
+
+                          <Box
                             sx={{
-                              fontSize: "1.3rem",
+                              display: "flex",
 
-                              fontWeight: 900,
+                              alignItems: "center",
 
-                              letterSpacing: "-0.02em",
+                              justifyContent: "space-between",
+
+                              mb: 1.5,
+
+                              pb: 1.25,
+
+                              borderBottom: "1px solid rgba(255,255,255,0.12)",
                             }}
                           >
-                            {year}
-                          </Typography>
+                            <Typography
+                              sx={{
+                                fontSize: "1.3rem",
 
-                          <Typography
-                            sx={{
-                              color: "text.secondary",
+                                fontWeight: 900,
 
-                              fontSize: "0.85rem",
-                            }}
-                          >
-                            {yearTournaments.length}{" "}
-                            {yearTournaments.length === 1 ? "cup" : "cuper"}
-                          </Typography>
-                        </Box>
+                                letterSpacing: "-0.02em",
+                              }}
+                            >
+                              {year}
+                            </Typography>
+                          </Box>
 
-                        {/* CUPRADER */}
+                          {/* MÅNADER OCH CUPRADER */}
 
-                        <Stack spacing={1}>
-                          {yearTournaments.map((tournament) => {
-                            const date = getTournamentDate(
-                              tournament.finishedAt,
-                            );
-
-                            const winnerName = getWinnerName(tournament);
-
-                            const isLatest =
-                              tournament.publicId ===
-                              latestTournament?.publicId;
-
-                            return (
-                              <Paper
-                                key={tournament.publicId}
-                                component="button"
-                                type="button"
-                                onClick={() =>
-                                  handleOpenTournament(tournament.publicId)
-                                }
-                                elevation={0}
-                                sx={{
-                                  ...cardBaseSx,
-
-                                  width: "100%",
-
-                                  p: 0,
-
-                                  overflow: "hidden",
-
-                                  textAlign: "left",
-
-                                  font: "inherit",
-
-                                  color: "text.primary",
-
-                                  cursor: "pointer",
-
-                                  transition:
-                                    "border-color 0.2s, background-color 0.2s",
-
-                                  "&:hover": {
-                                    borderColor: "rgba(198,40,40,0.38)",
-
-                                    backgroundColor: "rgba(198,40,40,0.025)",
-                                  },
-
-                                  "&:focus-visible": {
-                                    outline: "2px solid",
-
-                                    outlineColor: "error.main",
-
-                                    outlineOffset: 3,
-                                  },
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    display: "flex",
-
-                                    alignItems: "stretch",
-                                  }}
-                                >
-                                  {/* RÖD VÄNSTERACCENT */}
-
-                                  <Box
+                          <Stack spacing={2.5}>
+                            {Object.entries(monthGroups).map(
+                              ([month, monthTournaments]) => (
+                                <Box key={month}>
+                                  <Typography
                                     sx={{
-                                      width: 3,
+                                      mb: 1.25,
 
-                                      flexShrink: 0,
+                                      fontSize: "0.85rem",
 
-                                      backgroundColor: isLatest
-                                        ? "error.main"
-                                        : "transparent",
+                                      fontWeight: 800,
 
-                                      "button:hover &": {
-                                        backgroundColor: "error.main",
-                                      },
-                                    }}
-                                  />
+                                      color: "text.secondary",
 
-                                  <Box
-                                    sx={{
-                                      display: "flex",
+                                      textTransform: "capitalize",
 
-                                      alignItems: "center",
-
-                                      gap: { xs: 1.5, sm: 2.5 },
-
-                                      width: "100%",
-
-                                      minWidth: 0,
-
-                                      p: { xs: 1.75, sm: 2.25 },
+                                      letterSpacing: "0.025em",
                                     }}
                                   >
-                                    {/* DATUM */}
+                                    {month}
+                                  </Typography>
 
-                                    <Box
-                                      sx={{
-                                        width: { xs: 48, sm: 58 },
+                                  <Stack spacing={1}>
+                                    {monthTournaments.map((tournament) => {
+                                      const date = getTournamentDate(
+                                        tournament.finishedAt,
+                                      );
 
-                                        flexShrink: 0,
+                                      const winnerName =
+                                        getWinnerName(tournament);
 
-                                        textAlign: "center",
+                                      const isLatest =
+                                        tournament.publicId ===
+                                        latestTournament?.publicId;
 
-                                        borderRight:
-                                          "1px solid rgba(255,255,255,0.1)",
-
-                                        pr: { xs: 1.5, sm: 2 },
-                                      }}
-                                    >
-                                      <Typography
-                                        sx={{
-                                          fontSize: {
-                                            xs: "1.45rem",
-
-                                            sm: "1.7rem",
-                                          },
-
-                                          fontWeight: 900,
-
-                                          lineHeight: 1,
-                                        }}
-                                      >
-                                        {date
-                                          ? dateFormatter.format(date)
-                                          : "–"}
-                                      </Typography>
-
-                                      <Typography
-                                        sx={{
-                                          mt: 0.5,
-
-                                          fontSize: "0.7rem",
-
-                                          fontWeight: 800,
-
-                                          color: "text.secondary",
-
-                                          textTransform: "uppercase",
-                                        }}
-                                      >
-                                        {date
-                                          ? monthFormatter.format(date)
-                                          : "–"}
-                                      </Typography>
-                                    </Box>
-
-                                    {/* CUPNAMN + INFORMATION */}
-
-                                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                                      <Box
-                                        sx={{
-                                          display: "flex",
-
-                                          alignItems: "center",
-
-                                          gap: 1,
-
-                                          flexWrap: "wrap",
-                                        }}
-                                      >
-                                        <Typography
+                                      return (
+                                        <Paper
+                                          key={tournament.publicId}
+                                          component="button"
+                                          type="button"
+                                          onClick={() =>
+                                            handleOpenTournament(
+                                              tournament.publicId,
+                                            )
+                                          }
+                                          elevation={0}
                                           sx={{
-                                            fontSize: {
-                                              xs: "0.95rem",
+                                            ...cardBaseSx,
 
-                                              sm: "1.05rem",
+                                            width: "100%",
+
+                                            p: 0,
+
+                                            overflow: "hidden",
+
+                                            textAlign: "left",
+
+                                            font: "inherit",
+
+                                            color: "text.primary",
+
+                                            cursor: "pointer",
+
+                                            transition:
+                                              "border-color 0.2s, background-color 0.2s",
+
+                                            "&:hover": {
+                                              borderColor:
+                                                "rgba(198,40,40,0.38)",
+
+                                              backgroundColor:
+                                                "rgba(198,40,40,0.025)",
                                             },
 
-                                            fontWeight: 800,
+                                            "&:focus-visible": {
+                                              outline: "2px solid",
 
-                                            overflowWrap: "anywhere",
+                                              outlineColor: "error.main",
+
+                                              outlineOffset: 3,
+                                            },
                                           }}
                                         >
-                                          {tournament.name}
-                                        </Typography>
-
-                                        {isLatest && (
-                                          <Typography
-                                            component="span"
+                                          <Box
                                             sx={{
-                                              color: "error.light",
+                                              display: "flex",
 
-                                              fontSize: "0.6rem",
-
-                                              fontWeight: 900,
-
-                                              letterSpacing: "0.07em",
+                                              alignItems: "stretch",
                                             }}
                                           >
-                                            SENASTE
-                                          </Typography>
-                                        )}
-                                      </Box>
+                                            {/* RÖD VÄNSTERACCENT */}
 
-                                      <Typography
-                                        sx={{
-                                          mt: 0.5,
+                                            <Box
+                                              sx={{
+                                                width: 3,
 
-                                          fontSize: "0.82rem",
+                                                flexShrink: 0,
 
-                                          color: "text.secondary",
-                                        }}
-                                      >
-                                        {getTeamModeLabel(tournament.teamMode)}
-                                        {" · "}
-                                        {tournament.participantCount} spelare
-                                      </Typography>
+                                                backgroundColor: isLatest
+                                                  ? "error.main"
+                                                  : "transparent",
 
-                                      {/* VINNARE PÅ MOBIL */}
+                                                "button:hover &": {
+                                                  backgroundColor: "error.main",
+                                                },
+                                              }}
+                                            />
 
-                                      <Box
-                                        sx={{
-                                          display: { xs: "flex", md: "none" },
+                                            <Box
+                                              sx={{
+                                                display: "flex",
 
-                                          alignItems: "center",
+                                                alignItems: "center",
 
-                                          gap: 0.75,
+                                                gap: { xs: 1.5, sm: 2.5 },
 
-                                          mt: 0.75,
+                                                width: "100%",
 
-                                          color: winnerName
-                                            ? "success.light"
-                                            : "text.secondary",
-                                        }}
-                                      >
-                                        <TrophyIcon size={16} />
+                                                minWidth: 0,
 
-                                        <Typography
-                                          sx={{ fontSize: "0.82rem" }}
-                                        >
-                                          {winnerName
-                                            ? `${winnerName} vann`
-                                            : "Vinnare saknas"}
-                                        </Typography>
-                                      </Box>
-                                    </Box>
+                                                p: { xs: 1.75, sm: 2.25 },
+                                              }}
+                                            >
+                                              {/* DATUM */}
 
-                                    {/* VINNARKOLUMN DESKTOP */}
+                                              <Box
+                                                sx={{
+                                                  width: { xs: 48, sm: 58 },
 
-                                    <Box
-                                      sx={{
-                                        display: { xs: "none", md: "flex" },
+                                                  flexShrink: 0,
 
-                                        flexDirection: "column",
+                                                  textAlign: "center",
 
-                                        alignItems: "flex-start",
+                                                  borderRight:
+                                                    "1px solid rgba(255,255,255,0.1)",
 
-                                        justifyContent: "center",
+                                                  pr: { xs: 1.5, sm: 2 },
+                                                }}
+                                              >
+                                                <Typography
+                                                  sx={{
+                                                    fontSize: {
+                                                      xs: "1.45rem",
 
-                                        width: 190,
+                                                      sm: "1.7rem",
+                                                    },
 
-                                        flexShrink: 0,
+                                                    fontWeight: 900,
 
-                                        gap: 0.5,
-                                      }}
-                                    >
-                                      <Typography
-                                        sx={{
-                                          color: "text.secondary",
+                                                    lineHeight: 1,
+                                                  }}
+                                                >
+                                                  {date
+                                                    ? dateFormatter.format(date)
+                                                    : "–"}
+                                                </Typography>
 
-                                          fontSize: "0.65rem",
+                                                <Typography
+                                                  sx={{
+                                                    mt: 0.5,
 
-                                          fontWeight: 900,
+                                                    fontSize: "0.7rem",
 
-                                          letterSpacing: "0.09em",
-                                        }}
-                                      >
-                                        VINNARE
-                                      </Typography>
+                                                    fontWeight: 800,
 
-                                      <Box
-                                        sx={{
-                                          display: "flex",
+                                                    color: "text.secondary",
 
-                                          alignItems: "center",
+                                                    textTransform: "uppercase",
+                                                  }}
+                                                >
+                                                  {date
+                                                    ? monthFormatter.format(
+                                                        date,
+                                                      )
+                                                    : "–"}
+                                                </Typography>
+                                              </Box>
 
-                                          gap: 0.75,
+                                              {/* CUPNAMN + INFORMATION */}
 
-                                          minWidth: 0,
+                                              <Box
+                                                sx={{ flex: 1, minWidth: 0 }}
+                                              >
+                                                <Box
+                                                  sx={{
+                                                    display: "flex",
 
-                                          color: winnerName
-                                            ? "success.light"
-                                            : "text.secondary",
-                                        }}
-                                      >
-                                        <TrophyIcon size={17} />
+                                                    alignItems: "center",
 
-                                        <Typography
-                                          sx={{
-                                            fontSize: "0.95rem",
+                                                    gap: 1,
 
-                                            fontWeight: 800,
+                                                    flexWrap: "wrap",
+                                                  }}
+                                                >
+                                                  <Typography
+                                                    sx={{
+                                                      fontSize: {
+                                                        xs: "0.95rem",
 
-                                            overflowWrap: "anywhere",
-                                          }}
-                                        >
-                                          {winnerName ?? "Okänd vinnare"}
-                                        </Typography>
-                                      </Box>
-                                    </Box>
+                                                        sm: "1.05rem",
+                                                      },
 
-                                    {/* PIL */}
+                                                      fontWeight: 800,
 
-                                    <Box
-                                      sx={{
-                                        display: "flex",
+                                                      overflowWrap: "anywhere",
+                                                    }}
+                                                  >
+                                                    {tournament.name}
+                                                  </Typography>
 
-                                        alignItems: "center",
+                                                  {isLatest && (
+                                                    <Typography
+                                                      component="span"
+                                                      sx={{
+                                                        color: "error.light",
 
-                                        justifyContent: "center",
+                                                        fontSize: "0.6rem",
 
-                                        color: "text.secondary",
+                                                        fontWeight: 900,
 
-                                        flexShrink: 0,
+                                                        letterSpacing: "0.07em",
+                                                      }}
+                                                    >
+                                                      SENASTE
+                                                    </Typography>
+                                                  )}
+                                                </Box>
 
-                                        transition:
-                                          "color 0.2s, transform 0.2s",
+                                                <Typography
+                                                  sx={{
+                                                    mt: 0.5,
 
-                                        "button:hover &": {
-                                          color: "error.light",
+                                                    fontSize: "0.82rem",
 
-                                          transform: "translate(2px, -2px)",
-                                        },
-                                      }}
-                                      aria-hidden="true"
-                                    >
-                                      <ArrowIcon />
-                                    </Box>
-                                  </Box>
+                                                    color: "text.secondary",
+                                                  }}
+                                                >
+                                                  {getTeamModeLabel(
+                                                    tournament.teamMode,
+                                                  )}
+                                                  {" · "}
+                                                  {
+                                                    tournament.participantCount
+                                                  }{" "}
+                                                  spelare
+                                                </Typography>
+
+                                                {/* VINNARE PÅ MOBIL */}
+
+                                                <Box
+                                                  sx={{
+                                                    display: {
+                                                      xs: "flex",
+                                                      md: "none",
+                                                    },
+
+                                                    alignItems: "center",
+
+                                                    gap: 0.75,
+
+                                                    mt: 0.75,
+
+                                                    color: winnerName
+                                                      ? "success.light"
+                                                      : "text.secondary",
+                                                  }}
+                                                >
+                                                  <TrophyIcon size={16} />
+
+                                                  <Typography
+                                                    sx={{ fontSize: "0.82rem" }}
+                                                  >
+                                                    {winnerName
+                                                      ? `${winnerName} vann`
+                                                      : "Vinnare saknas"}
+                                                  </Typography>
+                                                </Box>
+                                              </Box>
+
+                                              {/* VINNARKOLUMN DESKTOP */}
+
+                                              <Box
+                                                sx={{
+                                                  display: {
+                                                    xs: "none",
+                                                    md: "flex",
+                                                  },
+
+                                                  flexDirection: "column",
+
+                                                  alignItems: "flex-start",
+
+                                                  justifyContent: "center",
+
+                                                  width: 190,
+
+                                                  flexShrink: 0,
+
+                                                  gap: 0.5,
+                                                }}
+                                              >
+                                                <Typography
+                                                  sx={{
+                                                    color: "text.secondary",
+
+                                                    fontSize: "0.65rem",
+
+                                                    fontWeight: 900,
+
+                                                    letterSpacing: "0.09em",
+                                                  }}
+                                                >
+                                                  VINNARE
+                                                </Typography>
+
+                                                <Box
+                                                  sx={{
+                                                    display: "flex",
+
+                                                    alignItems: "center",
+
+                                                    gap: 0.75,
+
+                                                    minWidth: 0,
+
+                                                    color: winnerName
+                                                      ? "success.light"
+                                                      : "text.secondary",
+                                                  }}
+                                                >
+                                                  <TrophyIcon size={17} />
+
+                                                  <Typography
+                                                    sx={{
+                                                      fontSize: "0.95rem",
+
+                                                      fontWeight: 800,
+
+                                                      overflowWrap: "anywhere",
+                                                    }}
+                                                  >
+                                                    {winnerName ??
+                                                      "Okänd vinnare"}
+                                                  </Typography>
+                                                </Box>
+                                              </Box>
+
+                                              {/* PIL */}
+
+                                              <Box
+                                                sx={{
+                                                  display: "flex",
+
+                                                  alignItems: "center",
+
+                                                  justifyContent: "center",
+
+                                                  color: "text.secondary",
+
+                                                  flexShrink: 0,
+
+                                                  transition:
+                                                    "color 0.2s, transform 0.2s",
+
+                                                  "button:hover &": {
+                                                    color: "error.light",
+
+                                                    transform:
+                                                      "translate(2px, -2px)",
+                                                  },
+                                                }}
+                                                aria-hidden="true"
+                                              >
+                                                <ArrowIcon />
+                                              </Box>
+                                            </Box>
+                                          </Box>
+                                        </Paper>
+                                      );
+                                    })}
+                                  </Stack>
                                 </Box>
-                              </Paper>
-                            );
-                          })}
-                        </Stack>
-                      </Box>
-                    ))}
+                              ),
+                            )}
+                          </Stack>
+                        </Box>
+                      );
+                    })}
                 </Stack>
               )}
             </Stack>
