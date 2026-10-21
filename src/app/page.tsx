@@ -19,6 +19,7 @@ type TournamentSummary = {
   publicId: string;
   name: string;
   status: string;
+  winnerTeamNumber?: number | null;
 };
 
 function getTournamentPhase(status: string) {
@@ -241,7 +242,9 @@ export default function Home() {
                   >
                     {activeTournament
                       ? `${getTournamentPhase(displayedTournament.status)} · Följ matcher och tabell live`
-                      : "Avslutad · Se resultat, tabell och slutspel"}
+                      : displayedTournament.winnerTeamNumber != null
+                        ? `Avslutad · Lag ${displayedTournament.winnerTeamNumber} vann`
+                        : "Avslutad · Se resultat, tabell och slutspel"}
                   </Typography>
                 </Box>
 
