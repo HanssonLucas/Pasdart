@@ -1,8 +1,15 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 import { db } from "@/db";
-import { matches, players, teamPlayers, teams, tournaments } from "@/db/schema";
+import {
+  matches,
+  players,
+  teamPlayers,
+  teams,
+  tournamentPlayers,
+  tournaments,
+} from "@/db/schema";
 import { getTeamDisplayName } from "@/lib/tournaments/getTeamDisplayName";
 
 export async function GET() {
@@ -11,6 +18,7 @@ export async function GET() {
       id: tournaments.id,
       publicId: tournaments.publicId,
       name: tournaments.name,
+      teamMode: tournaments.teamMode,
       finishedAt: tournaments.finishedAt,
     })
     .from(tournaments)
@@ -22,6 +30,19 @@ export async function GET() {
   }
 
   const tournamentIds = finishedTournaments.map((tournament) => tournament.id);
+
+  const participantCounts = await db
+    .select({
+      tournamentId: tournamentPlayers.tournamentId,
+      count: sql<number>`cast(count(*) as integer)`,
+    })
+    .from(tournamentPlayers)
+    .where(inArray(tournamentPlayers.tournamentId, tournamentIds))
+    .groupBy(tournamentPlayers.tournamentId);
+
+  const participantCountMap = new Map(
+    participantCounts.map((item) => [item.tournamentId, item.count]),
+  );
 
   const winners = await db
     .select({
@@ -68,6 +89,8 @@ export async function GET() {
         finishedAt: tournament.finishedAt,
         winnerTeamNumber: winnerTeamNumbers.get(tournament.id) ?? null,
         winnerTeamName: names.length > 0 ? getTeamDisplayName(names) : null,
+        teamMode: tournament.teamMode,
+        participantCount: participantCountMap.get(tournament.id) ?? 0,
       };
     }),
   });
