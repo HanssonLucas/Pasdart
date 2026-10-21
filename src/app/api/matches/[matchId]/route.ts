@@ -128,7 +128,10 @@ export async function PATCH(
         ? tournament.groupBestOf
         : tournament.playoffBestOf;
 
-    const legsNeededToWin = Math.floor(bestOf / 2) + 1;
+    const isFirstTo =
+      match.stage === "group" && tournament.groupMatchMode === "firstTo";
+
+    const legsNeededToWin = isFirstTo ? bestOf : Math.floor(bestOf / 2) + 1;
 
     const teamAWon =
       teamALegs === legsNeededToWin && teamBLegs < legsNeededToWin;
@@ -139,7 +142,9 @@ export async function PATCH(
     if (!teamAWon && !teamBWon) {
       return NextResponse.json(
         {
-          error: `En match bäst av ${bestOf} kräver ${legsNeededToWin} vunna legs.`,
+          error: isFirstTo
+            ? `En match First to ${bestOf} kräver ${bestOf} vunna legs.`
+            : `En match bäst av ${bestOf} kräver ${legsNeededToWin} vunna legs.`,
         },
         { status: 400 },
       );
