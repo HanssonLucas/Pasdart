@@ -7,7 +7,7 @@ import PasdartInlineError from "@/components/PasdartInlineError";
 type MatchResultControlsProps = {
   matchId: number;
   bestOf: number;
-  matchMode?: "bestOf" | "fixedLegs";
+  matchMode?: "bestOf" | "firstTo" | "fixedLegs";
   fixedLegCount?: number;
   isAdmin: boolean;
   density?: "default" | "compact" | "inline";
@@ -16,8 +16,12 @@ type MatchResultControlsProps = {
   onResult: (matchId: number, teamALegs: number, teamBLegs: number) => void;
 };
 
-function getPossibleResults(bestOf: number) {
-  const legsToWin = Math.floor(bestOf / 2) + 1;
+function getPossibleResults(
+  bestOf: number,
+  matchMode: "bestOf" | "firstTo" = "bestOf",
+) {
+  const legsToWin =
+    matchMode === "firstTo" ? bestOf : Math.floor(bestOf / 2) + 1;
 
   const results: Array<[number, number]> = [];
 
@@ -63,7 +67,10 @@ export default function MatchResultControls({
   const possibleResults =
     matchMode === "fixedLegs" && fixedLegCount
       ? getPossibleFixedLegResults(fixedLegCount)
-      : getPossibleResults(bestOf);
+      : getPossibleResults(
+          bestOf,
+          matchMode === "firstTo" ? "firstTo" : "bestOf",
+        );
 
   return (
     <Box>
