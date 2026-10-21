@@ -81,6 +81,15 @@ export async function PATCH(
     );
   }
 
+  if (tournament.status === "finished") {
+    return NextResponse.json(
+      {
+        error: "Resultat kan inte ändras efter att turneringen har avslutats.",
+      },
+      { status: 409 },
+    );
+  }
+
   if (
     match.stage === "group" &&
     (tournament.status === "playoffs" || tournament.status === "finished")
