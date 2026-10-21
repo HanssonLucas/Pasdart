@@ -15,7 +15,7 @@ import {
 
 import PasdartInlineError from "@/components/PasdartInlineError";
 
-type ActiveTournament = {
+type TournamentSummary = {
   publicId: string;
   name: string;
   status: string;
@@ -37,7 +37,10 @@ export default function Home() {
   const [joiningViewer, setJoiningViewer] = useState(false);
 
   const [activeTournament, setActiveTournament] =
-    useState<ActiveTournament | null>(null);
+    useState<TournamentSummary | null>(null);
+
+  const [latestTournament, setLatestTournament] =
+    useState<TournamentSummary | null>(null);
 
   const [isActiveTournamentAdmin, setIsActiveTournamentAdmin] = useState(false);
 
@@ -62,13 +65,15 @@ export default function Home() {
         }
 
         const result = (await response.json()) as {
-          activeTournament?: ActiveTournament | null;
+          activeTournament?: TournamentSummary | null;
+          latestTournament?: TournamentSummary | null;
         };
 
         if (!cancelled) {
           const tournament = result.activeTournament ?? null;
 
           setActiveTournament(tournament);
+          setLatestTournament(result.latestTournament ?? null);
 
           if (!tournament) {
             setIsActiveTournamentAdmin(false);
@@ -104,19 +109,25 @@ export default function Home() {
     };
   }, []);
 
-  function handleOpenActiveTournament() {
-    if (!activeTournament) {
+  const displayedTournament = activeTournament ?? latestTournament;
+
+  function handleOpenDisplayedTournament() {
+    if (!displayedTournament) {
       return;
     }
 
-    if (isActiveTournamentAdmin) {
-      router.push(`/tournaments/${activeTournament.publicId}/schedule`);
-      return;
+    const adminToken = localStorage.getItem(
+      `pasdart_admin_${displayedTournament.publicId}`,
+    );
+
+    if (!adminToken) {
+      sessionStorage.setItem(
+        `pasdart_viewer_${displayedTournament.publicId}`,
+        "1",
+      );
     }
 
-    sessionStorage.setItem(`pasdart_viewer_${activeTournament.publicId}`, "1");
-
-    router.push(`/tournaments/${activeTournament.publicId}/schedule`);
+    router.push(`/tournaments/${displayedTournament.publicId}/schedule`);
   }
 
   async function handleFollowTournament() {
@@ -170,17 +181,23 @@ export default function Home() {
         }}
       >
         <Stack spacing={2.25}>
-          {activeTournament && (
+          {displayedTournament && (
             <Paper
               elevation={0}
               sx={{
                 px: { xs: 2, sm: 2.5 },
                 py: { xs: 1.75, sm: 2 },
-                border: "1px solid rgba(198,40,40,0.36)",
+                border: activeTournament
+                  ? "1px solid rgba(198,40,40,0.36)"
+                  : "1px solid rgba(76,175,80,0.28)",
                 borderLeft: "3px solid",
-                borderLeftColor: "error.main",
+                borderLeftColor: activeTournament
+                  ? "error.main"
+                  : "success.main",
                 borderRadius: 1,
-                backgroundColor: "rgba(198,40,40,0.045)",
+                backgroundColor: activeTournament
+                  ? "rgba(198,40,40,0.045)"
+                  : "rgba(46,125,50,0.035)",
               }}
             >
               <Stack
@@ -191,77 +208,60 @@ export default function Home() {
                   gap: 1.5,
                 }}
               >
-                <Stack
-                  sx={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 1.5,
-                    minWidth: 0,
-                  }}
-                >
-                  <Box
-                    aria-hidden="true"
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography
+                    variant="caption"
                     sx={{
-                      width: 10,
-                      height: 10,
-                      flexShrink: 0,
-                      borderRadius: "50%",
-                      backgroundColor: "error.main",
-                      boxShadow: "0 0 0 4px rgba(211,47,47,0.12)",
+                      display: "block",
+                      color: activeTournament ? "error.light" : "success.light",
+                      fontWeight: 900,
+                      letterSpacing: "0.1em",
                     }}
-                  />
+                  >
+                    {activeTournament ? "PÅGÅENDE CUP" : "SENASTE CUP"}
+                  </Typography>
 
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        display: "block",
-                        color: "error.light",
-                        fontWeight: 900,
-                        letterSpacing: "0.1em",
-                      }}
-                    >
-                      LIVE NU
-                    </Typography>
+                  <Typography
+                    sx={{
+                      mt: 0.1,
+                      fontWeight: 900,
+                      fontSize: { xs: "1.1rem", sm: "1.2rem" },
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    {displayedTournament.name}
+                  </Typography>
 
-                    <Typography
-                      sx={{
-                        mt: 0.1,
-                        fontWeight: 900,
-                        fontSize: { xs: "1.1rem", sm: "1.2rem" },
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
-                      {activeTournament.name}
-                    </Typography>
-
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: "text.secondary",
-                        mt: 0.15,
-                      }}
-                    >
-                      {getTournamentPhase(activeTournament.status)} · Följ
-                      matcher och tabell live
-                    </Typography>
-                  </Box>
-                </Stack>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "text.secondary",
+                      mt: 0.15,
+                    }}
+                  >
+                    {activeTournament
+                      ? `${getTournamentPhase(displayedTournament.status)} · Följ matcher och tabell live`
+                      : "Avslutad · Se resultat, tabell och slutspel"}
+                  </Typography>
+                </Box>
 
                 <Button
-                  variant="contained"
-                  onClick={handleOpenActiveTournament}
+                  variant={activeTournament ? "contained" : "outlined"}
+                  color={activeTournament ? "primary" : "success"}
+                  onClick={handleOpenDisplayedTournament}
                   sx={{
-                    minWidth: { sm: 210 },
+                    minWidth: { sm: 190 },
                     minHeight: 44,
                     borderRadius: 0.75,
                     boxShadow: "none",
                     fontWeight: 800,
                   }}
                 >
-                  {isActiveTournamentAdmin
-                    ? "Tillbaka till spelschemat"
-                    : "Följ cupen live"}
+                  {activeTournament
+                    ? isActiveTournamentAdmin
+                      ? "Fortsätt cupen"
+                      : "Följ cupen"
+                    : "Visa cupen"}
                 </Button>
               </Stack>
             </Paper>

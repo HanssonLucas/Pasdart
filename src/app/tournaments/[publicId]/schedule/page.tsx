@@ -2526,9 +2526,9 @@ export default function SchedulePage({
                               gridTemplateAreas: showInlineFinishedResult
                                 ? {
                                     xs: `
-            "teamA teamB"
-            "result result"
-          `,
+                                    "teamA teamB"
+                                    "result result"
+                                  `,
                                     sm: `"teamA result teamB"`,
                                   }
                                 : {
@@ -2649,6 +2649,7 @@ export default function SchedulePage({
 
                           {match.status === "finished" &&
                             data.isAdmin &&
+                            data.tournament.status !== "finished" &&
                             editingMatchId !== match.id && (
                               <Button
                                 type="button"
@@ -3012,33 +3013,35 @@ export default function SchedulePage({
                             />
                           )}
 
-                          {showInlineFinishedResult && data.isAdmin && (
-                            <Button
-                              type="button"
-                              variant="outlined"
-                              size="small"
-                              onClick={() => setEditingMatchId(match.id)}
-                              sx={{
-                                alignSelf: "center",
-                                minWidth: 0,
-                                px: 1.25,
-                                py: 0.25,
-                                borderRadius: 0.5,
-                                borderColor: "rgba(255,255,255,0.16)",
-                                color: "text.secondary",
-                                fontSize: "0.72rem",
-                                fontWeight: 700,
-                                textTransform: "none",
-                                "&:hover": {
-                                  borderColor: "rgba(76,175,80,0.65)",
-                                  backgroundColor: "rgba(46,125,50,0.05)",
-                                  color: "text.primary",
-                                },
-                              }}
-                            >
-                              Ändra resultat
-                            </Button>
-                          )}
+                          {showInlineFinishedResult &&
+                            data.isAdmin &&
+                            data.tournament.status !== "finished" && (
+                              <Button
+                                type="button"
+                                variant="outlined"
+                                size="small"
+                                onClick={() => setEditingMatchId(match.id)}
+                                sx={{
+                                  alignSelf: "center",
+                                  minWidth: 0,
+                                  px: 1.25,
+                                  py: 0.25,
+                                  borderRadius: 0.5,
+                                  borderColor: "rgba(255,255,255,0.16)",
+                                  color: "text.secondary",
+                                  fontSize: "0.72rem",
+                                  fontWeight: 700,
+                                  textTransform: "none",
+                                  "&:hover": {
+                                    borderColor: "rgba(76,175,80,0.65)",
+                                    backgroundColor: "rgba(46,125,50,0.05)",
+                                    color: "text.primary",
+                                  },
+                                }}
+                              >
+                                Ändra resultat
+                              </Button>
+                            )}
 
                           {editingMatchId === match.id && (
                             <Button
