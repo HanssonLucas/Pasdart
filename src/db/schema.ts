@@ -33,7 +33,16 @@ export const tournaments = pgTable("tournaments", {
   groupLegCount: integer("group_leg_count").notNull().default(3),
 
   groupBestOf: integer("group_best_of").notNull(),
+
   playoffBestOf: integer("playoff_best_of").notNull(),
+
+  semifinalMatchMode: text("semifinal_match_mode").notNull().default("bestOf"),
+
+  finalMatchMode: text("final_match_mode").notNull().default("bestOf"),
+
+  semifinalLegTarget: integer("semifinal_leg_target").notNull().default(5),
+
+  finalLegTarget: integer("final_leg_target").notNull().default(5),
 
   groupMaxDarts: integer("group_max_darts"),
   playoffMaxDarts: integer("playoff_max_darts"),
