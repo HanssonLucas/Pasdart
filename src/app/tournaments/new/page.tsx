@@ -514,7 +514,7 @@ export default function NewTournamentPage() {
 
                       setGroupMatchMode(mode);
 
-                      if (mode === "bestOf") {
+                      if (mode !== "fixedLegs") {
                         setGroupLegCount(groupBestOf);
                       }
                     }}
@@ -523,6 +523,12 @@ export default function NewTournamentPage() {
                       value="bestOf"
                       control={<Radio />}
                       label="Bäst av"
+                    />
+
+                    <FormControlLabel
+                      value="firstTo"
+                      control={<Radio />}
+                      label="Först till"
                     />
 
                     <FormControlLabel
@@ -542,14 +548,18 @@ export default function NewTournamentPage() {
                   >
                     {groupMatchMode === "bestOf"
                       ? "Matchen avslutas när ett lag har säkrat segern."
-                      : "Alla valda legs spelas. Vid jämnt antal legs kan matchen sluta oavgjort."}
+                      : groupMatchMode === "firstTo"
+                        ? "Första laget som vinner det valda antalet legs vinner matchen."
+                        : "Alla valda legs spelas. Vid jämnt antal legs kan matchen sluta oavgjort."}
                   </Typography>
                 </FormControl>
 
-                {groupMatchMode === "bestOf" ? (
+                {groupMatchMode !== "fixedLegs" ? (
                   <TextField
                     select
-                    label="Bäst av"
+                    label={
+                      groupMatchMode === "firstTo" ? "Först till" : "Bäst av"
+                    }
                     value={groupBestOf}
                     onChange={(event) => {
                       setGroupBestOf(event.target.value);
