@@ -1191,8 +1191,14 @@ export default function SchedulePage({
                       >
                         {isPlayoffView ? (
                           <>
-                            {data.tournament.gameType} · Bäst av{" "}
-                            {data.tournament.playoffBestOf}
+                            {data.tournament.gameType} ·{" "}
+                            {data.tournament.semifinalMatchMode === "firstTo"
+                              ? `Semifinal: Först till ${data.tournament.semifinalLegTarget}`
+                              : `Semifinal: Bäst av ${data.tournament.semifinalLegTarget}`}
+                            {" · "}
+                            {data.tournament.finalMatchMode === "firstTo"
+                              ? `Final: Först till ${data.tournament.finalLegTarget}`
+                              : `Final: Bäst av ${data.tournament.finalLegTarget}`}
                             {data.tournament.playoffMaxDarts
                               ? ` · Max ${data.tournament.playoffMaxDarts} darts`
                               : ""}
@@ -3023,7 +3029,16 @@ export default function SchedulePage({
                             editingMatchId === match.id) && (
                             <MatchResultControls
                               matchId={match.id}
-                              bestOf={data.tournament.playoffBestOf}
+                              bestOf={
+                                match.stage === "semifinal"
+                                  ? data.tournament.semifinalLegTarget
+                                  : data.tournament.finalLegTarget
+                              }
+                              matchMode={
+                                match.stage === "semifinal"
+                                  ? data.tournament.semifinalMatchMode
+                                  : data.tournament.finalMatchMode
+                              }
                               isAdmin={data.isAdmin}
                               density="inline"
                               actionError={
