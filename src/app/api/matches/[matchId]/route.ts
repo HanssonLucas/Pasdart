@@ -61,6 +61,10 @@ export async function PATCH(
       groupLegCount: tournaments.groupLegCount,
       groupBestOf: tournaments.groupBestOf,
       playoffBestOf: tournaments.playoffBestOf,
+      semifinalMatchMode: tournaments.semifinalMatchMode,
+      semifinalLegTarget: tournaments.semifinalLegTarget,
+      finalMatchMode: tournaments.finalMatchMode,
+      finalLegTarget: tournaments.finalLegTarget,
     })
     .from(tournaments)
     .where(eq(tournaments.id, match.tournamentId));
@@ -123,15 +127,25 @@ export async function PATCH(
       winnerTeamId = match.teamBId;
     }
   } else {
-    const bestOf =
+    const matchMode =
+      match.stage === "group"
+        ? tournament.groupMatchMode
+        : match.stage === "semifinal"
+          ? tournament.semifinalMatchMode
+          : tournament.finalMatchMode;
+
+    const legTarget =
       match.stage === "group"
         ? tournament.groupBestOf
-        : tournament.playoffBestOf;
+        : match.stage === "semifinal"
+          ? tournament.semifinalLegTarget
+          : tournament.finalLegTarget;
 
-    const isFirstTo =
-      match.stage === "group" && tournament.groupMatchMode === "firstTo";
+    const isFirstTo = matchMode === "firstTo";
 
-    const legsNeededToWin = isFirstTo ? bestOf : Math.floor(bestOf / 2) + 1;
+    const legsNeededToWin = isFirstTo
+      ? legTarget
+      : Math.floor(legTarget / 2) + 1;
 
     const teamAWon =
       teamALegs === legsNeededToWin && teamBLegs < legsNeededToWin;
@@ -143,8 +157,8 @@ export async function PATCH(
       return NextResponse.json(
         {
           error: isFirstTo
-            ? `En match First to ${bestOf} kräver ${bestOf} vunna legs.`
-            : `En match bäst av ${bestOf} kräver ${legsNeededToWin} vunna legs.`,
+            ? `En match först till ${legTarget} kräver ${legTarget} vunna legs.`
+            : `En match bäst av ${legTarget} kräver ${legsNeededToWin} vunna legs.`,
         },
         { status: 400 },
       );
