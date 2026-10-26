@@ -116,6 +116,14 @@ type TournamentResponse = {
 
     playoffBestOf: number;
 
+    semifinalMatchMode: "bestOf" | "firstTo";
+
+    semifinalLegTarget: number;
+
+    finalMatchMode: "bestOf" | "firstTo";
+
+    finalLegTarget: number;
+
     groupMaxDarts: number | null;
 
     playoffMaxDarts: number | null;
@@ -2687,7 +2695,16 @@ export default function SchedulePage({
                             editingMatchId === match.id) && (
                             <MatchResultControls
                               matchId={match.id}
-                              bestOf={data.tournament.playoffBestOf}
+                              bestOf={
+                                match.stage === "semifinal"
+                                  ? data.tournament.semifinalLegTarget
+                                  : data.tournament.finalLegTarget
+                              }
+                              matchMode={
+                                match.stage === "semifinal"
+                                  ? data.tournament.semifinalMatchMode
+                                  : data.tournament.finalMatchMode
+                              }
                               isAdmin={data.isAdmin}
                               density="inline"
                               actionError={

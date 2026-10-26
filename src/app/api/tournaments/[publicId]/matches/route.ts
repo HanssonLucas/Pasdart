@@ -24,6 +24,10 @@ export async function GET(
       groupBestOf: tournaments.groupBestOf,
 
       playoffBestOf: tournaments.playoffBestOf,
+      semifinalMatchMode: tournaments.semifinalMatchMode,
+      semifinalLegTarget: tournaments.semifinalLegTarget,
+      finalMatchMode: tournaments.finalMatchMode,
+      finalLegTarget: tournaments.finalLegTarget,
       groupMaxDarts: tournaments.groupMaxDarts,
       playoffMaxDarts: tournaments.playoffMaxDarts,
       tiebreakMethod: tournaments.tiebreakMethod,
@@ -70,6 +74,10 @@ export async function GET(
     groupBestOf: tournament.groupBestOf,
 
     playoffBestOf: tournament.playoffBestOf,
+    semifinalMatchMode: tournament.semifinalMatchMode,
+    semifinalLegTarget: tournament.semifinalLegTarget,
+    finalMatchMode: tournament.finalMatchMode,
+    finalLegTarget: tournament.finalLegTarget,
     groupMaxDarts: tournament.groupMaxDarts,
     playoffMaxDarts: tournament.playoffMaxDarts,
     tiebreakMethod: tournament.tiebreakMethod,
