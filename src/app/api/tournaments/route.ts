@@ -108,6 +108,10 @@ export async function POST(request: Request) {
     groupLegCount,
     groupBestOf,
     playoffBestOf,
+    semifinalMatchMode,
+    semifinalLegTarget,
+    finalMatchMode,
+    finalLegTarget,
     groupMaxDarts,
     playoffMaxDarts,
     boardCount,
@@ -135,6 +139,30 @@ export async function POST(request: Request) {
     );
   }
 
+  const isValidPlayoffFormat = (mode: unknown, target: unknown) => {
+    if (mode !== "bestOf" && mode !== "firstTo") {
+      return false;
+    }
+
+    const count = Number(target);
+
+    if (!Number.isInteger(count) || count < 1 || count > 9) {
+      return false;
+    }
+
+    return mode === "firstTo" || count % 2 === 1;
+  };
+
+  if (
+    !isValidPlayoffFormat(semifinalMatchMode, semifinalLegTarget) ||
+    !isValidPlayoffFormat(finalMatchMode, finalLegTarget)
+  ) {
+    return NextResponse.json(
+      { error: "Ogiltigt matchformat för semifinal eller final." },
+      { status: 400 },
+    );
+  }
+
   const publicId = crypto.randomUUID();
   const adminToken = crypto.randomUUID();
   const viewerCode = String(
@@ -155,6 +183,10 @@ export async function POST(request: Request) {
       groupLegCount: Number(groupLegCount),
       groupBestOf: Number(groupBestOf),
       playoffBestOf: Number(playoffBestOf),
+      semifinalMatchMode,
+      semifinalLegTarget: Number(semifinalLegTarget),
+      finalMatchMode,
+      finalLegTarget: Number(finalLegTarget),
       groupMaxDarts: groupMaxDarts ? Number(groupMaxDarts) : null,
       playoffMaxDarts: playoffMaxDarts ? Number(playoffMaxDarts) : null,
       boardCount: Number(boardCount),
