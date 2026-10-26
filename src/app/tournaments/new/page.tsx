@@ -48,7 +48,13 @@ export default function NewTournamentPage() {
   const [groupLegCount, setGroupLegCount] = useState("3");
   const [groupBestOf, setGroupBestOf] = useState("3");
 
-  const [playoffBestOf, setPlayoffBestOf] = useState("5");
+  const [semifinalMatchMode, setSemifinalMatchMode] = useState("bestOf");
+  const [semifinalLegTarget, setSemifinalLegTarget] = useState("5");
+
+  const [finalMatchMode, setFinalMatchMode] = useState("bestOf");
+  const [finalLegTarget, setFinalLegTarget] = useState("5");
+
+  const [playoffBestOf] = useState("5");
 
   const [groupMaxDarts, setGroupMaxDarts] = useState("39");
   const [playoffMaxDarts, setPlayoffMaxDarts] = useState("39");
@@ -693,23 +699,115 @@ export default function NewTournamentPage() {
                     mt: 0.35,
                   }}
                 >
-                  Slutspelet spelas alltid som Bäst av.
+                  Välj matchformat och antal legs för semifinal och final.
                 </Typography>
               </Box>
 
               <Stack spacing={2.25} sx={{ p: { xs: 2, sm: 2.5 } }}>
+                <Typography sx={{ fontWeight: 800 }}>Semifinal</Typography>
+
+                <FormControl>
+                  <FormLabel>Matchformat</FormLabel>
+                  <RadioGroup
+                    row
+                    value={semifinalMatchMode}
+                    onChange={(event) => {
+                      const mode = event.target.value;
+                      setSemifinalMatchMode(mode);
+
+                      if (
+                        mode === "bestOf" &&
+                        Number(semifinalLegTarget) % 2 === 0
+                      ) {
+                        setSemifinalLegTarget(
+                          String(Number(semifinalLegTarget) + 1),
+                        );
+                      }
+                    }}
+                  >
+                    <FormControlLabel
+                      value="bestOf"
+                      control={<Radio />}
+                      label="Bäst av"
+                    />
+                    <FormControlLabel
+                      value="firstTo"
+                      control={<Radio />}
+                      label="Först till"
+                    />
+                  </RadioGroup>
+                </FormControl>
+
                 <TextField
                   select
-                  label="Slutspel - bäst av"
-                  value={playoffBestOf}
-                  onChange={(event) => setPlayoffBestOf(event.target.value)}
+                  label={
+                    semifinalMatchMode === "firstTo" ? "Först till" : "Bäst av"
+                  }
+                  value={semifinalLegTarget}
+                  onChange={(event) =>
+                    setSemifinalLegTarget(event.target.value)
+                  }
                   fullWidth
                 >
-                  <MenuItem value="1">1 leg</MenuItem>
-                  <MenuItem value="3">3 legs</MenuItem>
-                  <MenuItem value="5">5 legs</MenuItem>
-                  <MenuItem value="7">7 legs</MenuItem>
-                  <MenuItem value="9">9 legs</MenuItem>
+                  {(semifinalMatchMode === "firstTo"
+                    ? [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                    : [1, 3, 5, 7, 9]
+                  ).map((count) => (
+                    <MenuItem key={count} value={String(count)}>
+                      {count} {count === 1 ? "leg" : "legs"}
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <Typography sx={{ fontWeight: 800 }}>Final</Typography>
+
+                <FormControl>
+                  <FormLabel>Matchformat</FormLabel>
+                  <RadioGroup
+                    row
+                    value={finalMatchMode}
+                    onChange={(event) => {
+                      const mode = event.target.value;
+                      setFinalMatchMode(mode);
+
+                      if (
+                        mode === "bestOf" &&
+                        Number(finalLegTarget) % 2 === 0
+                      ) {
+                        setFinalLegTarget(String(Number(finalLegTarget) + 1));
+                      }
+                    }}
+                  >
+                    <FormControlLabel
+                      value="bestOf"
+                      control={<Radio />}
+                      label="Bäst av"
+                    />
+                    <FormControlLabel
+                      value="firstTo"
+                      control={<Radio />}
+                      label="Först till"
+                    />
+                  </RadioGroup>
+                </FormControl>
+
+                <TextField
+                  select
+                  label={
+                    finalMatchMode === "firstTo" ? "Först till" : "Bäst av"
+                  }
+                  value={finalLegTarget}
+                  onChange={(event) => setFinalLegTarget(event.target.value)}
+                  fullWidth
+                >
+                  {(finalMatchMode === "firstTo"
+                    ? [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                    : [1, 3, 5, 7, 9]
+                  ).map((count) => (
+                    <MenuItem key={count} value={String(count)}>
+                      {count} {count === 1 ? "leg" : "legs"}
+                    </MenuItem>
+                  ))}
                 </TextField>
 
                 <TextField
@@ -771,7 +869,8 @@ export default function NewTournamentPage() {
                       }}
                     >
                       Formatet Alla legs spelas används bara i gruppspelet.
-                      Semifinal och final avgörs alltid med Bäst av.
+                      Semifinal och final spelas med sina egna valda
+                      matchformat.
                     </Typography>
                   </Box>
                 )}
